@@ -24,7 +24,7 @@ PRODUCT_PACKAGES += \
     SlimLauncher \
 		FDroid \
 		Superuser \
-		Catlog
+		Matlog
 
 # Add Superuser
 # NOTE: Superuser is being named UPDATE-SuperSU.zip to keep build script happy
