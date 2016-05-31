@@ -27,5 +27,9 @@ PRODUCT_PROPERTY_OVERRIDES := $(subst dataroaming=false,dataroaming=true,$(PRODU
 PRODUCT_PROPERTY_OVERRIDES += \
 		fw.show_multiuserui=0
 
+# Enable Root for adb and apps
+PRODUCT_PROPERTY_OVERRIDES += \
+		persist.sys.root_access=3
+
 # Updates overlay settings
 PRODUCT_PACKAGE_OVERLAYS += vendor/extra/overlay/common
