@@ -1,11 +1,5 @@
 #TODO: Copy resolv.conf
 
-# XXX: Remove when merged into /vendor/slim
-# https://review.slimroms.org/#/c/15890/
-#
-## SLim Framework
-include frameworks/opt/slim/slim_framework.mk
-
 ########################################
 ############## Packages ################
 ########################################
