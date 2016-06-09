@@ -8,7 +8,10 @@
 PRODUCT_PACKAGES += \
 		FDroid \
 		Matlog \
-		Snap
+		Snap \
+		LayersManager \
+		LockClock \
+		htop
 
 ########################################
 ############# Settings #################
