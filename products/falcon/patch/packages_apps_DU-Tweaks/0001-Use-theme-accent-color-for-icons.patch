@@ -1,0 +1,541 @@
+From 7d80684c16715263217113a50a515ee291792e32 Mon Sep 17 00:00:00 2001
+From: tsubus <tsubus@ilwt.org>
+Date: Sat, 3 Dec 2016 00:34:23 +0100
+Subject: [PATCH] Use theme accent color for icons
+
+- Icon colors are synced with Settings icon colors
+- This should not affect themes that already have
+  the correct icon coloring for DU-Tweaks, but it
+  should fix the rest of the themes
+
+Change-Id: I128edbe8af33dde447162e3bc555418e15019219
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ res/drawable/fab_accent.xml                              |  4 ++--
+ res/drawable/ic_battery_style.xml                        |  4 ++--
+ res/drawable/ic_buttons.xml                              |  4 ++--
+ res/drawable/ic_carrierlabel.xml                         |  4 ++--
+ res/drawable/ic_dirtytweaks_info.xml                     |  4 ++--
+ res/drawable/ic_expanded_desktop.xml                     |  4 ++--
+ res/drawable/ic_misctweaks.xml                           |  4 ++--
+ res/drawable/ic_navigation.xml                           |  4 ++--
+ res/drawable/ic_omniswitch.xml                           |  4 ++--
+ res/drawable/ic_powermenu.xml                            |  4 ++--
+ res/drawable/ic_recents.xml                              |  4 ++--
+ res/drawable/ic_statusbar_notifications.xml              |  4 ++--
+ res/drawable/ic_statusbarclock.xml                       |  4 ++--
+ res/drawable/ic_systemui_tuner_qs.xml                    |  4 ++--
+ res/drawable/ic_systemui_tuner_statusbaritems.xml        |  4 ++--
+ res/drawable/ic_traffic.xml                              |  4 ++--
+ res/drawable/tab.xml                                     |  4 ++--
+ res/layout/preference_battery_style.xml                  |  2 +-
+ res/layout/preference_buttons.xml                        |  2 +-
+ res/layout/preference_carrierlabel.xml                   |  2 +-
+ res/layout/preference_expanded_desktop.xml               |  2 +-
+ res/layout/preference_misctweaks.xml                     |  2 +-
+ res/layout/preference_navigation.xml                     |  2 +-
+ res/layout/preference_omniswitch.xml                     |  2 +-
+ res/layout/preference_powermenu.xml                      |  2 +-
+ res/layout/preference_recents.xml                        |  2 +-
+ res/layout/preference_statusbar_notifications.xml        |  2 +-
+ res/layout/preference_statusbarclock.xml                 |  2 +-
+ res/layout/preference_systemui_tuner_qs.xml              |  2 +-
+ res/layout/preference_systemui_tuner_statusbaritems.xml  |  2 +-
+ res/layout/preference_traffic.xml                        |  2 +-
+ res/values/colors.xml                                    | 11 -----------
+ src/com/dirtyunicorns/dutweaks/PagerSlidingTabStrip.java |  5 +++--
+ 33 files changed, 51 insertions(+), 61 deletions(-)
+
+diff --git a/res/drawable/fab_accent.xml b/res/drawable/fab_accent.xml
+index 6869219..0294cc0 100644
+--- a/res/drawable/fab_accent.xml
++++ b/res/drawable/fab_accent.xml
+@@ -1,4 +1,4 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+-    <solid android:color="@color/action_picker_fab_background" />
+-</shape>
+\ No newline at end of file
++    <solid android:color="?android:attr/colorAccent" />
++</shape>
+diff --git a/res/drawable/ic_battery_style.xml b/res/drawable/ic_battery_style.xml
+index 364fdba..21f33e8 100644
+--- a/res/drawable/ic_battery_style.xml
++++ b/res/drawable/ic_battery_style.xml
+@@ -15,8 +15,8 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M23,11H20V4L15,14H18V22M12,9H4V6H12M12.67,4H11V2H5V4H3.33A1.33,1.33 0 0,0 2,5.33V20.67C2,21.4 2.6,22 3.33,22H12.67C13.4,22 14,21.4 14,20.67V5.33A1.33,1.33 0 0,0 12.67,4Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+diff --git a/res/drawable/ic_buttons.xml b/res/drawable/ic_buttons.xml
+index 970750b..e204d07 100644
+--- a/res/drawable/ic_buttons.xml
++++ b/res/drawable/ic_buttons.xml
+@@ -15,9 +15,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M12,23L16,19H8M19,8H17V6H19M19,11H17V9H19M16,8H14V6H16M16,11H14V9H16M16,15H8V13H16M7,8H5V6H7M7,11H5V9H7M8,9H10V11H8M8,6H10V8H8M11,9H13V11H11M11,6H13V8H11M20,3H4C2.89,3 2,3.89 2,5V15A2,2 0 0,0 4,17H20A2,2 0 0,0 22,15V5C22,3.89 21.1,3 20,3Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_carrierlabel.xml b/res/drawable/ic_carrierlabel.xml
+index 6cc5bfe..11b72ee 100644
+--- a/res/drawable/ic_carrierlabel.xml
++++ b/res/drawable/ic_carrierlabel.xml
+@@ -18,8 +18,8 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M6,11A2,2 0 0,1 8,13V17H4A2,2 0 0,1 2,15V13A2,2 0 0,1 4,11H6M4,13V15H6V13H4M20,13V15H22V17H20A2,2 0 0,1 18,15V13A2,2 0 0,1 20,11H22V13H20M12,7V11H14A2,2 0 0,1 16,13V15A2,2 0 0,1 14,17H12A2,2 0 0,1 10,15V7H12M12,15H14V13H12V15Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+diff --git a/res/drawable/ic_dirtytweaks_info.xml b/res/drawable/ic_dirtytweaks_info.xml
+index 5c848da..fe3ae90 100644
+--- a/res/drawable/ic_dirtytweaks_info.xml
++++ b/res/drawable/ic_dirtytweaks_info.xml
+@@ -18,8 +18,8 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+diff --git a/res/drawable/ic_expanded_desktop.xml b/res/drawable/ic_expanded_desktop.xml
+index e10df4b..b5c5ee7 100644
+--- a/res/drawable/ic_expanded_desktop.xml
++++ b/res/drawable/ic_expanded_desktop.xml
+@@ -18,9 +18,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M6,8h12v8H6V8ZM6,22h12c1.1,0,2-0.9,2-2V4c0-1.1-0.9-2-2-2H6C4.9,2,4,2.9,4,4v16C4,21.1,4.9,22,6,22L6,22z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_misctweaks.xml b/res/drawable/ic_misctweaks.xml
+index bb8b9b7..a7c77d3 100644
+--- a/res/drawable/ic_misctweaks.xml
++++ b/res/drawable/ic_misctweaks.xml
+@@ -18,9 +18,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M17,16V14H7V16H17M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5C3.89,21 3,20.1 3,19V5C3,3.89 3.89,3 5,3H19M17,10V8H7V10H17Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_navigation.xml b/res/drawable/ic_navigation.xml
+index 9fae9c1..70c2c3c 100644
+--- a/res/drawable/ic_navigation.xml
++++ b/res/drawable/ic_navigation.xml
+@@ -18,9 +18,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M4.2,3C3.57,3 3.05,3.5 3,4.11C3,8.66 3,13.24 3,17.8C3,18.46 3.54,19 4.2,19C4.31,19 4.42,19 4.53,18.95C8.5,16.84 12.56,14.38 16.5,12.08C16.94,11.89 17.21,11.46 17.21,11C17.21,10.57 17,10.17 16.6,9.96C12.5,7.56 8.21,5.07 4.53,3.05C4.42,3 4.31,3 4.2,3M19.87,6C19.76,6 19.65,6 19.54,6.05C18.6,6.57 17.53,7.18 16.5,7.75C16.85,7.95 17.19,8.14 17.5,8.33C18.5,8.88 19.07,9.9 19.07,11V11C19.07,12.18 18.38,13.27 17.32,13.77C15.92,14.59 12.92,16.36 11.32,17.29C14.07,18.89 16.82,20.5 19.54,21.95C19.65,22 19.76,22 19.87,22C20.54,22 21.07,21.46 21.07,20.8C21.07,16.24 21.08,11.66 21.07,7.11C21,6.5 20.5,6 19.87,6Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_omniswitch.xml b/res/drawable/ic_omniswitch.xml
+index 38b072d..52b8ed5 100644
+--- a/res/drawable/ic_omniswitch.xml
++++ b/res/drawable/ic_omniswitch.xml
+@@ -18,9 +18,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M21,9V15A6,6 0 0,1 15,21H4.41L11.07,14.35C11.38,14.04 11.69,13.73 11.84,13.75C12,13.78 12,14.14 12,14.5V17H14A3,3 0 0,0 17,14V8.41L21,4.41V9M3,15V9A6,6 0 0,1 9,3H19.59L12.93,9.65C12.62,9.96 12.31,10.27 12.16,10.25C12,10.22 12,9.86 12,9.5V7H10A3,3 0 0,0 7,10V15.59L3,19.59V15Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_powermenu.xml b/res/drawable/ic_powermenu.xml
+index ac7c429..2097766 100644
+--- a/res/drawable/ic_powermenu.xml
++++ b/res/drawable/ic_powermenu.xml
+@@ -18,9 +18,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M16.56,5.44L15.11,6.89C16.84,7.94 18,9.83 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12C6,9.83 7.16,7.94 8.88,6.88L7.44,5.44C5.36,6.88 4,9.28 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12C20,9.28 18.64,6.88 16.56,5.44M13,3H11V13H13"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_recents.xml b/res/drawable/ic_recents.xml
+index 7ab064d..0f96a50 100644
+--- a/res/drawable/ic_recents.xml
++++ b/res/drawable/ic_recents.xml
+@@ -18,9 +18,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M4,4H20V20H4V4M6,8V18H18V8H6Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_statusbar_notifications.xml b/res/drawable/ic_statusbar_notifications.xml
+index 07f233d..ca817ae 100644
+--- a/res/drawable/ic_statusbar_notifications.xml
++++ b/res/drawable/ic_statusbar_notifications.xml
+@@ -15,9 +15,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M17,11H15V9H17M13,11H11V9H13M9,11H7V9H9M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4C22,2.89 21.1,2 20,2Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_statusbarclock.xml b/res/drawable/ic_statusbarclock.xml
+index b2bf2b3..8f36316 100644
+--- a/res/drawable/ic_statusbarclock.xml
++++ b/res/drawable/ic_statusbarclock.xml
+@@ -18,9 +18,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M14,12H15.5V14.82L17.94,16.23L17.19,17.53L14,15.69V12M4,2H18A2,2 0 0,1 20,4V10.1C21.24,11.36 22,13.09 22,15A7,7 0 0,1 15,22C13.09,22 11.36,21.24 10.1,20H4A2,2 0 0,1 2,18V4A2,2 0 0,1 4,2M4,15V18H8.67C8.24,17.09 8,16.07 8,15H4M4,8H10V5H4V8M18,8V5H12V8H18M4,13H8.29C8.63,11.85 9.26,10.82 10.1,10H4V13M15,10.15A4.85,4.85 0 0,0 10.15,15C10.15,17.68 12.32,19.85 15,19.85A4.85,4.85 0 0,0 19.85,15C19.85,12.32 17.68,10.15 15,10.15Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_systemui_tuner_qs.xml b/res/drawable/ic_systemui_tuner_qs.xml
+index 6b4498e..6774b4f 100644
+--- a/res/drawable/ic_systemui_tuner_qs.xml
++++ b/res/drawable/ic_systemui_tuner_qs.xml
+@@ -15,8 +15,8 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M13,3V9H21V3M13,21H21V11H13M3,21H11V15H3M3,13H11V3H3V13Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+diff --git a/res/drawable/ic_systemui_tuner_statusbaritems.xml b/res/drawable/ic_systemui_tuner_statusbaritems.xml
+index 2625beb..75584ea 100644
+--- a/res/drawable/ic_systemui_tuner_statusbaritems.xml
++++ b/res/drawable/ic_systemui_tuner_statusbaritems.xml
+@@ -18,9 +18,9 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M4,4H20A1,1 0 0,1 21,5V9A1,1 0 0,1 20,10H4A1,1 0 0,1 3,9V5A1,1 0 0,1 4,4M9,8H10V6H9V8M5,6V8H7V6H5M8,16H11V13H13V16H16V18H13V21H11V18H8V16Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+ 
+diff --git a/res/drawable/ic_traffic.xml b/res/drawable/ic_traffic.xml
+index 6671226..21be0ed 100644
+--- a/res/drawable/ic_traffic.xml
++++ b/res/drawable/ic_traffic.xml
+@@ -15,8 +15,8 @@ Copyright (C) 2014 The Android Open Source Project
+         android:height="24dp"
+         android:viewportWidth="24"
+         android:viewportHeight="24"
+-        android:tint="?android:attr/colorControlNormal">
++        android:tint="?android:attr/colorAccent">
+     <path
+         android:pathData="M9,3L5,7H8V14H10V7H13M16,17V10H14V17H11L15,21L19,17H16Z"
+-        android:fillColor="@color/white"/>
++        android:fillColor="#FFFFFFFF"/>
+ </vector>
+diff --git a/res/drawable/tab.xml b/res/drawable/tab.xml
+index afb1706..3836563 100644
+--- a/res/drawable/tab.xml
++++ b/res/drawable/tab.xml
+@@ -1,8 +1,8 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <selector xmlns:android="http://schemas.android.com/apk/res/android" android:exitFadeDuration="@android:integer/config_shortAnimTime">
+ 
+-    <item android:state_pressed="true" android:drawable="@color/background_tab_pressed" />
+-    <item android:state_focused="true" android:drawable="@color/background_tab_pressed"/>
++    <item android:state_pressed="true" android:drawable="@color/card_background" />
++    <item android:state_focused="true" android:drawable="@color/card_background"/>
+     <item android:drawable="@android:color/transparent"/>
+ 
+ </selector>
+diff --git a/res/layout/preference_battery_style.xml b/res/layout/preference_battery_style.xml
+index 7a61873..f1df1c8 100644
+--- a/res/layout/preference_battery_style.xml
++++ b/res/layout/preference_battery_style.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_battery_style"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_buttons.xml b/res/layout/preference_buttons.xml
+index 975b791..244a2ac 100644
+--- a/res/layout/preference_buttons.xml
++++ b/res/layout/preference_buttons.xml
+@@ -27,7 +27,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_buttons"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_carrierlabel.xml b/res/layout/preference_carrierlabel.xml
+index adb3382..33f0a03 100644
+--- a/res/layout/preference_carrierlabel.xml
++++ b/res/layout/preference_carrierlabel.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_carrierlabel"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_expanded_desktop.xml b/res/layout/preference_expanded_desktop.xml
+index 8de2dcf..5892f2c 100644
+--- a/res/layout/preference_expanded_desktop.xml
++++ b/res/layout/preference_expanded_desktop.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_expanded_desktop"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_misctweaks.xml b/res/layout/preference_misctweaks.xml
+index f8d0ccc..09a2cc4 100644
+--- a/res/layout/preference_misctweaks.xml
++++ b/res/layout/preference_misctweaks.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_misctweaks"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_navigation.xml b/res/layout/preference_navigation.xml
+index 7836bae..35c6d3d 100644
+--- a/res/layout/preference_navigation.xml
++++ b/res/layout/preference_navigation.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_navigation"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_omniswitch.xml b/res/layout/preference_omniswitch.xml
+index 3ed4554..b25d07e 100644
+--- a/res/layout/preference_omniswitch.xml
++++ b/res/layout/preference_omniswitch.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_omniswitch"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_powermenu.xml b/res/layout/preference_powermenu.xml
+index d77e265..a345c93 100644
+--- a/res/layout/preference_powermenu.xml
++++ b/res/layout/preference_powermenu.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_powermenu"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_recents.xml b/res/layout/preference_recents.xml
+index c21580f..262742e 100644
+--- a/res/layout/preference_recents.xml
++++ b/res/layout/preference_recents.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_recents"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_statusbar_notifications.xml b/res/layout/preference_statusbar_notifications.xml
+index e8d716d..184e0d2 100644
+--- a/res/layout/preference_statusbar_notifications.xml
++++ b/res/layout/preference_statusbar_notifications.xml
+@@ -27,7 +27,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_statusbar_notifications"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_statusbarclock.xml b/res/layout/preference_statusbarclock.xml
+index 9a86d13..71a9978 100644
+--- a/res/layout/preference_statusbarclock.xml
++++ b/res/layout/preference_statusbarclock.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_statusbarclock"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_systemui_tuner_qs.xml b/res/layout/preference_systemui_tuner_qs.xml
+index edcdeba..bdb7365 100644
+--- a/res/layout/preference_systemui_tuner_qs.xml
++++ b/res/layout/preference_systemui_tuner_qs.xml
+@@ -27,7 +27,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_systemui_tuner_qs"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_systemui_tuner_statusbaritems.xml b/res/layout/preference_systemui_tuner_statusbaritems.xml
+index d17bfd3..9a83971 100644
+--- a/res/layout/preference_systemui_tuner_statusbaritems.xml
++++ b/res/layout/preference_systemui_tuner_statusbaritems.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_systemui_tuner_statusbaritems"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/layout/preference_traffic.xml b/res/layout/preference_traffic.xml
+index 548a848..0894ba4 100644
+--- a/res/layout/preference_traffic.xml
++++ b/res/layout/preference_traffic.xml
+@@ -30,7 +30,7 @@
+         android:layout_height="wrap_content">
+         <ImageView
+             android:src="@drawable/ic_traffic"
+-            android:tint="@color/icon_tint_color"
++            android:tint="?android:attr/colorAccent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center" />
+diff --git a/res/values/colors.xml b/res/values/colors.xml
+index 44f0f57..c4e7f44 100644
+--- a/res/values/colors.xml
++++ b/res/values/colors.xml
+@@ -16,18 +16,7 @@
+  -->
+ 
+ <resources>
+-
+-    <color name="white">#FFF</color>
+-    <color name="background_tab_pressed">#1AFFFFFF</color>
+-    <color name="material_deep_teal_500">@*android:color/material_deep_teal_500</color>
+-    <color name="icon_tint_color">@color/material_deep_teal_500</color>
+-    <color name="theme_accent">#ff009688</color>
+-    <color name="action_picker_fab_background">@color/theme_accent</color>
+-
+     <!-- Expanded desktop -->
+     <drawable name="expanded_item_bg_activated">#ffEEEEEE</drawable>
+     <drawable name="expanded_item_bg">@android:color/background_light</drawable>
+-    <color name="expanded_button_color_normal">#4CAF50</color>
+-    <color name="expanded_button_color_close">#F44336</color>
+-
+ </resources>
+diff --git a/src/com/dirtyunicorns/dutweaks/PagerSlidingTabStrip.java b/src/com/dirtyunicorns/dutweaks/PagerSlidingTabStrip.java
+index 20d28e1..7f75193 100644
+--- a/src/com/dirtyunicorns/dutweaks/PagerSlidingTabStrip.java
++++ b/src/com/dirtyunicorns/dutweaks/PagerSlidingTabStrip.java
+@@ -44,6 +44,7 @@ import android.widget.LinearLayout;
+ import android.widget.TextView;
+ 
+ import com.android.settings.R;
++import com.android.settings.Utils;
+ 
+ import java.util.Locale;
+ 
+@@ -156,8 +157,8 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
+         TypedArray a = context.obtainStyledAttributes(attrs, ATTRS);
+         tabTextSize = a.getDimensionPixelSize(TEXT_SIZE_INDEX, tabTextSize);
+         ColorStateList colorStateList = a.getColorStateList(TEXT_COLOR_INDEX);
+-        int textPrimaryColor = context.getResources().getColor(R.color.material_deep_teal_500);
+-        int tabTextColor = context.getResources().getColor(R.color.material_deep_teal_500);
++        int textPrimaryColor = Utils.getColorAccent(context);
++        int tabTextColor = Utils.getColorAccent(context);
+ 
+         underlineColor = textPrimaryColor;
+         dividerColor = textPrimaryColor;
+-- 
+2.1.4
+

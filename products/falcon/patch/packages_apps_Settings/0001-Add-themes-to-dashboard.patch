@@ -1,7 +1,7 @@
-From 8a55d498f04c5848e9344b275b08d25ec51378c9 Mon Sep 17 00:00:00 2001
+From 5ecfe3cbc2ff10903a453b729aee70f41fa82398 Mon Sep 17 00:00:00 2001
 From: tsubus <tsubus@ilwt.org>
 Date: Sat, 3 Dec 2016 00:01:54 +0100
-Subject: [PATCH] Add themes to dashboard
+Subject: [PATCH 1/8] Add themes to dashboard
 
 - drawable ported from m
 
