@@ -4,7 +4,8 @@
 
 # Add wanted packages
 PRODUCT_PACKAGES += \
-		LockClock
+		LockClock \
+		Substratum
 
 ########################################
 ############# Settings #################
