@@ -1,3 +1,4 @@
 # Add wanted packages
 PRODUCT_PACKAGES += \
-    OpenDelta
+    OpenDelta \
+    Substratum
