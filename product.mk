@@ -17,6 +17,8 @@ PRODUCT_PACKAGES += \
 		OpenDelta
 
 # Boot Animation
+DU_CUSTOM_BOOTANIMATION := true
+
 PRODUCT_COPY_FILES += \
 		vendor/extra/prebuilt/common/media/bootanimation.zip:system/media/bootanimation.zip
 
