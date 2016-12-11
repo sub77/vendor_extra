@@ -150,7 +150,7 @@ index 761ef52..deb9046 100644
  
 -            public BroadcastRunnable(@NonNull final String action, @NonNull final OverlayInfo oi,
 -                    final boolean doUpdate) {
-+            public BroadcastRunnable(@NonNull final String action, @NonNull final OverlayInfo oi, 
++            public BroadcastRunnable(@NonNull final String action, @NonNull final OverlayInfo oi,
 +                    final boolean doUpdate, final boolean shouldWait) {
                  mAction = action;
                  mOverlayInfo = oi;
@@ -351,7 +351,7 @@ index d6f5373..44004c1 100644
                  case "disable":
                      return runEnableDisable(false);
 +                case "disable-all":
-+                	return runDisableAll();
++                    return runDisableAll();
                  case "set-priority":
                      return runSetPriority();
                  default:
@@ -413,7 +413,7 @@ index d6f5373..44004c1 100644
 +            switch (opt) {
 +                case "--user":
 +                    userId = UserHandle.parseUserArg(getNextArgRequired());
-+                	break;
++                   break;
 +                default:
 +                    System.err.println("Error: Unknown option: " + opt);
 +                    return 1;
