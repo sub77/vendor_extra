@@ -1,0 +1,33 @@
+From a96007c32f9248a0eb1c145c896a13ba7e211243 Mon Sep 17 00:00:00 2001
+From: Steve Kondik <steve@cyngn.com>
+Date: Wed, 26 Oct 2016 15:05:22 -0700
+Subject: [PATCH] surfaceflinger: Fix crash when setting priority
+
+ * If phase offsets aren't set, SFEventThread will be null. Fixit.
+
+Change-Id: Ieb4917a2dea4ed5e214215a5ad192d9cf3b72072
+---
+
+diff --git a/services/surfaceflinger/SurfaceFlinger_hwc1.cpp b/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
+index c6f5067..b407157 100644
+--- a/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
++++ b/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
+@@ -483,12 +483,13 @@
+     }
+ 
+     // set SFEventThread to SCHED_FIFO to minimize jitter
+-    struct sched_param param = {0};
+-    param.sched_priority = 2;
+-    if (sched_setscheduler(mSFEventThread->getTid(), SCHED_FIFO, &param) != 0) {
+-        ALOGE("Couldn't set SCHED_FIFO for SFEventThread");
++    if (mSFEventThread != NULL) {
++        struct sched_param param = {0};
++        param.sched_priority = 2;
++        if (sched_setscheduler(mSFEventThread->getTid(), SCHED_FIFO, &param) != 0) {
++            ALOGE("Couldn't set SCHED_FIFO for SFEventThread");
++        }
+     }
+-
+ 
+     // Initialize the H/W composer object.  There may or may not be an
+     // actual hardware composer underneath.

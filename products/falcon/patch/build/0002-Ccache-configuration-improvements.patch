@@ -1,0 +1,29 @@
+From e82a7168895e0b2fe9096e2d50cdd0e773cf93fc Mon Sep 17 00:00:00 2001
+From: Nathan Chancellor <natechancellor@gmail.com>
+Date: Thu, 8 Dec 2016 19:58:24 -0700
+Subject: [PATCH 2/2] Ccache configuration improvements
+
+which throws an error if a binary is not found which breaks the build. Use command -v as it is safer.
+
+Change-Id: I2f08548e6559b9bd8ad7df19296f7bae960bad5c
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+---
+ core/ccache.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/ccache.mk b/core/ccache.mk
+index 4a30274..31d29fc 100644
+--- a/core/ccache.mk
++++ b/core/ccache.mk
+@@ -39,7 +39,7 @@ ifneq ($(filter-out false,$(USE_CCACHE)),)
+   export CCACHE_CPP2 := true
+ 
+   # Detect if the system already has ccache installed to use instead of the prebuilt
+-  ccache := $(shell which ccache)
++  ccache := $(shell command -v ccache)
+ 
+   ifeq ($(ccache),)
+     CCACHE_HOST_TAG := $(HOST_PREBUILT_TAG)
+-- 
+2.1.4
+
