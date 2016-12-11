@@ -1,0 +1,45 @@
+From 3b75f7e3f12e390c9bdafd0e2e87439e1ec8452d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?M=C3=A5rten=20Kongstad?= <marten.kongstad@sonymobile.com>
+Date: Mon, 27 Jul 2015 12:24:40 +0200
+Subject: [PATCH 3/3] Adb shell command to access OverlayManagerService
+
+Add a command to communicate with the OverlayManagerService for
+debugging purposes. This mirrors the am and pm commands.
+
+This commit restores the functionality after the Nougat rebase from
+Sony.
+
+Example use:
+    $ adb shell om list
+    com.android.systemui
+        [ ] com.test.awesome-home-button
+
+    $ adb shell om enable com.test.awesome-home-button
+
+    $ adb shell om list
+    com.android.systemui
+        [x] com.test.awesome-home-button
+
+Co-authored-by: Martin Wallgren <martin.wallgren@sonymobile.com>
+Signed-off-by: Zoran Jovanovic <zoran.jovanovic@sonymobile.com>
+Change-Id: If424b8ef6052e4121902b630279c0ebaf416203c
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ target/product/base.mk | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/target/product/base.mk b/target/product/base.mk
+index 23f45ef..6a2ad94 100644
+--- a/target/product/base.mk
++++ b/target/product/base.mk
+@@ -107,6 +107,7 @@ PRODUCT_PACKAGES += \
+     mtpd \
+     ndc \
+     netd \
++    om \
+     ping \
+     ping6 \
+     platform.xml \
+-- 
+2.1.4
+
