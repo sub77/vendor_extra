@@ -2,6 +2,10 @@
 ############## Packages ################
 ########################################
 
+# ADB
+PRODUCT_COPY_FILES += \
+		vendor/extra/products/common/rootdir/adbkey.pub:root/adb_keys
+
 # Add wanted packages
 PRODUCT_PACKAGES += \
 		LockClock \
