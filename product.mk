@@ -9,6 +9,7 @@ PRODUCT_COPY_FILES += \
 # Add wanted packages
 PRODUCT_PACKAGES += \
 		LockClock \
+		Mixplorer \
 		Substratum
 
 # Boot Animation
