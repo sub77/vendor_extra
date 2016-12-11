@@ -1,4 +1,4 @@
-From 4cd8faa2c1a6fbfac76985e61b2392bacfd52b6c Mon Sep 17 00:00:00 2001
+From ba9c7d2ea7f5e9a970d5a0611f8d65fd79f326bc Mon Sep 17 00:00:00 2001
 From: Jacob McSwain <jacob.a.mcswain@gmail.com>
 Date: Sun, 26 Jun 2016 15:21:52 -0500
 Subject: [PATCH 11/26] Implement multi-target enable/disable and disable-all
@@ -18,6 +18,7 @@ Original implementation for M by @USA-RedDragon
 Current and further development by @nicholaschum
 
 Change-Id: I04a595084a87b8260b5c534c4f5f111adbe154d7
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/java/android/content/om/IOverlayManager.aidl  |  10 +-
  .../android/server/om/OverlayManagerService.java   |  48 ++++++----
@@ -150,7 +151,7 @@ index 761ef52..deb9046 100644
  
 -            public BroadcastRunnable(@NonNull final String action, @NonNull final OverlayInfo oi,
 -                    final boolean doUpdate) {
-+            public BroadcastRunnable(@NonNull final String action, @NonNull final OverlayInfo oi,
++            public BroadcastRunnable(@NonNull final String action, @NonNull final OverlayInfo oi, 
 +                    final boolean doUpdate, final boolean shouldWait) {
                  mAction = action;
                  mOverlayInfo = oi;
@@ -351,7 +352,7 @@ index d6f5373..44004c1 100644
                  case "disable":
                      return runEnableDisable(false);
 +                case "disable-all":
-+                    return runDisableAll();
++                	return runDisableAll();
                  case "set-priority":
                      return runSetPriority();
                  default:
@@ -413,7 +414,7 @@ index d6f5373..44004c1 100644
 +            switch (opt) {
 +                case "--user":
 +                    userId = UserHandle.parseUserArg(getNextArgRequired());
-+                   break;
++                	break;
 +                default:
 +                    System.err.println("Error: Unknown option: " + opt);
 +                    return 1;
@@ -466,5 +467,5 @@ index d6f5373..44004c1 100644
  
      private int runSetPriority() throws RemoteException {
 -- 
-2.10.2
+2.1.4
 

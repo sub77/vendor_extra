@@ -1,4 +1,4 @@
-From 05fcd51790f8e307731dd1bb5396e8654eacbcd9 Mon Sep 17 00:00:00 2001
+From 64fd6a224426668f8d7dd4bffeb1207790535d26 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?M=C3=A5rten=20Kongstad?= <marten.kongstad@sonymobile.com>
 Date: Mon, 25 Apr 2016 16:29:22 +0200
 Subject: [PATCH 04/26] Set EXTRA_REPLACING correctly in ACTION_PACKAGE_ADDED
@@ -30,6 +30,7 @@ ACTION_PACKAGE_ADDED with EXTRA_REPLACING set to false, but instead it
 was set to true. The bug was initially introduced in commit bd0e9e49.
 
 Change-Id: Icf869013d5d652de4bf0f6df4529b7a68d35a25c
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  services/core/java/com/android/server/pm/PackageManagerService.java | 1 +
  1 file changed, 1 insertion(+)
@@ -47,5 +48,5 @@ index 0ad2a0e..feeb5e4 100644
                  }
                  sendPackageBroadcast(Intent.ACTION_PACKAGE_ADDED, packageName,
 -- 
-2.10.2
+2.1.4
 

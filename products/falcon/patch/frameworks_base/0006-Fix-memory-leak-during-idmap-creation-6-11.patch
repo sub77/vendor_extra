@@ -1,4 +1,4 @@
-From fb71880bcef4e181d8eb4498290297e0f464b1fd Mon Sep 17 00:00:00 2001
+From f519ec81a5d6d6d76059d6645d89e7c8c8971640 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?M=C3=A5rten=20Kongstad?= <marten.kongstad@sonymobile.com>
 Date: Thu, 2 Jun 2016 09:34:36 +0200
 Subject: [PATCH 06/26] Fix memory leak during idmap creation [6/11]
@@ -6,6 +6,7 @@ Subject: [PATCH 06/26] Fix memory leak during idmap creation [6/11]
 Plug a memory leak in AssetManager::createIdmap.
 
 Change-Id: Ieed805c596df931e2167ebb47c1b2907d6bf67f4
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  libs/androidfw/AssetManager.cpp | 38 +++++++++++++++++++++++++-------------
  1 file changed, 25 insertions(+), 13 deletions(-)
@@ -63,5 +64,5 @@ index 214c0d1..c0690af 100644
  
  bool AssetManager::addDefaultAssets()
 -- 
-2.10.2
+2.1.4
 

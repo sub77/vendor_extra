@@ -1,4 +1,4 @@
-From 58d8fb5b2ae171d441054beb1745759f5a651c9f Mon Sep 17 00:00:00 2001
+From 9c491cd5879d13bfac19823d3f18f900e15beb77 Mon Sep 17 00:00:00 2001
 From: Nicholas Chum <nicholaschum@gmail.com>
 Date: Tue, 17 Nov 2015 18:57:11 -0500
 Subject: [PATCH 17/26] Allow Immersive cling colors to be fully themed
@@ -8,6 +8,7 @@ removing hardcoded framework calls. Let the themer decide what they want
 the colors to be.
 
 Change-Id: Ia0927fda5e44a3ce8ef699cb018bea9b9e7ace62
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/res/res/layout/immersive_mode_cling.xml | 12 ++++++------
  core/res/res/values/du_colors.xml            |  3 +++
@@ -77,5 +78,5 @@ index c6dbc1c..7408ae9 100644
 +    <color name="immersive_cling_button_text_color">@android:color/white</color>
  </resources>
 -- 
-2.10.2
+2.1.4
 

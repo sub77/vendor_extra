@@ -1,4 +1,4 @@
-From 9eb43fa49e4050fbbee73b68b33f0abd355e5efb Mon Sep 17 00:00:00 2001
+From ac0f947235997df0e13c5d9cfc31967a8658eb30 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?M=C3=A5rten=20Kongstad?= <marten.kongstad@sonymobile.com>
 Date: Tue, 15 Dec 2015 16:08:31 +0100
 Subject: [PATCH 01/26] Support tagging resources as OK to overlay [1/11]
@@ -21,6 +21,7 @@ they are pre-installed or if the signature of the overlay package
 matches the signature of the target package.
 
 Change-Id: I08d11de845c1679017798ea1636ef4c36f820d8e
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  cmds/idmap/create.cpp             |  2 +-
  cmds/idmap/inspect.cpp            |  6 +++
@@ -469,5 +470,5 @@ index cf1e992..4b9b8b6 100644
          Vector<sp<ConfigList> > mOrderedConfigs;
          SortedVector<String16> mCanAddEntries;
 -- 
-2.10.2
+2.1.4
 

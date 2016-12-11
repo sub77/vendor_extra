@@ -1,10 +1,11 @@
-From 81a0effa1abd545f0f3a7cd603f1608b86d8bfd6 Mon Sep 17 00:00:00 2001
+From 459cd0c83797ed8116b09610d6c0e57cdf2b394a Mon Sep 17 00:00:00 2001
 From: Nicholas Chum <nicholaschum@gmail.com>
 Date: Thu, 27 Oct 2016 07:08:00 +0200
 Subject: [PATCH 10/26] Do not enforce code policy limiting overlay
  installation [10/11]
 
 Change-Id: Iea317f3771f25dbfcbf4938e88cace12fd97d7eb
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  services/core/java/com/android/server/pm/PackageManagerService.java | 4 ----
  1 file changed, 4 deletions(-)
@@ -25,5 +26,5 @@ index feeb5e4..fa040bc 100644
                  mCustomResolverComponentName.getPackageName().equals(pkg.packageName)) {
              setUpCustomResolverActivity(pkg);
 -- 
-2.10.2
+2.1.4
 

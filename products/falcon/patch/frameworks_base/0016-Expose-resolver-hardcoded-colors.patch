@@ -1,4 +1,4 @@
-From f460d93cde5fe9d22bd930005f0833310580c3b4 Mon Sep 17 00:00:00 2001
+From 9b2c2c804ada09bc6b4a13ccb15dadb364f40db0 Mon Sep 17 00:00:00 2001
 From: Nathan Chancellor <natechancellor@gmail.com>
 Date: Fri, 9 Dec 2016 10:47:17 -0700
 Subject: [PATCH 16/26] Expose resolver hardcoded colors
@@ -46,6 +46,7 @@ Date:   Sun Nov 8 05:27:28 2015 -0500
     Change-Id: I286d92b5d1f672c8adb3c0af1951793521536d90
 
 Change-Id: Iec7951147bbbc99aee6b06ae50c1acc7b9c01a7f
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/res/res/layout/chooser_grid.xml                 |  6 +++---
  .../res/layout/resolver_different_item_header.xml    |  2 +-
@@ -196,5 +197,5 @@ index 0000000..c6dbc1c
 +    <color name="resolver_list_bg">@color/white</color>
 +</resources>
 -- 
-2.10.2
+2.1.4
 

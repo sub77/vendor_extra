@@ -1,4 +1,4 @@
-From f613a25aff728c5a3df6d0952d91577365b94169 Mon Sep 17 00:00:00 2001
+From 6869c2348d4214aa47eda5e48bf4c401964e2067 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?M=C3=A5rten=20Kongstad?= <marten.kongstad@sonymobile.com>
 Date: Thu, 2 Jun 2016 09:35:31 +0200
 Subject: [PATCH 03/26] Integrate OverlayManagerService into framework [3/11]
@@ -39,6 +39,7 @@ Finally the application requests its ResourcesManager to create new
 ResourcesImpl objects based on the updated paths.
 
 Change-Id: If0b1eaa690c38f9c33f7c8dc981314205a73fa9c
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  cmds/idmap/Android.mk                              |   2 +-
  cmds/idmap/idmap.cpp                               |  55 ---------
@@ -1446,5 +1447,5 @@ index 7669b06..9170881 100644
          // service, and permissions service, therefore we start it after them.
          startSensorService();
 -- 
-2.10.2
+2.1.4
 

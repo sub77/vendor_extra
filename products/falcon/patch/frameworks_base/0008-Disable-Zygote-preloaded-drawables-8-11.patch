@@ -1,4 +1,4 @@
-From 5587ee83a080c2d8ae61a55d9c08249f0c438540 Mon Sep 17 00:00:00 2001
+From 536fa211c07b76ba3970e18bd44d421edf0c2d1b Mon Sep 17 00:00:00 2001
 From: Josh Guilfoyle <Josh.Guilfoyle@T-Mobile.com>
 Date: Wed, 26 Jan 2011 23:28:43 -0800
 Subject: [PATCH 08/26] Disable Zygote preloaded drawables [8/11]
@@ -14,6 +14,7 @@ reintroduce the drawable cache in a way that can be altered at runtime
 without significant complexity or runtime penalty.
 
 Change-Id: I253b1a22482ac664c196533a4c2fcd88ae84b996
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/java/com/android/internal/os/ZygoteInit.java | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
@@ -41,5 +42,5 @@ index 6829961..01e1e5e 100644
              mResources.finishPreloading();
          } catch (RuntimeException e) {
 -- 
-2.10.2
+2.1.4
 

@@ -1,7 +1,7 @@
-From 5f564566e1e2e812c6d9b1c42772603225a1ab0d Mon Sep 17 00:00:00 2001
+From df71eb33ae1fcdbfb03edf11de75cb90f820ec5a Mon Sep 17 00:00:00 2001
 From: George G <kreach3r@users.noreply.github.com>
 Date: Mon, 14 Nov 2016 14:49:47 +0200
-Subject: [PATCH 25/26] Notification dynamic colors bool compatible with OMS7
+Subject: [PATCH 24/26] Notification dynamic colors bool compatible with OMS7
  [2/2]
 
 OMS7 introduced this fine piece of code:
@@ -19,6 +19,7 @@ https://github.com/SubstratumResources/platform_frameworks_base/blob/n-oms7/core
 Replaced deprecated Resources.getSystem() with compatible method.
 
 Change-Id: I02efe27de3cc7067552964ffbaf079f9e9b5bc3e
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/java/android/app/Notification.java | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
@@ -46,5 +47,5 @@ index 55029aa..67c2132 100644
              }
  
 -- 
-2.10.2
+2.1.4
 

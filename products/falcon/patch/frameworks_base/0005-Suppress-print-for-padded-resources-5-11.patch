@@ -1,9 +1,10 @@
-From 623e987c7ffd5fafbdad30644dda6dcdbb69865a Mon Sep 17 00:00:00 2001
+From 29942348a75493fad4e68622ba1e5f5fc62fcd08 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?M=C3=A5rten=20Kongstad?= <marten.kongstad@sonymobile.com>
 Date: Mon, 29 Feb 2016 14:12:35 +0100
 Subject: [PATCH 05/26] Suppress print for padded resources [5/11]
 
 Change-Id: I565ccf515068b96927e4317cc9c06543415bb324
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  cmds/idmap/inspect.cpp | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
@@ -24,5 +25,5 @@ index 924090f..cb52a39 100644
          }
  
 -- 
-2.10.2
+2.1.4
 

@@ -1,4 +1,4 @@
-From 3d72e89713ffd774068244f3165fde6e3f777a1e Mon Sep 17 00:00:00 2001
+From 7ca77ac9e483704dd164dd54b4e36bb21d529952 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?M=C3=A5rten=20Kongstad?= <marten.kongstad@sonymobile.com>
 Date: Thu, 2 Jun 2016 09:35:09 +0200
 Subject: [PATCH 07/26] Add command 'rmidmap' [7/11]
@@ -11,6 +11,7 @@ This commit depends on a corresponding commit in frameworks/native (with
 the same Change-Id).
 
 Change-Id: I58f55f643da99c0bd69136ee43c1c8c70c352797
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  services/core/java/com/android/server/pm/Installer.java | 7 +++++++
  1 file changed, 7 insertions(+)
@@ -34,5 +35,5 @@ index 2e18b1c..7f618b8 100644
          assertValidInstructionSet(instructionSet);
          mInstaller.execute("rmdex", codePath, instructionSet);
 -- 
-2.10.2
+2.1.4
 

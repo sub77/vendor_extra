@@ -1,4 +1,4 @@
-From fee3f286beb204e20c628291f27c29c61123b307 Mon Sep 17 00:00:00 2001
+From c78da5315c1059dea7e74bab6ceceaff447226e6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?M=C3=A5rten=20Kongstad?= <marten.kongstad@sonymobile.com>
 Date: Tue, 15 Dec 2015 16:40:23 +0100
 Subject: [PATCH 02/26] Introduce the OverlayManagerService [2/11]
@@ -58,6 +58,7 @@ Overlay packages are handled per Android user. The data is persisted in
 /data/system/overlays.xml.
 
 Change-Id: Icc3c7daa25345d20bc5014b865024422eab72f5b
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  Android.mk                                         |   1 +
  core/java/android/content/Context.java             |  10 +
@@ -3078,5 +3079,5 @@ index 5fd9c58..01ea3ee 100644
  
      @Override
 -- 
-2.10.2
+2.1.4
 

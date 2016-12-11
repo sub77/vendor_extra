@@ -1,4 +1,4 @@
-From 1e518c3a814f444dfde3ff6ce9eb92708b80f3d4 Mon Sep 17 00:00:00 2001
+From 6577831c61dab88f54f232c843797e5149caf1d7 Mon Sep 17 00:00:00 2001
 From: Nicholas Chum <nicholaschum@gmail.com>
 Date: Sun, 17 Jul 2016 17:56:40 -0400
 Subject: [PATCH 13/26] N-Extras: Allow system effect sounds to be themed
@@ -11,6 +11,7 @@ directory, then use the default sounds.
 At the current moment, this will require a soft reboot to work.
 
 Change-Id: I7666c2bd259443ccec442bf6059786bea3dc069e
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  .../com/android/server/audio/AudioService.java     | 26 +++++++++++++++++-----
  1 file changed, 21 insertions(+), 5 deletions(-)
@@ -74,5 +75,5 @@ index ad4eef5..4e4b457 100644
                          mediaPlayer.setAudioStreamType(AudioSystem.STREAM_SYSTEM);
                          mediaPlayer.prepare();
 -- 
-2.10.2
+2.1.4
 

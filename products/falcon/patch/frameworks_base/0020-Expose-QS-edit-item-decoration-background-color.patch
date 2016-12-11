@@ -1,4 +1,4 @@
-From 60b1154880cfb775af9dd5ae4abbfff80538f82a Mon Sep 17 00:00:00 2001
+From 69a648ea321c755c9420714802e5cfc96e6e8d24 Mon Sep 17 00:00:00 2001
 From: Ivan Iskandar <iiiiskandar14@gmail.com>
 Date: Sun, 18 Sep 2016 21:33:18 +0700
 Subject: [PATCH 20/26] Expose QS edit item decoration background color
@@ -9,6 +9,7 @@ More descriptive color name
 @nathanchance edit: updated for 7.1 Nougat
 
 Change-Id: I9867ca26e7d9dacad37d2b70180a98fede0fb0e8
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  packages/SystemUI/res/values/du_colors.xml                          | 3 +++
  .../SystemUI/src/com/android/systemui/qs/customize/TileAdapter.java | 6 ++++--
@@ -54,5 +55,5 @@ index 12485c3..031fd74 100644
                  mDrawable.setBounds(0, top, width, bottom);
                  mDrawable.draw(c);
 -- 
-2.10.2
+2.1.4
 

@@ -1,9 +1,10 @@
-From 3457dd9534e98add5641e30d0163ea528eda3a63 Mon Sep 17 00:00:00 2001
+From 70547ee017e1e32f1b0052f0982e497c9e92a8de Mon Sep 17 00:00:00 2001
 From: Simao Gomes Viana <xdevs23@outlook.com>
 Date: Fri, 25 Nov 2016 20:50:29 +0100
 Subject: [PATCH 22/26] Allow custom alpha for notification shade bg color
 
 Change-Id: If621df83d994feae0448a734408ba85ac8329325
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  .../stack/NotificationStackScrollLayout.java       | 40 +++++++++++++++-------
  1 file changed, 27 insertions(+), 13 deletions(-)
@@ -60,5 +61,5 @@ index ddffdfe..1243175 100644
          invalidate();
      }
 -- 
-2.10.2
+2.1.4
 

@@ -1,4 +1,4 @@
-From 9e77066820ed1fbd1673e455fab3677e31f070d5 Mon Sep 17 00:00:00 2001
+From 1ee0a0e422f7272f89b712b29dd049aec4bcd48f Mon Sep 17 00:00:00 2001
 From: Nicholas Chum <nicholaschum@gmail.com>
 Date: Sun, 19 Jun 2016 10:37:13 -0400
 Subject: [PATCH 09/26] Persistence on boot through OverlayManagerServiceImpl
@@ -9,6 +9,7 @@ by Sony, but instead, it shouldn't be enforced at all to allow third
 party overlays from the community to boot up with the device.
 
 Change-Id: Ic6eeb38b5e7bcec4211405d4504ba37a75738227
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  .../server/om/OverlayManagerServiceImpl.java       | 31 +++++++++++++++-------
  1 file changed, 21 insertions(+), 10 deletions(-)
@@ -74,5 +75,5 @@ index 2a0d88b..4c61968 100644
  
      private void removeIdmapIfPossible(@NonNull final OverlayInfo oi) {
 -- 
-2.10.2
+2.1.4
 

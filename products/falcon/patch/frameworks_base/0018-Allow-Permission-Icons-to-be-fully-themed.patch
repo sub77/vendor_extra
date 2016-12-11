@@ -1,4 +1,4 @@
-From caeafdc17a75fea1dacbfaa3e90df12ae6233055 Mon Sep 17 00:00:00 2001
+From e53aa5674a3153600d7f540d7faa26e01e43dc9a Mon Sep 17 00:00:00 2001
 From: Nicholas Chum <nicholaschum@gmail.com>
 Date: Mon, 23 Nov 2015 23:49:15 -0500
 Subject: [PATCH 18/26] Allow Permission Icons to be fully themed
@@ -11,6 +11,7 @@ forces a black tint (invisible on dark themes) on the icons. Let's
 remove this.
 
 Change-Id: I31eb5021a6d297997dbba156f98cbf47f2102b6c
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/res/res/layout/app_permission_item.xml | 2 +-
  core/res/res/values/du_colors.xml           | 1 +
@@ -40,5 +41,5 @@ index 7408ae9..a7316ab 100644
 +    <color name="app_permission_icon_tint">@android:color/black</color>
  </resources>
 -- 
-2.10.2
+2.1.4
 

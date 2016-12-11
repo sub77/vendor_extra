@@ -1,4 +1,4 @@
-From 8ba654526365ccd7c2f357b71f525f78c27677d7 Mon Sep 17 00:00:00 2001
+From 88f56b3b9282b9c7f2fd9ebd5e745b19311964db Mon Sep 17 00:00:00 2001
 From: Nicholas Chum <nicholaschum@gmail.com>
 Date: Sat, 27 Aug 2016 10:56:46 -0400
 Subject: [PATCH 23/26] Expose a bool to disable dynamic colors
@@ -12,6 +12,7 @@ Separate app title and small icon colors for more flexibility.
 Expose hardcoded sender text name.
 
 Change-Id: I3c7828118991ec4fc616011caf073c81f75428b4
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/java/android/app/Notification.java | 23 ++++++++++++++++++++---
  core/res/res/values/du_colors.xml       |  4 +++-
@@ -128,5 +129,5 @@ index 6326282..07f7fef 100644
 +
  </resources>
 -- 
-2.10.2
+2.1.4
 

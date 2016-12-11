@@ -1,12 +1,13 @@
-From 10cf6bdf7bf6eee8f9b23537ebf71a9cfeefe79e Mon Sep 17 00:00:00 2001
+From e08a8427ba270c7557a3c59c4e10b609f675b3ee Mon Sep 17 00:00:00 2001
 From: Daniel Koman <dankoman30@gmail.com>
 Date: Fri, 17 Apr 2015 11:56:28 -0600
-Subject: [PATCH 24/26] Allow prevention of doze notification color inversion
+Subject: [PATCH 25/26] Allow prevention of doze notification color inversion
 
 Removed empty newline at the end -- KreAch3R
 Removed slims files for aosp roms -- Bgill55
 
 Change-Id: I2d361c34904f3d168894b8b1741456319fd68456
+Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/res/res/values/du_config.xml                                | 5 +++++
  core/res/res/values/du_symbols.xml                               | 3 +++
@@ -62,5 +63,5 @@ index 2c96e31..65fd115 100644
              for (int i = 0; i < mTargets.size(); i++) {
                  mTargets.get(i).setLayerType(View.LAYER_TYPE_HARDWARE, mDarkPaint);
 -- 
-2.10.2
+2.1.4
 
