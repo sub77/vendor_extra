@@ -7,6 +7,10 @@ PRODUCT_PACKAGES += \
 		LockClock \
 		Substratum
 
+# Boot Animation
+PRODUCT_COPY_FILES += \
+		vendor/extra/prebuilt/common/media/bootanimation.zip:system/media/bootanimation.zip
+
 ########################################
 ############# Settings #################
 ########################################
