@@ -1,0 +1,29 @@
+From d8d8ee78e4908917858a8ac04526b0a52d3a9b3c Mon Sep 17 00:00:00 2001
+From: sub77 <darfpunk@gmx.de>
+Date: Mon, 19 Dec 2016 19:19:04 +0000
+Subject: [PATCH] do not build bootanimation
+
+Change-Id: I138f73f5da5609aab0dc24b28c59ab8f0dd5f95f
+Signed-off-by: sub77 <darfpunk@gmx.de>
+---
+ config/common.mk | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/config/common.mk b/config/common.mk
+index efe3a10..0738271 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -83,8 +83,10 @@ include vendor/du/config/packages.mk
+ PRODUCT_PACKAGE_OVERLAYS += vendor/du/overlay/common
+ 
+ # Boot Animation
++ifeq ($(DU_BOOTANIMATION),true)
+ PRODUCT_COPY_FILES += \
+     vendor/du/prebuilt/common/media/bootanimation.zip:system/media/bootanimation.zip
++endif
+ 
+ # SuperSU
+ PRODUCT_COPY_FILES += \
+-- 
+2.1.4
+

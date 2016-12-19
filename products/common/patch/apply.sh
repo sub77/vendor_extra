@@ -12,7 +12,7 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
     # Supported both path/to/repo_with_underlines/file.patch and path_to_repo+with+underlines/file.patch (both leads to path/to/repo_with_underlines)
     repo_to_patch="$(if dirname $patch|grep -q /; then dirname $patch; else dirname $patch |tr '_' '/'|tr '+' '_'; fi)"
 
-    echo -e ${CL_BLU}" --> Is $repo_to_patch patched for '$title' ?.. "${CL_RST}
+    echo -e "Is ${CL_BLU}$repo_to_patch${CL_RST} patched for ${CL_BLU}'$title'${CL_RST} ? "
 
         if [ ! -d $build_root/$repo_to_patch ] ; then
                 echo "$repo_to_patch NOT EXIST! Go away and check your manifests. Skipping this patch."
@@ -21,16 +21,15 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
 
     pushd "$build_root/$repo_to_patch" > /dev/null
     if (git log |fgrep -qm1 "$title" ); then
-        echo -n Yes
+        echo -n
       commit_hash=$(git log --oneline |fgrep -m1 "$title"|cut -d ' ' -f 1)
       if [ q"$commit_hash" != "q" ]; then
           commit_id=$(git format-patch -1 --stdout $commit_hash |git patch-id|cut -d ' ' -f 1)
           patch_id=$(git patch-id < $absolute_patch_path|cut -d ' ' -f 1)
           if [ "$commit_id" = "$patch_id" ]; then
-              echo -e ${CL_GRN} ', patch matches'${CL_RST}
+              echo -e ${CL_GRN}'Yes, patch matches\n'${CL_RST}
           else
           echo -e ${CL_RED}"PATCH MISMATCH!: done"${CL_RST}
-              #echo ', PATCH MISMATCH!'
               sed '0,/^$/d' $absolute_patch_path|head -n -3  > /tmp/patch
               git show --stat $commit_hash -p --pretty=format:%b > /tmp/commit
               diff -u /tmp/patch /tmp/commit
