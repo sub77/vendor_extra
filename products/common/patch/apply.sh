@@ -1,7 +1,6 @@
 build_root=$(pwd)
 
-echo -e ""
-echo -e ${CL_RED}"Applying patches"${CL_RST}
+echo -e ${CL_RED}"\nApplying patches"${CL_RST}
 echo -e ${CL_RST}"----------------"${CL_RST}
 patches_path="$build_root/vendor/extra/products/common/patch/"
 pushd "$patches_path" > /dev/null
@@ -61,4 +60,4 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
 done
 popd > /dev/null
 echo -e ${CL_RST}"----------------"${CL_RST}
-echo -e ${CL_GRN}"Applying patches: done"${CL_RST}
+echo -e ${CL_GRN}"Applying patches: done\n"${CL_RST}
