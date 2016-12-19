@@ -3,12 +3,12 @@ export USE_CCACHE=1
 export CCACHE_DIR=/1and/ccache/du
 ccache -M 15G
 
-. ./vendor/extra/build/colors
+source ./vendor/extra/build/colors
 
 #PATCHING COMMON
 function patchcommontree()
 {
-for f in `test -d device && find -L vendor/extra/products/common/patch -maxdepth 4 -name 'apply.sh' 2> /dev/null`
+for f in `test -d device && find -L vendor/extra/products/common/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
 do
     echo -e ${CL_BLU}"\nPatching common-tree -> $f\n"${CL_RST}
     . $f
@@ -20,7 +20,7 @@ unset f
 # PATCHING DEVICE
 function patchdevicetree()
 {
-for f in `test -d device && find -L vendor/extra/products/$DU_BUILD/patch -maxdepth 4 -name 'apply.sh' 2> /dev/null`
+for f in `test -d device && find -L vendor/extra/products/$DU_BUILD/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
 do
     echo -e ${CL_MAG}"\nPatching device-tree -> $f\n"${CL_RST}
     . $f
