@@ -1,0 +1,28 @@
+From b9d5142181454e4a7ac4e369e76b91d63a34661f Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 14 Dec 2016 23:37:38 +0000
+Subject: [PATCH] Add VENDOR/EXTRA
+
+Change-Id: Ied03c1b28eecf5ea92a242acccef9e62b418c10e
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ config/common.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/config/common.mk b/config/common.mk
+index d2c5dc9..0a35b03 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -176,6 +176,9 @@ ifneq ($(INCLUDE_SLIMIRC),)
+     PRODUCT_PACKAGES += SlimIRC
+ endif
+ 
++# easy way to extend to add more packages
++-include vendor/extra/product.mk
++
+ # Set all versions
+ SLIM_VERSION := Slim-$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)-$(SLIM_BUILD_TYPE)$(SLIM_POSTFIX)
+ SLIM_MOD_VERSION := Slim-$(SLIM_BUILD)-$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)-$(SLIM_BUILD_TYPE)$(SLIM_POSTFIX)
+-- 
+2.1.4
+
