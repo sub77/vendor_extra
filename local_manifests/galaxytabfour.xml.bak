@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- Remotes -->
+  <remote name="twrp" fetch="ssh://git@github.com/sub77-twrp" />
+  <!-- Device -->
+  <project 
+    name="android_device_samsung_matisse" 
+    path="device/samsung/matisse"
+    remote="twrp"
+    revision="android-7.1"
+  />
+  <!-- Recovery -->
+  <remove-project name="android_bootable_recovery" />
+  <project 
+    name="Dees-Troy/Team-Win-Recovery-Project" 
+    path="bootable/recovery"
+    remote="github"
+    revision="android-7.1"
+  />
+</manifest>

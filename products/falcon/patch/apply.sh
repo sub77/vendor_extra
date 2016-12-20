@@ -2,7 +2,7 @@ build_root=$(pwd)
 
 echo -e ${CL_RED}"\nApplying patches"${CL_RST}
 echo -e ${CL_RST}"----------------"${CL_RST}
-patches_path="$build_root/vendor/extra/products/$TARGET_PRODUCT/patch/"
+patches_path="$build_root/vendor/extra/products/falcon/patch/"
 pushd "$patches_path" > /dev/null
 unset repos
 for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
