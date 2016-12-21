@@ -1,14 +1,13 @@
-From 29a73a1edd2d951c78875ad6402e6a962a5948ca Mon Sep 17 00:00:00 2001
+From 741c3fc8a81b9425a7a4b8b5702007c9b5b47e01 Mon Sep 17 00:00:00 2001
 From: sub77 <darfpunk@gmx.de>
-Date: Tue, 20 Dec 2016 03:01:15 +0000
-Subject: [PATCH] Add tw_device_specific_version
+Date: Wed, 21 Dec 2016 14:50:26 +0000
+Subject: [PATCH] TW_DEVICE_SPECIFIC_VERSION
 
-Change-Id: I3055c7f352c7f21adecb957b0ee07bdbbc0c6e02
 Signed-off-by: sub77 <darfpunk@gmx.de>
 ---
  Android.mk  | 3 +++
- variables.h | 6 +++++-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+ variables.h | 4 ++++
+ 2 files changed, 7 insertions(+)
 
 diff --git a/Android.mk b/Android.mk
 index 582b710..bcaf7e1 100644
@@ -25,7 +24,7 @@ index 582b710..bcaf7e1 100644
  LOCAL_ADDITIONAL_DEPENDENCIES += \
      dump_image \
 diff --git a/variables.h b/variables.h
-index 9cdbfb6..d06b7a9 100644
+index 9cdbfb6..b70ae35 100644
 --- a/variables.h
 +++ b/variables.h
 @@ -17,7 +17,11 @@
@@ -40,15 +39,6 @@ index 9cdbfb6..d06b7a9 100644
  
  #define TW_USE_COMPRESSION_VAR      "tw_use_compression"
  #define TW_FILENAME                 "tw_filename"
-@@ -26,7 +30,7 @@
- 
- #define MAX_BACKUP_NAME_LEN 64
- #define TW_BACKUP_TEXT              "tw_backup_text"
--#define TW_BACKUP_NAME		        "tw_backup_name"
-+#define TW_BACKUP_NAME              "tw_backup_name"
- #define TW_BACKUP_SYSTEM_VAR        "tw_backup_system"
- #define TW_BACKUP_DATA_VAR          "tw_backup_data"
- #define TW_BACKUP_BOOT_VAR          "tw_backup_boot"
 -- 
 2.1.4
 

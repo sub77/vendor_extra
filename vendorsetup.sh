@@ -1,2 +1,4 @@
-add_lunch_combo omni_falcon-eng
-. ./vendor/extra/build/fmsetup.sh
+. ./vendor/extra/build/colors.sh
+. ./vendor/extra/build/ccache.sh
+. ./vendor/extra/build/repos.sh
+. ./vendor/extra/build/basepatch.sh

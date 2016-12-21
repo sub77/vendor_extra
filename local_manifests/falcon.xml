@@ -2,9 +2,9 @@
 <manifest>
   <!-- Device -->
   <project
-   name="sub77-twrp/android_device_motorola_falcon"
+   name="sub77/android_device_motorola_falcon"
    path="device/motorola/falcon"
    remote="sub"
-   revision="twrp-6.0"
+   revision="twrp6.0"
   />
 </manifest>

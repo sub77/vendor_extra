@@ -9,3 +9,5 @@ if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
     CL_CYN="\033[36m"
     CL_RST="\033[0m"
 fi
+
+        echo -e ${CL_GRN}"\n * Setup colors\n"${CL_RST}
