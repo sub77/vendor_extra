@@ -1,0 +1,31 @@
+From e55e6c0bcc99c45013bbc80fb0169f55490cdbff Mon Sep 17 00:00:00 2001
+From: sub77 <darfpunk@gmx.de>
+Date: Tue, 20 Dec 2016 19:36:25 +0000
+Subject: [PATCH] SnapdragonCamera: fix video recording for older drivers
+
+Older drivers need the preview size to be the same as the video
+size. This check is done in getDesiredPreviewSize but was broken
+because CameraCapabilities return an empty list instead of null.
+
+Change-Id: I71f41ac52a3bab47c3d56de5b04590ba69cca459
+Signed-off-by: sub77 <darfpunk@gmx.de>
+---
+ src/com/android/camera/VideoModule.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/camera/VideoModule.java b/src/com/android/camera/VideoModule.java
+index 73fb2cd..58aa5bb 100644
+--- a/src/com/android/camera/VideoModule.java
++++ b/src/com/android/camera/VideoModule.java
+@@ -1018,7 +1018,7 @@ public class VideoModule implements CameraModule,
+             return;
+         }
+         mParameters = mCameraDevice.getParameters();
+-        if (mParameters.getSupportedVideoSizes() == null ||
++        if (mParameters.getSupportedVideoSizes().size() == 0 ||
+                 isHFREnabled(mProfile.videoFrameWidth, mProfile.videoFrameHeight)) {
+             mDesiredPreviewWidth = mProfile.videoFrameWidth;
+             mDesiredPreviewHeight = mProfile.videoFrameHeight;
+-- 
+2.1.4
+
