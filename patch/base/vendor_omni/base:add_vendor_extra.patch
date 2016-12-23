@@ -1,0 +1,28 @@
+From a684d87f22e41ce216103dbf91a9553d4fa4f8b2 Mon Sep 17 00:00:00 2001
+From: sub77 <darfpunk@gmx.de>
+Date: Tue, 20 Dec 2016 02:52:55 +0000
+Subject: [PATCH] Add vendor_extra
+
+Change-Id: I06d99b079af4b29de888421b63b5b32270abc486
+Signed-off-by: sub77 <darfpunk@gmx.de>
+---
+ config/common.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/config/common.mk b/config/common.mk
+index 9bd99a0..6345038 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -67,6 +67,9 @@ PRODUCT_COPY_FILES += \
+ # Versioning
+ -include vendor/omni/config/version.mk
+ 
++# Extra Vendor
++-include vendor/extra/product.mk
++
+ # Add our overlays
+ PRODUCT_PACKAGE_OVERLAYS += vendor/omni/overlay/common
+ 
+-- 
+2.1.4
+
