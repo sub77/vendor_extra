@@ -1,0 +1,28 @@
+From ac1b16d7365788505e23fe84aba526bc96afb7dc Mon Sep 17 00:00:00 2001
+From: sub77 <darfpunk@gmx.de>
+Date: Wed, 28 Dec 2016 21:16:33 +0000
+Subject: [PATCH] add vendor_extra
+
+Change-Id: I94596d2b5187e7d1a06945c5cbab62566d8ccb05
+Signed-off-by: sub77 <darfpunk@gmx.de>
+---
+ config/common.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/config/common.mk b/config/common.mk
+index efe3a10..292cddf 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -91,6 +91,9 @@ PRODUCT_COPY_FILES += \
+     vendor/du/prebuilt/common/UPDATE-SuperSU.zip:system/addon.d/UPDATE-SuperSU.zip \
+     vendor/du/prebuilt/common/etc/init.d/99SuperSUDaemon:system/etc/init.d/99SuperSUDaemon
+ 
++# Extra Vendor
++-include vendor/extra/product.mk
++
+ # Versioning System
+ ANDROID_VERSION = 7.1.1
+ DU_VERSION = v11.0
+-- 
+2.1.4
+
