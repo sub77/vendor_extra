@@ -1,0 +1,27 @@
+From 90fdd62eb76f1baeb309cb328209a7f6534dda94 Mon Sep 17 00:00:00 2001
+From: sub77 <darfpunk@gmx.de>
+Date: Wed, 28 Dec 2016 13:26:38 +0000
+Subject: [PATCH 2/3] make nice
+
+Change-Id: I57658bda80ba9ff9df3ce5720170ad7966317055
+Signed-off-by: sub77 <darfpunk@gmx.de>
+---
+ envsetup.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/envsetup.sh b/envsetup.sh
+index 28d13ed..4893bfc 100644
+--- a/envsetup.sh
++++ b/envsetup.sh
+@@ -1627,7 +1627,7 @@ fi
+ for f in `test -d device && find -L device -maxdepth 4 -name 'vendorsetup.sh' 2> /dev/null | sort` \
+          `test -d vendor && find -L vendor -maxdepth 4 -name 'vendorsetup.sh' 2> /dev/null | sort`
+ do
+-    echo "including $f"
++    echo -e ${CL_GRN}"\n * Including $f"${CL_RST}
+     . $f
+ done
+ unset f
+-- 
+2.1.4
+
