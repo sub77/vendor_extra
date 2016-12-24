@@ -4,8 +4,12 @@ PRODUCT_PACKAGES += \
 
 # Add prebuilt packages
 PRODUCT_PACKAGES += \
-    Mixplorer \
-    Substratum
+    Mixplorer
+
+# OMS
+PRODUCT_PACKAGES += \
+		masquerade \
+		Substratum
 
 # Updates overlay settings
 PRODUCT_PACKAGE_OVERLAYS += vendor/extra/overlay/common
