@@ -1,0 +1,29 @@
+From 07ce512771e6c64c7b4e3a91cea5b664086b3ec4 Mon Sep 17 00:00:00 2001
+From: sub77 <darfpunk@gmx.de>
+Date: Wed, 21 Dec 2016 21:11:28 +0000
+Subject: [PATCH 2/2] Its officially homegrown
+
+* fixes onReceive state = error_unofficial
+
+Change-Id: If5428c2c2d98cf940a7a2c6eb8540498536c5903
+Signed-off-by: sub77 <darfpunk@gmx.de>
+---
+ res/values/config.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/res/values/config.xml b/res/values/config.xml
+index f40aa54..af29c84 100644
+--- a/res/values/config.xml
++++ b/res/values/config.xml
+@@ -54,7 +54,7 @@
+         <item>i777</item>
+     </string-array>
+ 
+-    <string name="official_version_tag">NIGHTLY</string>
++    <string name="official_version_tag">HOMEMADE</string>
+     <string name="weekly_version_tag">WEEKLY</string>
+     <string name="security_version_tag">SECURITY_RELEASE</string>
+ 
+-- 
+2.1.4
+
