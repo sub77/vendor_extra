@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remove-project name="android_bootable_recovery" />
+  <!-- TWRP -->
+  <project
+   name="nkk71/android_bootable_recovery"
+   path="bootable/recovery"
+   remote="github"
+   revision="android-7.1-mrom"
+  />
+  <!-- MultiROM -->
+  <project
+   name="nkk71/multirom"
+   path="system/extras/multirom"
+   remote="github"
+   revision="master"
+  />
+  <project
+   name="Tasssadar/libbootimg"
+   path="system/extras/libbootimg"
+   remote="github"
+   revision="master"
+  />
+</manifest>
