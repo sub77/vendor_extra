@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- OTA App -->
+  <project
+   name="sub77/android_packages_apps_OpenDelta"
+   path="packages/apps/OpenDelta"
+   remote="sub"
+   revision="n7x-caf"
+  />
+  <!-- OTA Server -->
+  <project
+   name="sub77/android_packages_apps_OpenDelta"
+   path="opendelta"
+   remote="sub"
+   revision="n7x-server"
+  />
+</manifest>
