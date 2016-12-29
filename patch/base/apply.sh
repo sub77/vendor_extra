@@ -55,5 +55,5 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
     popd > /dev/null
 done
 popd > /dev/null
-        echo -e ${CL_GRN}"\n * Setup basepatches\n"${CL_RST}
+        echo -e ${CL_GRN} "\n * Setup basepatches\n" ${CL_RST}
 
