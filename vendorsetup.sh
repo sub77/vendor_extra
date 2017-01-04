@@ -4,4 +4,4 @@ source ./vendor/extra/build/ccache.sh
 source ./vendor/extra/build/repos.sh
 source ./vendor/extra/patch/base/apply.sh
 
-add_lunch_combo du_falcon-userdebug
+add_lunch_combo omni_falcon-userdebug
