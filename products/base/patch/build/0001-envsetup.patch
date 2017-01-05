@@ -1,7 +1,7 @@
-From 083a5958963d7dd82b2491feb3653d2ede760670 Mon Sep 17 00:00:00 2001
+From c44180c3e1000699cbacf92165f280dd9aaaf636 Mon Sep 17 00:00:00 2001
 From: sub77 <darfpunk@gmx.de>
 Date: Wed, 21 Dec 2016 14:37:49 +0000
-Subject: [PATCH] envsetup
+Subject: [PATCH 1/2] envsetup
 
 Change-Id: If0b1435a14a6d343ca0f769684da9bd5d6f779de
 Signed-off-by: sub77 <darfpunk@gmx.de>
@@ -10,7 +10,7 @@ Signed-off-by: sub77 <darfpunk@gmx.de>
  1 file changed, 22 insertions(+)
 
 diff --git a/envsetup.sh b/envsetup.sh
-index 454d80d..3c854ca 100644
+index 0ec94ee4f..74133e6ca 100644
 --- a/envsetup.sh
 +++ b/envsetup.sh
 @@ -239,12 +239,34 @@ function printconfig()
@@ -49,5 +49,5 @@ index 454d80d..3c854ca 100644
      export ANDROID_BUILD_TOP=$(gettop)
      # With this environment variable new GCC can apply colors to warnings/errors
 -- 
-2.1.4
+2.11.0
 

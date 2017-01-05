@@ -1,4 +1,4 @@
-. ./vendor/extra/build/colors.sh
+. ./vendor/extra/build/env.sh
 . ./vendor/extra/build/ccache.sh
 . ./vendor/extra/build/repos.sh
-. ./vendor/extra/build/basepatch.sh
+. ./vendor/extra/products/base/patch/apply.sh

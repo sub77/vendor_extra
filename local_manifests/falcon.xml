@@ -5,6 +5,6 @@
    name="sub77/android_device_motorola_falcon"
    path="device/motorola/falcon"
    remote="sub"
-   revision="twrp6.0"
+   revision="twrp/android-7.1"
   />
 </manifest>
