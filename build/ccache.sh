@@ -1,5 +1,5 @@
-rom_dir_full=`pwd`
-rom_dir=`basename $rom_dir_full`
+#rom_dir_full=`pwd`
+#rom_dir=`basename $rom_dir_full`
 
 export CCACHE_DIR=$ccache_dir/$rom_dir
 ccache -M $ccache_size >/dev/null

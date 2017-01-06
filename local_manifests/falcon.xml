@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- Device -->
+  <project
+   name="sub77/android_device_motorola_falcon"
+   path="device/motorola/falcon"
+   remote="sub"
+   revision="android-7.1"
+  />
+  <!-- Vendor -->
+  <project
+   name="sub77/proprietary_vendor_motorola"
+   path="vendor/motorola"
+   remote="sub"
+   revision="android-7.1"
+  />
+  <project
+   name="sub77/android_vendor_qcom_binaries"
+   path="vendor/qcom/binaries"
+   remote="sub"
+   revision="cm-14.1"
+  />
+</manifest>
