@@ -1,0 +1,55 @@
+From ec4f659358506042dfb25467bcf11899c67878b7 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 5 Jan 2017 06:18:21 +0000
+Subject: [PATCH] envsetup
+
+Change-Id: I3a53336ea5fd28aa57a0682639ebdb923e5f1199
+---
+ envsetup.sh | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/envsetup.sh b/envsetup.sh
+index a7f3c1e76..c302fa2f7 100644
+--- a/envsetup.sh
++++ b/envsetup.sh
+@@ -283,6 +283,9 @@ function set_stuff_for_environment()
+     setpaths
+     set_sequence_number
+ 
++    patchcommontree
++    patchdevicetree
++
+     export ANDROID_BUILD_TOP=$(gettop)
+     # With this environment variable new GCC can apply colors to warnings/errors
+     export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+@@ -1732,6 +1735,27 @@ function provision()
+     "$ANDROID_PRODUCT_OUT/provision-device" "$@"
+ }
+ 
++function patchcommontree()
++{
++for f in `test -d vendor && find -L vendor/extra/patch/*/ -maxdepth 1 -name 'apply.sh' 2> /dev/null`
++do
++    echo -e ${CL_YLW}"\nPatching common-tree -> $f\n"${CL_RST}
++    . $f
++done
++unset f
++}
++
++function patchdevicetree()
++{
++for f in `test -d device && find -L device/*/$CUSTOM_BUILD/patch -maxdepth 4 -name 'apply.sh' 2> /dev/null | sort` \
++         `test -d vendor && find -L vendor/extra/patch/device/$CUSTOM_BUILD -maxdepth 4 -name 'apply.sh' 2> /dev/null | sort`
++do
++    echo -e ${CL_YLW}"\nPatching device-tree -> $f\n"${CL_RST}
++    . $f
++done
++unset f
++}
++
+ if [ "x$SHELL" != "x/bin/bash" ]; then
+     case `ps -o command -p $$` in
+         *bash*)
+-- 
+2.11.0
+

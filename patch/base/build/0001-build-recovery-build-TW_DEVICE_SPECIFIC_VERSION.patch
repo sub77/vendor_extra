@@ -1,0 +1,57 @@
+From 5f7c726bc304b5878aee094aad06c7dddee2e232 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 5 Jan 2017 07:51:21 +0000
+Subject: [PATCH] build: recovery: build: TW_DEVICE_SPECIFIC_VERSION
+
+Change-Id: Iea3c403b2c5895e990c2c90254db83e0f4dbab7c
+---
+ core/dumpvar.mk | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 1bd477765..1efeba66b 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -24,12 +24,22 @@ print_build_config_vars := \
+   BUILD_ID \
+   OUT_DIR
+ 
++ifdef TW_DEVICE_SPECIFIC_VERSION
++print_build_config_vars_grn += \
++  TW_DEVICE_SPECIFIC_VERSION
++else
++print_build_config_vars_red += \
++  TW_DEVICE_SPECIFIC_VERSION
++endif
++
+ ifeq ($(TARGET_BUILD_PDK),true)
+ print_build_config_vars += \
+   TARGET_BUILD_PDK \
+   PDK_FUSION_PLATFORM_ZIP
+ endif
+ 
++
++
+ # ---------------------------------------------------------------
+ # the setpath shell function in envsetup.sh uses this to figure out
+ # what to add to the path given the config we have chosen.
+@@ -87,10 +97,16 @@ ifneq ($(dumpvar_goals),report_config)
+ PRINT_BUILD_CONFIG:=
+ endif
+ 
++ifneq ($(BUILD_WITH_COLORS),0)
++    include $(TOP_DIR)vendor/extra/build/colors.mk
++endif
++
+ ifneq ($(filter report_config,$(DUMP_MANY_VARS)),)
+ # Construct the shell commands that print the config banner.
+ report_config_sh := echo '============================================';
+ report_config_sh += $(foreach v,$(print_build_config_vars),echo '$v=$($(v))';)
++report_config_sh += $(foreach v,$(print_build_config_vars_grn),echo ${CLR_GRN}'$v=$($(v))${CLR_RST}';)
++report_config_sh += $(foreach v,$(print_build_config_vars_red),echo ${CLR_RED}'$v=$($(v))${CLR_RST}';)
+ report_config_sh += echo '============================================';
+ endif
+ 
+-- 
+2.11.0
+

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 build_root=$(pwd)
-patches_path="$build_root/vendor/extra/products/base/patch/"
+patches_path="$build_root/vendor/extra/patch/base/"
 pushd "$patches_path" > /dev/null
 unset repos
 for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do

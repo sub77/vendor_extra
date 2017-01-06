@@ -1,0 +1,60 @@
+From 18b66928f80b41bcaa8d3724c90f61b7cd27acee Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 5 Jan 2017 07:56:32 +0000
+Subject: [PATCH] TW_DEVICE_SPECIFIC_VERSION
+
+---
+ Android.mk        | 4 ++++
+ orscmd/Android.mk | 4 ++++
+ variables.h       | 4 ++++
+ 3 files changed, 12 insertions(+)
+
+diff --git a/Android.mk b/Android.mk
+index 582b710e..5ce4202d 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -40,6 +40,10 @@ TWHTCD_PATH := $(TWRES_PATH)htcd/
+ 
+ TARGET_RECOVERY_GUI := true
+ 
++ifneq ($(TW_DEVICE_SPECIFIC_VERSION),)
++    LOCAL_CFLAGS += -DTW_DEVICE_SPECIFIC_VERSION=\"$(TW_DEVICE_SPECIFIC_VERSION)\"
++endif
++
+ LOCAL_SRC_FILES := \
+     twrp.cpp \
+     fixContexts.cpp \
+diff --git a/orscmd/Android.mk b/orscmd/Android.mk
+index 9f18c16a..18232984 100644
+--- a/orscmd/Android.mk
++++ b/orscmd/Android.mk
+@@ -1,6 +1,10 @@
+ LOCAL_PATH:= $(call my-dir)
+ include $(CLEAR_VARS)
+ 
++ifneq ($(TW_DEVICE_SPECIFIC_VERSION),)
++    LOCAL_CFLAGS += -DTW_DEVICE_SPECIFIC_VERSION=\"$(TW_DEVICE_SPECIFIC_VERSION)\"
++endif
++
+ LOCAL_SRC_FILES:= \
+ 	orscmd.cpp
+ LOCAL_CFLAGS:= -c -W
+diff --git a/variables.h b/variables.h
+index 9cdbfb61..b70ae350 100644
+--- a/variables.h
++++ b/variables.h
+@@ -17,7 +17,11 @@
+ #ifndef _VARIABLES_HEADER_
+ #define _VARIABLES_HEADER_
+ 
++#ifdef TW_DEVICE_SPECIFIC_VERSION
++#define TW_VERSION_STR TW_DEVICE_SPECIFIC_VERSION
++#else
+ #define TW_VERSION_STR              "3.0.3-0"
++#endif
+ 
+ #define TW_USE_COMPRESSION_VAR      "tw_use_compression"
+ #define TW_FILENAME                 "tw_filename"
+-- 
+2.11.0
+

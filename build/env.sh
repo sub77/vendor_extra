@@ -1,5 +1,5 @@
 #!/bin/bash
-export PATH="/mnt/roms:/usr/lib/jvm/java-7-openjdk/bin:$PATH"
+export PATH="/mnt/roms:/usr/lib/jvm/java-8-openjdk/bin:$PATH"
 MYPYT=`python --version 2&>/tmp/mypyt|cat /tmp/mypyt`
 export mypyt=`sed q /tmp/mypyt`
 MYJDK=`java -version 2&>/tmp/myjdk|cat /tmp/myjdk`

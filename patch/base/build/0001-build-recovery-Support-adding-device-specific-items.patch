@@ -1,0 +1,38 @@
+From 78ee1a0602a263dc9b8fa8d5d62f2eb5329b6134 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 5 Jan 2017 04:51:29 +0000
+Subject: [PATCH] build: recovery: Support adding device-specific items
+
+(cdesai): Also add the relevant parts from koush's commit
+https://github.com/CyanogenMod/android_build/commit/7fd5a89df5ec3961c9aedfd2afad50d6d2561056
+"Add initial support for charge mode. also support recovery/root in the device tree to easily copy props into recovery images."
+
+Change-Id: I25205e68282680932917016646dabd1abadbfce6
+---
+ core/Makefile | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/core/Makefile b/core/Makefile
+index 28cb41aad..99da6da39 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -897,6 +897,16 @@ else
+ recovery_font := $(call include-path-for, recovery)/fonts/12x22.png
+ endif
+ 
++ifneq ($(TARGET_RECOVERY_DEVICE_DIRS),)
++recovery_root_private := $(strip \
++  $(foreach d,$(TARGET_RECOVERY_DEVICE_DIRS), $(wildcard $(d)/recovery/root)))
++else
++recovery_root_private := $(strip $(wildcard $(TARGET_DEVICE_DIR)/recovery/root))
++endif
++ifneq ($(recovery_root_private),)
++recovery_root_deps := $(shell find $(recovery_root_private) -type f)
++endif
++
+ ifndef TARGET_PRIVATE_RES_DIRS
+ TARGET_PRIVATE_RES_DIRS := $(wildcard $(TARGET_DEVICE_DIR)/recovery/res)
+ endif
+-- 
+2.11.0
+

@@ -7,4 +7,11 @@
    remote="sub"
    revision="twrp/android-7.1"
   />
+  <!-- Device -->
+  <project
+   name="sub77/android_kernel_motorola_msm8226"
+   path="kernel/motorola/msm8226"
+   remote="sub"
+   revision="twrp/android-7.1"
+  />
 </manifest>

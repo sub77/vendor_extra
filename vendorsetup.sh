@@ -1,4 +1,4 @@
-. ./vendor/extra/build/env.sh
-. ./vendor/extra/build/ccache.sh
-. ./vendor/extra/build/repos.sh
-. ./vendor/extra/products/base/patch/apply.sh
+source ./vendor/extra/config.sh
+source ./vendor/extra/build/ccache.sh
+source ./vendor/extra/build/repos.sh
+source ./vendor/extra/patch/base/apply.sh
