@@ -1,0 +1,46 @@
+From c028cfeedec9f4edb70ffffb2488ec07a8a48682 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 6 Feb 2017 01:39:31 +0100
+Subject: [PATCH 6/7] Remove gnutar
+
+* saves about 1mb on small recovery partitions
+---
+ Android.mk                   | 1 -
+ multirom/prebuilt/Android.mk | 9 ---------
+ 2 files changed, 10 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index 1b2175de..5d6f0014 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -447,7 +447,6 @@ ifeq ($(TARGET_RECOVERY_IS_MULTIROM), true)
+     #MultiROM additions
+     LOCAL_ADDITIONAL_DEPENDENCIES += \
+         zip \
+-        gnutar \
+         lz4 \
+         ntfs-3g \
+         cp_xattrs \
+diff --git a/multirom/prebuilt/Android.mk b/multirom/prebuilt/Android.mk
+index be1b2626..9c2f2439 100644
+--- a/multirom/prebuilt/Android.mk
++++ b/multirom/prebuilt/Android.mk
+@@ -9,15 +9,6 @@ LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+ LOCAL_SRC_FILES := $(LOCAL_MODULE)
+ include $(BUILD_PREBUILT)
+ 
+-#gnutar
+-include $(CLEAR_VARS)
+-LOCAL_MODULE := gnutar
+-LOCAL_MODULE_TAGS := eng
+-LOCAL_MODULE_CLASS := RECOVERY_EXECUTABLES
+-LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+-LOCAL_SRC_FILES := $(LOCAL_MODULE)
+-include $(BUILD_PREBUILT)
+-
+ #lz4
+ include $(CLEAR_VARS)
+ LOCAL_MODULE := lz4
+-- 
+2.11.0
+

@@ -1,0 +1,23 @@
+From a535855a95de79a5317da5a9f0add3d562f18f93 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 4 Feb 2017 18:48:21 +0100
+Subject: [PATCH] Wno-error=date-time
+
+Change-Id: I381f24a8b097ff4b66d64516b262829598a28fdd
+---
+ Android.mk | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Android.mk b/Android.mk
+index fb2d675..36584d7 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -46,4 +46,5 @@ LOCAL_SRC_FILES := \
+ LOCAL_C_INCLUDES := $(common_c_includes)
+ LOCAL_STATIC_LIBRARIES := liblz4
+ LOCAL_MODULE := lz4
++LOCAL_CFLAGS := -Wno-error=date-time
+ include $(BUILD_EXECUTABLE)
+-- 
+2.11.0
+

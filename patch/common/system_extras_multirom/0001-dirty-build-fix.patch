@@ -1,0 +1,53 @@
+From 8687ce1257896b45be1adec8e883e4a4ec318900 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 4 Feb 2017 20:51:01 +0100
+Subject: [PATCH] dirty build fix
+
+---
+ lib/framebuffer.c | 2 +-
+ lib/framebuffer.h | 2 +-
+ lib/util.h        | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/lib/framebuffer.c b/lib/framebuffer.c
+index 0ba8c11..5d3aa20 100644
+--- a/lib/framebuffer.c
++++ b/lib/framebuffer.c
+@@ -1093,7 +1093,7 @@ void *fb_draw_thread_work(UNUSED void *cookie)
+         clock_gettime(CLOCK_MONOTONIC, &curr);
+         diff = timespec_diff(&last, &curr);
+ 
+-        expected.__val = 1; // might be reseted by atomic_compare_exchange_strong
++        //expected.__val = 1; // might be reseted by atomic_compare_exchange_strong
+         pthread_mutex_lock(&fb_draw_mutex);
+         if(atomic_compare_exchange_strong(&fb_draw_requested, &expected, 0))
+         {
+diff --git a/lib/framebuffer.h b/lib/framebuffer.h
+index f96e5bb..79a1e6d 100644
+--- a/lib/framebuffer.h
++++ b/lib/framebuffer.h
+@@ -340,7 +340,7 @@ void fb_png_release(px_type *data);
+ void fb_png_drop_unused(void);
+ int fb_png_save_img(const char *path, int w, int h, int stride, px_type *data);
+ 
+-inline void center_text(fb_img *text, int targetX, int targetY, int targetW, int targetH);
++void center_text(fb_img *text, int targetX, int targetY, int targetW, int targetH);
+ 
+ int vt_set_mode(int graphics);
+ 
+diff --git a/lib/util.h b/lib/util.h
+index 5e2936e..1078e0f 100644
+--- a/lib/util.h
++++ b/lib/util.h
+@@ -62,7 +62,7 @@ int mr_system(const char *shell_fmt, ...);
+ 
+ inline int imin(int a, int b);
+ inline int imax(int a, int b);
+-inline int iabs(int a);
++int iabs(int a);
+ inline int in_rect(int x, int y, int rx, int ry, int rw, int rh);
+ 
+ inline void *mzalloc(size_t size); // alloc and fill with 0s
+-- 
+2.11.0
+

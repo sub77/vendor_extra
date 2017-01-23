@@ -1,0 +1,66 @@
+From 94c25b5cdd88422eb7ad6421895ca9af004573bf Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 5 Feb 2017 19:50:56 +0100
+Subject: [PATCH] move mulitrom bins out of recovery root
+
+---
+ Android.mk             | 2 +-
+ install_zip/Android.mk | 8 ++++----
+ trampoline/Android.mk  | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index 5553335..00d8373 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -33,7 +33,7 @@ LOCAL_MODULE:= multirom
+ LOCAL_MODULE_TAGS := eng
+ 
+ LOCAL_FORCE_STATIC_EXECUTABLE := true
+-LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)
++LOCAL_MODULE_PATH := $(TARGET_OUT_BREAKPAD)
+ LOCAL_UNSTRIPPED_PATH := $(TARGET_ROOT_OUT_UNSTRIPPED)
+ 
+ LOCAL_STATIC_LIBRARIES := libcutils libc libmultirom_static
+diff --git a/install_zip/Android.mk b/install_zip/Android.mk
+index cbac672..46511be 100644
+--- a/install_zip/Android.mk
++++ b/install_zip/Android.mk
+@@ -5,8 +5,8 @@ install_zip_path := $(multirom_local_path)/install_zip
+ 
+ MULTIROM_ZIP_TARGET := $(PRODUCT_OUT)/multirom
+ MULTIROM_INST_DIR := $(PRODUCT_OUT)/multirom_installer
+-multirom_binary := $(TARGET_ROOT_OUT)/multirom
+-trampoline_binary := $(TARGET_ROOT_OUT)/trampoline
++multirom_binary := $(TARGET_OUT_BREAKPAD)/multirom
++trampoline_binary := $(TARGET_OUT_BREAKPAD)/trampoline
+ 
+ ifeq ($(MR_FSTAB),)
+     $(info MR_FSTAB not defined in device files)
+@@ -45,8 +45,8 @@ $(MULTIROM_ZIP_TARGET): multirom trampoline signapk bbootimg mrom_kexec_static m
+ 	rm -rf $(MULTIROM_INST_DIR)
+ 	mkdir -p $(MULTIROM_INST_DIR)
+ 	cp -a $(install_zip_path)/prebuilt-installer/* $(MULTIROM_INST_DIR)/
+-	cp -a $(TARGET_ROOT_OUT)/multirom $(MULTIROM_INST_DIR)/multirom/
+-	cp -a $(TARGET_ROOT_OUT)/trampoline $(MULTIROM_INST_DIR)/multirom/
++	cp -a $(TARGET_OUT_BREAKPAD)/multirom $(MULTIROM_INST_DIR)/multirom/
++	cp -a $(TARGET_OUT_BREAKPAD)/trampoline $(MULTIROM_INST_DIR)/multirom/
+ 	cp -a $(TARGET_OUT_OPTIONAL_EXECUTABLES)/mrom_kexec_static $(MULTIROM_INST_DIR)/multirom/kexec
+ 	cp -a $(TARGET_OUT_OPTIONAL_EXECUTABLES)/mrom_adbd $(MULTIROM_INST_DIR)/multirom/adbd
+ 
+diff --git a/trampoline/Android.mk b/trampoline/Android.mk
+index baf4230..220cb7e 100644
+--- a/trampoline/Android.mk
++++ b/trampoline/Android.mk
+@@ -10,7 +10,7 @@ LOCAL_SRC_FILES:= \
+ LOCAL_MODULE:= trampoline
+ LOCAL_MODULE_TAGS := eng
+ 
+-LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)
++LOCAL_MODULE_PATH := $(TARGET_OUT_BREAKPAD)
+ LOCAL_UNSTRIPPED_PATH := $(TARGET_ROOT_OUT_UNSTRIPPED)
+ LOCAL_STATIC_LIBRARIES := libcutils libc libmultirom_static libbootimg
+ LOCAL_FORCE_STATIC_EXECUTABLE := true
+-- 
+2.11.0
+

@@ -1,0 +1,69 @@
+From 6e903641a8172803db0cc209fb21805a46ecb866 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 6 Feb 2017 01:41:47 +0100
+Subject: [PATCH 7/7] Build toybox cpio
+
+* Fix MultiROM injection on SDK 25
+---
+ Android.mk        |  7 +++++++
+ toybox/Android.mk | 12 +++++++++++-
+ 2 files changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/Android.mk b/Android.mk
+index 5d6f0014..f20586cb 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -213,6 +213,13 @@ ifeq ($(shell git -C $(LOCAL_PATH) diff --quiet; echo $$?),1)
+ endif
+ LOCAL_CFLAGS += -DTW_GIT_REVISION='"$(tw_git_revision)"'
+ 
++ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 25; echo $$?),0)
++    ifeq ($(TARGET_RECOVERY_IS_MULTIROM),true)
++        TARGET_RECOVERY_DEVICE_MODULES += toybox_recovery
++        TW_RECOVERY_ADDITIONAL_RELINK_FILES := $(OUT)/recovery/root/sbin/toybox
++    endif
++endif
++
+ #TWRP Build Flags
+ ifeq ($(TW_EXCLUDE_MTP),)
+     LOCAL_SHARED_LIBRARIES += libtwrpmtp
+diff --git a/toybox/Android.mk b/toybox/Android.mk
+index b34c2c30..5539cd5b 100644
+--- a/toybox/Android.mk
++++ b/toybox/Android.mk
+@@ -16,7 +16,8 @@
+ 
+ ifneq ($(wildcard external/toybox/Android.mk),)
+ 
+-ifeq ($(TW_USE_TOOLBOX), true)
++ifeq ($(TARGET_RECOVERY_IS_MULTIROM),true)
++
+ 
+ LOCAL_PATH := external/toybox
+ 
+@@ -408,6 +409,7 @@ ALL_TOOLS := \
+     xargs \
+     yes
+ 
++ifneq ($(TARGET_RECOVERY_IS_MULTIROM),true)
+ ifeq ($(shell test $(PLATFORM_SDK_VERSION) -gt 24; echo $$?),0)
+ ALL_TOOLS += \
+     arp \
+@@ -482,6 +484,14 @@ ALL_TOOLS += \
+     setfattr
+ endif
+ endif
++endif
++
++ifeq ($(TARGET_RECOVERY_IS_MULTIROM),true)
++ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 25; echo $$?),0)
++ALL_TOOLS := \
++    cpio
++endif
++endif
+ 
+ # Install the symlinks.
+ LOCAL_POST_INSTALL_CMD := $(hide) $(foreach t,$(ALL_TOOLS),ln -sf toybox $(TARGET_RECOVERY_ROOT_OUT)/sbin/$(t);)
+-- 
+2.11.0
+
