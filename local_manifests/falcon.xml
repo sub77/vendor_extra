@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- DEVICE -->
+  <project
+   name="sub77/android_device_motorola_falcon"
+   path="device/motorola/falcon"
+   remote="sub"
+   revision="du/n7x-caf"
+  />
+  <project
+   name="sub77/android_device_motorola_msm8226-common"
+   path="device/motorola/msm8226-common"
+   remote="sub"
+   revision="du/n7x-caf"
+  />
+  <project
+   name="sub77/proprietary_vendor_motorola"
+   path="vendor/motorola"
+   remote="sub"
+   revision="du/n7x-caf"
+  />
+</manifest>
