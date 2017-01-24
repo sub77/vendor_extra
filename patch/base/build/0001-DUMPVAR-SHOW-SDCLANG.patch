@@ -1,0 +1,30 @@
+From d21fd24f4ada604e17da331f9f2ac3aeb60d4649 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 25 Jan 2017 21:56:43 +0000
+Subject: [PATCH] DUMPVAR SHOW SDCLANG
+
+Change-Id: I9f2cb103f393e1ff9a72117f84d16eccd36af777
+---
+ core/dumpvar.mk | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 3fa2094..b52a20c 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -39,6 +39,12 @@ print_build_config_vars += \
+   PDK_FUSION_PLATFORM_ZIP
+ endif
+ 
++ifeq ($(TARGET_USE_SDCLANG),true)
++print_build_config_vars += \
++  SDCLANG \
++  SDCLANG_PATH
++endif
++
+ # ---------------------------------------------------------------
+ # the setpath shell function in envsetup.sh uses this to figure out
+ # what to add to the path given the config we have chosen.
+-- 
+2.1.4
+
