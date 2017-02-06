@@ -1,0 +1,113 @@
+From 828b45825cbbe77ecf36475cfe24f5fac036a435 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 6 Feb 2017 03:00:31 +0100
+Subject: [PATCH 2/4] build: Use project pathmap for recovery
+
+Change-Id: I6339ac77b899a43db21261d587252b65cb58ad79
+---
+ core/Makefile   |  8 ++++----
+ core/config.mk  |  4 ++++
+ core/pathmap.mk | 31 ++++++++++++++++++++++++++++++-
+ 3 files changed, 38 insertions(+), 5 deletions(-)
+
+diff --git a/core/Makefile b/core/Makefile
+index f6a75987e..d78128ca4 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -857,7 +857,7 @@ INTERNAL_RECOVERYIMAGE_FILES := $(filter $(TARGET_RECOVERY_OUT)/%, \
+ ifneq ($(TARGET_RECOVERY_INITRC),)
+   recovery_initrc := $(TARGET_RECOVERY_INITRC) # Use target specific init.rc
+ else
+-  recovery_initrc := $(call include-path-for, recovery)/etc/init.rc
++  recovery_initrc := $(call project-path-for,recovery)/etc/init.rc
+ endif
+ recovery_sepolicy := $(call intermediates-dir-for,ETC,sepolicy.recovery)/sepolicy.recovery
+ ifneq ($(TARGET_PREBUILT_RECOVERY_KERNEL),)
+@@ -868,7 +868,7 @@ endif
+ recovery_uncompressed_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery.cpio
+ recovery_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery.img
+ recovery_build_prop := $(intermediate_system_build_prop)
+-recovery_resources_common := $(call include-path-for, recovery)/res
++recovery_resources_common := $(call project-path-for,recovery)/res
+ 
+ # Set recovery_density to the density bucket of the device.
+ recovery_density := unknown
+@@ -892,9 +892,9 @@ endif
+ # its private recovery resources.
+ 
+ ifneq (,$(filter xxxhdpi 560dpi xxhdpi 400dpi xhdpi,$(recovery_density)))
+-recovery_font := $(call include-path-for, recovery)/fonts/18x32.png
++recovery_font := $(call project-path-for,recovery)/fonts/18x32.png
+ else
+-recovery_font := $(call include-path-for, recovery)/fonts/12x22.png
++recovery_font := $(call project-path-for,recovery)/fonts/12x22.png
+ endif
+ 
+ ifneq ($(TARGET_RECOVERY_DEVICE_DIRS),)
+diff --git a/core/config.mk b/core/config.mk
+index 7f9af6bdf..2e793b415 100644
+--- a/core/config.mk
++++ b/core/config.mk
+@@ -167,6 +167,10 @@ include $(BUILD_SYSTEM)/envsetup.mk
+ # See envsetup.mk for a description of SCAN_EXCLUDE_DIRS
+ FIND_LEAVES_EXCLUDES := $(addprefix --prune=, $(OUT_DIR) $(SCAN_EXCLUDE_DIRS) .repo .git)
+ 
++# General entries for project pathmap.  Any entries listed here should
++# be device and hardware independent.
++$(call project-set-path-variant,recovery,RECOVERY_VARIANT,bootable/recovery)
++
+ # The build system exposes several variables for where to find the kernel
+ # headers:
+ #   TARGET_DEVICE_KERNEL_HEADERS is automatically created for the current
+diff --git a/core/pathmap.mk b/core/pathmap.mk
+index effc87856..803b4d9be 100644
+--- a/core/pathmap.mk
++++ b/core/pathmap.mk
+@@ -41,7 +41,6 @@ pathmap_INCL := \
+     libhardware_legacy:hardware/libhardware_legacy/include \
+     libril:hardware/ril/include \
+     opengl-tests-includes:frameworks/native/opengl/tests/include \
+-    recovery:bootable/recovery \
+     system-core:system/core/include \
+     audio:system/media/audio/include \
+     audio-effects:system/media/audio_effects/include \
+@@ -63,6 +62,36 @@ define include-path-for
+ $(foreach n,$(1),$(patsubst $(n):%,%,$(filter $(n):%,$(pathmap_INCL))))
+ endef
+ 
++# Enter project path into pathmap
++#
++# $(1): name
++# $(2): path
++#
++define project-set-path
++$(eval pathmap_PROJ += $(1):$(2))
++endef
++
++# Enter variant project path into pathmap
++#
++# $(1): name
++# $(2): variable to check
++# $(3): base path
++#
++define project-set-path-variant
++    $(call project-set-path,$(1),$(strip \
++        $(if $($(2)), \
++            $(3)-$($(2)), \
++            $(3))))
++endef
++
++# Returns the path to the requested module's include directory,
++# relative to the root of the source tree.
++#
++# $(1): a list of modules (or other named entities) to find the projects for
++define project-path-for
++$(foreach n,$(1),$(patsubst $(n):%,%,$(filter $(n):%,$(pathmap_PROJ))))
++endef
++
+ #
+ # Many modules expect to be able to say "#include <jni.h>",
+ # so make it easy for them to find the correct path.
+-- 
+2.11.0
+

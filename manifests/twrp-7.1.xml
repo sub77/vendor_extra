@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote  name="sub"
+           fetch="ssh://git@github.com" />
+<!-- ADD IN TWRP & MULTIROM REPOS [NKK71] -->
+ <remove-project name="android_bootable_recovery" />
+  <project name="nkk71/android_bootable_recovery" path="bootable/recovery" remote="github" revision="android-7.1-mrom" />
+  <project name="nkk71/multirom" path="system/extras/multirom" remote="github" revision="master" />
+  <project name="tasssadar/kexec-tools" path="system/extras/multirom/kexec-tools" remote="github" revision="master" />
+  <project name="tasssadar/libbootimg" path="system/extras/libbootimg" remote="github" revision="master" />
+  <project name="tasssadar/multirom_adbd" path="system/extras/multirom/adbd" remote="github" revision="master" />
+<!-- ADD IN DEVICE-SPECIFIC REPOS  -->
+  <project name="sub77/android_device_motorola_falcon" path="device/motorola/falcon" remote="sub" revision="twrp-7.1" />
+  <project name="sub77/android_device_samsung_matisse" path="device/samsung/matisse" remote="sub" revision="twrp-7.1" />
+</manifest>

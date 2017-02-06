@@ -1,0 +1,59 @@
+From 50c08092a8c81477e23e6a8a5a1bd2925ee02d7b Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 6 Feb 2017 06:29:54 +0100
+Subject: [PATCH 1/4] DUMPVAR TW_VERSION
+
+Change-Id: I62daa834034848aa7a1f30a18d6b1382aea64885
+---
+ core/dumpvar.mk | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 1bd477765..1f1545b96 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -30,6 +30,21 @@ print_build_config_vars += \
+   PDK_FUSION_PLATFORM_ZIP
+ endif
+ 
++ifneq ($(TARGET_RECOVERY_IS_MULTIROM),)
++print_build_config_vars2 += \
++  TARGET_RECOVERY_IS_MULTIROM
++endif
++
++ifneq ($(TW_MAIN_VERSION_STR),)
++print_build_config_vars2 += \
++  TW_MAIN_VERSION_STR
++endif
++
++ifneq ($(TW_DEVICE_VERSION),)
++print_build_config_vars2 += \
++  TW_DEVICE_VERSION
++endif
++
+ # ---------------------------------------------------------------
+ # the setpath shell function in envsetup.sh uses this to figure out
+ # what to add to the path given the config we have chosen.
+@@ -92,6 +107,8 @@ ifneq ($(filter report_config,$(DUMP_MANY_VARS)),)
+ report_config_sh := echo '============================================';
+ report_config_sh += $(foreach v,$(print_build_config_vars),echo '$v=$($(v))';)
+ report_config_sh += echo '============================================';
++report_config_sh += $(foreach v,$(print_build_config_vars2),echo '$v=$($(v))';)
++report_config_sh += echo '============================================';
+ endif
+ 
+ # Dump mulitple variables to "<var>=<value>" pairs, one per line.
+@@ -115,6 +132,10 @@ endif
+ 
+ endif # CALLED_FROM_SETUP
+ 
++ifneq ($(BUILD_WITH_COLORS),0)
++    include $(TOP_DIR)vendor/extra/build/colors.mk
++endif
++
+ ifneq ($(PRINT_BUILD_CONFIG),)
+ $(info ============================================)
+ $(foreach v, $(print_build_config_vars),\
+-- 
+2.11.0
+

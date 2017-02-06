@@ -1,0 +1,29 @@
+From d399f745c2871fc8c7e9ef784c8ec1810a0006a4 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 9 Feb 2017 01:21:33 +0100
+Subject: [PATCH] default.xml
+
+Change-Id: I06e8bdaa3e949f976aff28b13a166f6f246b3191
+---
+ default.xml | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/default.xml b/default.xml
+index 6a99193..64d5f47 100644
+--- a/default.xml
++++ b/default.xml
+@@ -511,5 +511,10 @@
+   <!-- project path="tools/tradefederation" name="platform/tools/tradefederation" groups="notdefault,tradefed" /> -->
+   <project path="vendor/omni" name="android_vendor_omni2" remote="omnirom" />
+   <!-- project path="packages/apps/MonthCalendarWidget" name="android_packages_apps_MonthCalendarWidget" remote="omnirom" /> -->
+-
++  <remote  name="sub"
++           fetch="ssh://git@github.com" />
++<!-- ADD IN DEVICE-SPECIFIC REPOS  -->
++  <project path="vendor/extra" name="sub77/vendor_extra" remote="sub" revision="twrp-7.1" >
++    <copyfile src="manifests/twrp-7.1.xml" dest=".repo/local_manifests/twrp-7.1.xml" />
++  </project>
+ </manifest>
+-- 
+2.11.0
+

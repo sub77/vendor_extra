@@ -1,5 +1,6 @@
 function func_setenv()
 {
+    unset MY_BUILD
     if [ "${rom_type}" == "cm" ]; then myrom="cm"; MYROM="cm"; MY_BUILD="$CM_BUILD";
     elif [ "${rom_type}" == "du" ]; then myrom="du"; MYROM="du"; MY_BUILD="$DU_BUILD";
     elif [ "${rom_type}" == "omni" ]; then myrom="omni"; MYROM="omni"; MY_BUILD="$CUSTOM_BUILD"; 
@@ -62,6 +63,7 @@ function func_ccache()
 
 function func_java()
 {
+    if  [[ "${java_home}" == "" ]]; then echo -e "${CL_MAG} * No Java Home set${CL_RST}"; else echo -e "${CL_MAG} * Java Home set: ${java_home}${CL_RST}"; export JAVA_HOME=${java_home}; fi
     MYPYT=`python --version 2&>/tmp/mypyt|cat /tmp/mypyt`
     export mypyt=`sed q /tmp/mypyt`
     MYJDK=`java -version 2&>/tmp/myjdk|cat /tmp/myjdk`
@@ -111,31 +113,34 @@ function func_repos()
 function func_alias()
 {
     alias be=" . build/envsetup.sh > /tmp/be && sed '/Generating\|Type/d' /tmp/be"
-    alias lu="lunch ${MYROM}_$MY_BUILD-userdebug"
-    alias le="lunch ${MYROM}_$MY_BUILD-eng"
+    #alias lu="lunch ${MYROM}_$MY_BUILD-userdebug"
+    #alias le="lunch ${MYROM}_$MY_BUILD-eng"
     alias rs="repo sync -j1000 --force-sync"
-    alias mb="lunch ${MYROM}_$MY_BUILD-userdebug && mka clobber && mka bacon"
-    alias mr="lunch ${MYROM}_$MY_BUILD-eng && mka clobber && mka recoveryimage"
-    alias mm="lunch ${MYROM}_$MY_BUILD-userdebug && mka clobber && mka multirom_zip"
+    #alias mb="lunch ${MYROM}_$MY_BUILD-userdebug && mka clobber && mka bacon"
+    #alias mr="lunch ${MYROM}_$MY_BUILD-eng && mka clobber && mka recoveryimage"
+    #alias mm="lunch ${MYROM}_$MY_BUILD-userdebug && mka clobber && mka multirom_zip"
     alias rb="repo branches"
     alias rd="repo diff"
     alias publish="./vendor/extra/build/publish.sh"
+    #alias twrpm="export TARGET_RECOVERY_IS_MULTIROM=false && lunch ${MYROM}_matisse-eng && mka clobber && mka recoveryimage"
+    #alias mromm="export TARGET_RECOVERY_IS_MULTIROM=true && lunch ${MYROM}_matisse-eng && mka clobber && mka recoveryimage"
         echo -e "${CL_GRN} * Setup aliases:${CL_LBL} type show_alias${CL_RST}"
 }
 
 function show_alias()
 {
     echo -e "${CL_LBL}\n   be${CL_RST}  . build/envsetup.sh"
-    echo -e "${CL_LBL}\n   lu${CL_RST}  lunch ${MYROM}_$MY_BUILD-userdebug"
-    echo -e "${CL_LBL}\n   le${CL_RST}  lunch ${MYROM}_$MY_BUILD-eng"
+    #echo -e "${CL_LBL}\n   lu${CL_RST}  lunch ${MYROM}_$MY_BUILD-userdebug"
+    #echo -e "${CL_LBL}\n   le${CL_RST}  lunch ${MYROM}_$MY_BUILD-eng"
     echo -e "${CL_LBL}\n   rs${CL_RST}  repo sync -j1000 --force-sync"
-    echo -e "${CL_LBL}\n   mb${CL_RST}  mka clobber && mka bacon"
-    echo -e "${CL_LBL}\n   mr${CL_RST}  mka clobber && mka recoveryimage"
-    echo -e "${CL_LBL}\n   mm${CL_RST}  mka clobber && mka multirom_zip"
+    #echo -e "${CL_LBL}\n   mb${CL_RST}  mka clobber && mka bacon"
+    #echo -e "${CL_LBL}\n   mr${CL_RST}  mka clobber && mka recoveryimage"
+    #echo -e "${CL_LBL}\n   mm${CL_RST}  mka clobber && mka multirom_zip"
     echo -e "${CL_LBL}\n   rb${CL_RST}  repo branches"
     echo -e "${CL_LBL}\n   rd${CL_RST}  repo diff"
-    echo -e "${CL_LBL}\n   publish${CL_RST}  upload to ftp"
-    alias publish="./vendor/extra/build/publish.sh"
+    echo -e "${CL_LBL}\n   publish${CL_RST}  ./vendor/extra/build/publish.sh"
+    #echo -e "${CL_LBL}\n   twrp${CL_RST}  build twrp recovery"
+    #echo -e "${CL_LBL}\n   mrom${CL_RST}  build mrom recovery"
     echo -e "${CL_LBL}\n${CL_RST}"
 }
 
@@ -148,7 +153,7 @@ function func_toolchain()
 
 function func_twrp()
 {
-	unset TW_DEVICE_VERSION
+    unset TW_DEVICE_VERSION
     export TW_MAIN_VERSION_STR="`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'`"
     export TW_DEVICE_VERSION="`date -u +%y%m%d%H%M`"
     export TW_VERSION="$TW_MAIN_VERSION_STR-$TW_DEVICE_VERSION"
@@ -158,3 +163,13 @@ function func_twrp()
     #export TW_VERSION=`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9`-$(date -u +%y%m%d%H%M)
 }
 
+function func_init()
+{
+        cd .repo/manifests
+        if git am  ../../vendor/extra/manifests/default.xml.patch > /dev/null; then
+            echo -e ${CL_GRN}"\n * Patching base: ${CL_RST} "${CL_P}default.xml ${CL_RST}"in" ${CL_LB}.repo/manifests${CL_RST}
+            else
+            git am --abort
+        fi
+        croot
+}
