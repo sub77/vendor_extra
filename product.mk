@@ -25,5 +25,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/common/magisk.zip:system/addon.d/magisk.zip
 
+# init.d wifi
+PRODUCT_COPY_FILES += \
+    vendor/extra/prebuilt/etc/init.d/50wifi:system/etc/init.d/50wifi
+
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.build.selinux=1
