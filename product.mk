@@ -1,3 +1,13 @@
+# Remove Apollo
+REMOVE_PACKAGES := \
+	Apollo
+
+PRODUCT_PACKAGES := $(filter-out $(REMOVE_PACKAGES),$(PRODUCT_PACKAGES))
+
+# Eleven
+PRODUCT_PACKAGES += \
+    Eleven
+
 # OMS
 PRODUCT_PACKAGES += \
 	masquerade \
