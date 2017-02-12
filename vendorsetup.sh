@@ -1,4 +1,3 @@
-. ./vendor/extra/build/colors.sh
-. ./vendor/extra/build/ccache.sh
-. ./vendor/extra/build/repos.sh
-. ./vendor/extra/patch/base/apply.sh
+. "$(gettop)/vendor/extra/build/config.sh"
+. "$(gettop)/vendor/extra/build/functions.sh"
+. "$(gettop)/vendor/extra/build/envsetup.sh"

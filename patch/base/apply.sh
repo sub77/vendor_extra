@@ -19,44 +19,17 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
         fi
 
     pushd "$build_root/$repo_to_patch" > /dev/null
-    if (git log |fgrep -qm1 "$title" ); then
-      commit_hash=$(git log --oneline |fgrep -m1 "$title"|cut -d ' ' -f 1)
-      if [ q"$commit_hash" != "q" ]; then
-          commit_id=$(git format-patch -1 --stdout $commit_hash |git patch-id|cut -d ' ' -f 1)
-          patch_id=$(git patch-id < $absolute_patch_path|cut -d ' ' -f 1)
-          if [ ! "$commit_id" = "$patch_id" ]; then
-          echo -e ${CL_RED}"PATCH MISMATCH!: done"${CL_RST}
-              sed '0,/^$/d' $absolute_patch_path|head -n -3  > /tmp/patch
-              git show --stat $commit_hash -p --pretty=format:%b > /tmp/commit
-              diff -u /tmp/patch /tmp/commit
-              rm /tmp/patch /tmp/commit
-              echo ' Resetting branch!'
-              git checkout $commit_hash~1
-              echo -e ${CL_GRN}
-              git am $absolute_patch_path || git am --abort
-              echo -e ${CL_RST}
-          fi
-    else
-        echo "Unable to get commit hash for '$title'! Something went wrong!"
-        sleep 20
-    fi
-    else
-        echo -e ${CL_MAG}
-        if git am $absolute_patch_path; then
+        if git am $absolute_patch_path 2&> /dev/null; then
+            echo -e ${CL_GRN}"\n * Patching base: ${CL_RST} "${CL_P}$title ${CL_RST}"in" ${CL_LB}$repo_to_patch ${CL_RST}
             source $build_root/build/envsetup.sh
             else
-            echo -e ${CL_RST}
-            echo -e ${CL_RED}"Failed, aborting git am"${CL_RST}
-            git am --abort
-                echo -e ${CL_RED}"Retry git am -3"${CL_RST}
-                    if ! git am -3 $absolute_patch_path; then
-                        echo -e ${CL_RED}"Failed -3, aborting git am"${CL_RST}
-                        git am --abort
+            git am --abort 2&> /dev/null
+                    if ! git am -3 $absolute_patch_path &> /dev/null; then
+                        echo -e ${CL_RED}"\n - Failed${CL_RST} - check basepatch: ${CL_PP}$title${CL_RST} in ${CL_BLU}$repo_to_patch${CL_RST}"
                     fi
         fi
-    fi
     popd > /dev/null
 done
 popd > /dev/null
-        echo -e ${CL_GRN}"\n * Setup environment\n"${CL_RST}
+        echo -e ${CL_GRN} "\n * Setup basepatches\n" ${CL_RST}
 

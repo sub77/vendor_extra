@@ -1,0 +1,57 @@
+From 9b92fcdd43278c8afc20fa021cdab87f36919217 Mon Sep 17 00:00:00 2001
+From: "Niklas Schnettler (Sh4dowSoul)" <niklas.schnettler@gmail.com>
+Date: Wed, 5 Oct 2016 18:07:43 +0200
+Subject: [PATCH 18/38] Themes: Expose various QuickSettings text colors
+
+Change-Id: Iaea71ca83afbc3d8cc6faea6afac16cabb46cfff
+---
+ packages/SystemUI/res/layout/qs_customize_panel_content.xml | 3 ++-
+ packages/SystemUI/res/layout/status_bar_alarm_group.xml     | 4 ++--
+ packages/SystemUI/res/values/projekt_colors.xml             | 4 ++++
+ 3 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/packages/SystemUI/res/layout/qs_customize_panel_content.xml b/packages/SystemUI/res/layout/qs_customize_panel_content.xml
+index ca0248e066e..84fa4cc07f8 100644
+--- a/packages/SystemUI/res/layout/qs_customize_panel_content.xml
++++ b/packages/SystemUI/res/layout/qs_customize_panel_content.xml
+@@ -23,7 +23,8 @@
+         android:layout_height="wrap_content"
+         android:layout_marginTop="28dp"
+         android:navigationContentDescription="@*android:string/action_bar_up_description"
+-        style="?android:attr/toolbarStyle" />
++        style="?android:attr/toolbarStyle"
++        android:titleTextColor="@color/qs_edit_toolbar_text_color"/>
+ 
+     <android.support.v7.widget.RecyclerView
+         android:id="@android:id/list"
+diff --git a/packages/SystemUI/res/layout/status_bar_alarm_group.xml b/packages/SystemUI/res/layout/status_bar_alarm_group.xml
+index 7c23a5ee90f..21d1266bbfe 100644
+--- a/packages/SystemUI/res/layout/status_bar_alarm_group.xml
++++ b/packages/SystemUI/res/layout/status_bar_alarm_group.xml
+@@ -68,8 +68,8 @@
+         android:paddingTop="3dp"
+         android:drawablePadding="8dp"
+         android:drawableStart="@drawable/ic_access_alarms_small"
+-        android:textColor="@color/alarm_status_color"
+-        android:textAppearance="@style/TextAppearance.StatusBar.Expanded.Date.Shadow"
++        android:textColor="@color/qs_alarm_status_text_color"
++        android:textAppearance="@style/TextAppearance.StatusBar.Expanded.Date"
+         android:gravity="top"
+         android:background="?android:attr/selectableItemBackgroundBorderless"
+         android:visibility="gone" />
+diff --git a/packages/SystemUI/res/values/projekt_colors.xml b/packages/SystemUI/res/values/projekt_colors.xml
+index 42f4a1568df..0f891994c9d 100644
+--- a/packages/SystemUI/res/values/projekt_colors.xml
++++ b/packages/SystemUI/res/values/projekt_colors.xml
+@@ -20,4 +20,8 @@
+     <color name="navbutton_ripple_color">#FFFFFFFF</color>
+     <!-- QS edit page background color -->
+     <color name="qs_edit_item_decoration_bg">@*android:color/secondary_device_default_settings</color>
++    <!-- QS alarm status text color -->
++    <color name="qs_alarm_status_text_color">#64ffffff</color>
++    <!-- QS edit page toolbar text color -->
++    <color name="qs_edit_toolbar_text_color">#FFFFFF</color>
+ </resources>
+-- 
+2.11.1
+

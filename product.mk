@@ -1,4 +1,8 @@
 # OMS
 PRODUCT_PACKAGES += \
-		masquerade \
-		Substratum
+	masquerade \
+	Substratum
+
+# Add prebuilt packages
+PRODUCT_PACKAGES += \
+	Mixplorer

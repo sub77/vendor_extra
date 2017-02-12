@@ -1,0 +1,48 @@
+From 247607848e75d40d9abed077428d11ef27d6cda4 Mon Sep 17 00:00:00 2001
+From: Alex Cruz <mazdarider23@gmail.com>
+Date: Tue, 24 Jan 2017 11:14:46 +0100
+Subject: [PATCH 33/38] Expose external qs tile tint color
+
+This should allow themers to get around issues like this (see pic below)
+
+https://i.imgur.com/cG2OzRT.jpg
+
+Change-Id: If6dbf9ab29f8007d85a3c45524b1cf4ba1b032fb
+---
+ packages/SystemUI/res/values/projekt_colors.xml                   | 8 ++++++++
+ .../src/com/android/systemui/qs/customize/TileQueryHelper.java    | 2 +-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/packages/SystemUI/res/values/projekt_colors.xml b/packages/SystemUI/res/values/projekt_colors.xml
+index 0f891994c9d..e31d1244ac8 100644
+--- a/packages/SystemUI/res/values/projekt_colors.xml
++++ b/packages/SystemUI/res/values/projekt_colors.xml
+@@ -24,4 +24,12 @@
+     <color name="qs_alarm_status_text_color">#64ffffff</color>
+     <!-- QS edit page toolbar text color -->
+     <color name="qs_edit_toolbar_text_color">#FFFFFF</color>
++    <!-- QS battery % text color -->
++    <color name="qs_battery_text_color">@*android:color/accent_device_default_light</color>
++    <!-- QS battery graph text color -->
++    <color name="qs_battery_graph_text_color">#66FFFFFF</color>
++    <!-- QS battery accent color -->
++    <color name="qs_battery_accent">@*android:color/accent_device_default_light</color>
++    <!-- External QS tile tint color -->
++    <color name="external_qs_tile_tint_color">@android:color/white</color>
+ </resources>
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/customize/TileQueryHelper.java b/packages/SystemUI/src/com/android/systemui/qs/customize/TileQueryHelper.java
+index 0be48d466ff..cd08ca145d2 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/customize/TileQueryHelper.java
++++ b/packages/SystemUI/src/com/android/systemui/qs/customize/TileQueryHelper.java
+@@ -173,7 +173,7 @@ public class TileQueryHelper {
+                     continue;
+                 }
+                 icon.mutate();
+-                icon.setTint(mContext.getColor(android.R.color.white));
++                icon.setTint(mContext.getColor(R.color.external_qs_tile_tint_color));
+                 CharSequence label = info.serviceInfo.loadLabel(pm);
+                 addTile(spec, icon, label != null ? label.toString() : "null", appLabel, mContext);
+             }
+-- 
+2.11.1
+

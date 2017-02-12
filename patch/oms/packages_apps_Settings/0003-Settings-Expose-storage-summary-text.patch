@@ -1,0 +1,59 @@
+From ac6f54483a8995f54ec35e5a9a5284aa2848e7a2 Mon Sep 17 00:00:00 2001
+From: George G <kreach3r@users.noreply.github.com>
+Date: Tue, 3 Nov 2015 23:57:22 +0200
+Subject: [PATCH 03/15] Settings: Expose storage summary text
+
+This commit simply exposes the storage summary text hardcodes to allow
+themers to theme them without issue.
+
+@nathanchance edit: updated for Nougat 7.1
+
+Change-Id: I10c124b6a1516a1be7ac234c1dd7dbe2cbe05bb2
+---
+ res/layout/storage_summary.xml                                   | 2 +-
+ res/values/projekt_colors.xml                                    | 2 ++
+ src/com/android/settings/deviceinfo/StorageVolumePreference.java | 4 ++++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/res/layout/storage_summary.xml b/res/layout/storage_summary.xml
+index 7bc51df5e..c01d2dae5 100644
+--- a/res/layout/storage_summary.xml
++++ b/res/layout/storage_summary.xml
+@@ -33,7 +33,7 @@
+         android:singleLine="true"
+         android:textAlignment="viewStart"
+         android:textAppearance="@android:style/TextAppearance.Material.Subhead"
+-        android:textColor="?android:attr/colorAccent"
++        android:textColor="@color/storage_summary_title_color"
+         android:textSize="36sp"
+         android:ellipsize="marquee"
+         android:fadingEdge="horizontal" />
+diff --git a/res/values/projekt_colors.xml b/res/values/projekt_colors.xml
+index 934083070..fb0d99eee 100644
+--- a/res/values/projekt_colors.xml
++++ b/res/values/projekt_colors.xml
+@@ -27,4 +27,6 @@
+     <color name="condition_card_divider_color">@android:color/white</color>
+     <color name="condition_card_first_button_text_color">@*android:color/primary_text_default_material_dark</color>
+     <color name="condition_card_second_button_text_color">@*android:color/primary_text_default_material_dark</color>
++    <!-- Storage Summary Title -->
++    <color name="storage_summary_title_color">@*android:color/accent_device_default_light</color>
+ </resources>
+diff --git a/src/com/android/settings/deviceinfo/StorageVolumePreference.java b/src/com/android/settings/deviceinfo/StorageVolumePreference.java
+index 6b23e3a96..24095313d 100644
+--- a/src/com/android/settings/deviceinfo/StorageVolumePreference.java
++++ b/src/com/android/settings/deviceinfo/StorageVolumePreference.java
+@@ -61,6 +61,10 @@ public class StorageVolumePreference extends Preference {
+         context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
+         mSecondaryColor = context.getResources().getColor(typedValue.resourceId);
+ 
++        TypedValue typedValue = new TypedValue();
++        context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
++        mSecondaryColor = context.getResources().getColor(typedValue.resourceId);
++
+         setLayoutResource(R.layout.storage_volume);
+ 
+         setKey(volume.getId());
+-- 
+2.11.1
+
