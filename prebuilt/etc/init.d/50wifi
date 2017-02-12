@@ -1,0 +1,2 @@
+#!/system/bin/sh
+if [[ ! -f /data/misc/wifi/wpa_supplicant.conf && -f /persist/wpa_supplicant.conf ]]; then cat /system/etc/wifi/wpa_supplicant.conf > /data/misc/wifi/wpa_supplicant.conf; cat /persist/wpa_supplicant.conf >> /data/misc/wifi/wpa_supplicant.conf; chmod 777 /data/misc/wifi/wpa_supplicant.conf; fi
