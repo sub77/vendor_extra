@@ -1,0 +1,36 @@
+From cf5e19cd4e6c32718ff48809968f6467e54793af Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 10 Feb 2017 00:51:48 +0100
+Subject: [PATCH 08/11] MultiROM: gui: fix twrp only builds
+
+---
+ gui/Android.mk                        | 2 ++
+ gui/theme/dummy/portrait_multirom.xml | 3 +++
+ 2 files changed, 5 insertions(+)
+ create mode 100644 gui/theme/dummy/portrait_multirom.xml
+
+diff --git a/gui/Android.mk b/gui/Android.mk
+index aa7faf82..bbf81de2 100644
+--- a/gui/Android.mk
++++ b/gui/Android.mk
+@@ -130,6 +130,8 @@ TWRP_RES += $(commands_recovery_local_path)/gui/theme/common/languages
+ TWRP_RES += $(commands_recovery_local_path)/gui/theme/common/$(word 1,$(subst _, ,$(TW_THEME))).xml
+ ifeq ($(TARGET_RECOVERY_IS_MULTIROM),true)
+     TWRP_RES += $(commands_recovery_local_path)/gui/theme/common/$(word 1,$(subst _, ,$(TW_THEME)))_multirom.xml
++else
++    TWRP_RES += $(commands_recovery_local_path)/gui/theme/dummy/$(word 1,$(subst _, ,$(TW_THEME)))_multirom.xml
+ endif
+ ifeq ($(TW_EXTRA_LANGUAGES),true)
+     TWRP_RES += $(commands_recovery_local_path)/gui/theme/extra-languages/fonts
+diff --git a/gui/theme/dummy/portrait_multirom.xml b/gui/theme/dummy/portrait_multirom.xml
+new file mode 100644
+index 00000000..24df4b56
+--- /dev/null
++++ b/gui/theme/dummy/portrait_multirom.xml
+@@ -0,0 +1,3 @@
++<?xml version="1.0"?>
++<recovery>
++</recovery>
+-- 
+2.11.1
+

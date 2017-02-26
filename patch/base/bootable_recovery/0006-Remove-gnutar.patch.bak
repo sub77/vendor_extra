@@ -1,7 +1,7 @@
-From c028cfeedec9f4edb70ffffb2488ec07a8a48682 Mon Sep 17 00:00:00 2001
+From 037754fd1d8d64b4216e200061dca38589a6eb26 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Mon, 6 Feb 2017 01:39:31 +0100
-Subject: [PATCH 6/7] Remove gnutar
+Subject: [PATCH 06/11] Remove gnutar
 
 * saves about 1mb on small recovery partitions
 ---
@@ -42,5 +42,5 @@ index be1b2626..9c2f2439 100644
  include $(CLEAR_VARS)
  LOCAL_MODULE := lz4
 -- 
-2.11.0
+2.11.1
 

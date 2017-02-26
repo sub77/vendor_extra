@@ -1,0 +1,25 @@
+From 2f5e6dd3305911e4480b9c8028baaf63cf520772 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 10 Feb 2017 02:01:41 +0100
+Subject: [PATCH 09/11] resize tmpfs
+
+---
+ etc/init.rc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/etc/init.rc b/etc/init.rc
+index 14e7b1fe..83cc72ed 100644
+--- a/etc/init.rc
++++ b/etc/init.rc
+@@ -35,7 +35,7 @@ on init
+     mkdir /data
+     mkdir /cache
+     mkdir /sideload
+-    mount tmpfs tmpfs /tmp
++    mount tmpfs tmpfs /tmp size=95%
+ 
+     chown root shell /tmp
+     chmod 0775 /tmp
+-- 
+2.11.1
+

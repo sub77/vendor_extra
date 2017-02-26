@@ -63,8 +63,8 @@ cmd_post_run += $(cmd_putmv_out)
 #rename command
 cmd_ren_rec_img  := mkdir -p /roms/upload/twrp/$(TARGET_DEVICE); cp -v "$(ANDROID_PRODUCT_OUT)/recovery.img" "/roms/upload/twrp/$(TARGET_DEVICE)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).img" &>/dev/null; echo -ne "\n\n\e[1mTW_DEVICE_VERSION.mk: \e[32m$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).img\e[0m" 1>&2;
 cmd_ren_rec_img  += mv -v "$(ANDROID_PRODUCT_OUT)/recovery.img" "$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).img" &>/dev/null; 
-cmd_ren_rec_tar  := mkdir -p /roms/upload/twrp/$(TARGET_DEVICE); cp -v "$(ANDROID_PRODUCT_OUT)/recovery.tar" "/roms/upload/twrp/$(TARGET_DEVICE)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).tar" &>/dev/null; echo -ne "\n\n\e[1mTW_DEVICE_VERSION.mk: \e[32m$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).tar\e[0m" 1>&2;
-cmd_ren_rec_tar  += mv -v "$(ANDROID_PRODUCT_OUT)/recovery.tar" "$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).tar" &>/dev/null; 
+#cmd_ren_rec_tar  := mkdir -p /roms/upload/twrp/$(TARGET_DEVICE); cp -v "$(ANDROID_PRODUCT_OUT)/recovery.tar" "/roms/upload/twrp/$(TARGET_DEVICE)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).tar" &>/dev/null; echo -ne "\n\n\e[1mTW_DEVICE_VERSION.mk: \e[32m$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).tar\e[0m" 1>&2;
+#cmd_ren_rec_tar  += mv -v "$(ANDROID_PRODUCT_OUT)/recovery.tar" "$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).tar" &>/dev/null; 
 
 #if the build number file doesnt exist create it as 01, if it does then check date
 $(shell $(cmd_pre_run))
@@ -74,9 +74,11 @@ $(shell echo "TW_DEVICE_VERSION.mk: Recovery build number=`cat $(TW_REC_BUILD_NU
 #once the recoveryimage is built, rename the output file, and increase the build number for the next run
 recoveryimage:
 	$(shell $(cmd_ren_rec_img))
+ifneq ($(WITH_TAR),)
 	$(shell $(cmd_ren_rec_tar))
+endif
 	$(shell $(cmd_post_run))
 	$(shell echo -ne "\n\n\e[1mTW_DEVICE_VERSION.mk:\e[0m Increase Recovery build number from $(TW_MAIN_VERSION_STR)-$(TW_DEVICE_VERSION) to $(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)` for next build\n\n" 1>&2)
 
-	
+
 TW_DEVICE_VERSION := $(shell cat $(TW_REC_BUILD_NUMBER_FILE))

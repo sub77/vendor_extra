@@ -1,7 +1,7 @@
-From c6e65868e0db8d436633ac4451cad7f28d7f9dd3 Mon Sep 17 00:00:00 2001
+From 78bd8bbf09ffb7c97f992eb19455c67e02fc77fd Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Sun, 29 Jan 2017 13:02:20 +0000
-Subject: [PATCH 4/7] Set Vibrate
+Subject: [PATCH 04/11] Set Vibrate
 
 Change-Id: I6209fd477976cd426a6a117901978234236ab402
 ---
@@ -26,5 +26,5 @@ index ca742457..9494ef2c 100644
  	TWPartition *store = PartitionManager.Get_Default_Storage_Partition();
  	if (store)
 -- 
-2.11.0
+2.11.1
 

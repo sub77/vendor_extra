@@ -1,7 +1,7 @@
-From 1129ad61ce764189a3276e2c63c4dda8e6a64ed5 Mon Sep 17 00:00:00 2001
+From 0744c67519c223a7e2e12299462c79c952b5c669 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Fri, 30 Sep 2016 00:43:23 +0000
-Subject: [PATCH 2/7] Set Military Time
+Subject: [PATCH 02/11] Set Military Time
 
 Change-Id: I789fcd49a36ecc0a5306890533d9f25908ee7f31
 ---
@@ -22,5 +22,5 @@ index ebd6a002..ca742457 100644
  	mConst.SetValue("tw_screen_timeout_secs", "0");
  	mConst.SetValue("tw_no_screen_timeout", "1");
 -- 
-2.11.0
+2.11.1
 

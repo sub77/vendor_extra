@@ -1,7 +1,7 @@
-From b97ec623fbad589b20e19cb761ab4c4214291b21 Mon Sep 17 00:00:00 2001
+From 8856bd5971ca31eee14be8241a8c650cc8f0f759 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Sun, 22 Jan 2017 15:11:22 +0000
-Subject: [PATCH 5/7] Revert "MultiROM support: Add phablet folder"
+Subject: [PATCH 05/11] Revert "MultiROM support: Add phablet folder"
 
 This reverts commit d0d38beabe1e7daf13f7771537c7aa6265e70da6.
 ---
@@ -10461,5 +10461,5 @@ index e6c7218b..00000000
 -sync
 -echo "Done upgrading: $(date)"
 -- 
-2.11.0
+2.11.1
 

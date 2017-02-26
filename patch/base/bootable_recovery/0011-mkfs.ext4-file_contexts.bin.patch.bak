@@ -1,0 +1,30 @@
+From 17b23c499a77f9965b4f417b685997039cadbd8b Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 10 Feb 2017 02:45:11 +0100
+Subject: [PATCH 11/11] mkfs.ext4 file_contexts.bin
+
+---
+ multirom/multirom.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/multirom/multirom.cpp b/multirom/multirom.cpp
+index 1b39df4f..ef915328 100644
+--- a/multirom/multirom.cpp
++++ b/multirom/multirom.cpp
+@@ -1783,11 +1783,11 @@ bool MultiROM::createImage(const std::string& base, const char *img, int size)
+ 	char cmd[256];
+ 
+ 	// make_ext4fs errors out if it has unknown path
+-	if(TWFunc::Path_Exists("/file_contexts") &&
++	if(TWFunc::Path_Exists("/file_contexts.bin") &&
+ 		(!strcmp(img, "data") ||
+ 		 !strcmp(img, "system") ||
+ 		 !strcmp(img, "cache"))) {
+-		snprintf(cmd, sizeof(cmd), "make_ext4fs -l %dM -a \"/%s\" -S /file_contexts \"%s/%s.img\"", size, img, base.c_str(), img);
++		snprintf(cmd, sizeof(cmd), "make_ext4fs -l %dM -a \"/%s\" -S /file_contexts.bin \"%s/%s.img\"", size, img, base.c_str(), img);
+ 	} else {
+ 		snprintf(cmd, sizeof(cmd), "make_ext4fs -l %dM \"%s/%s.img\"", size, base.c_str(), img);
+ 	}
+-- 
+2.11.1
+

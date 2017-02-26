@@ -1,7 +1,7 @@
-From 5be717aef38969d7a48474b504961bb14151de5d Mon Sep 17 00:00:00 2001
+From 3bb44179ab1a4bb79b4c578b9235c2446d376099 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Fri, 30 Sep 2016 00:44:36 +0000
-Subject: [PATCH 3/7] Set Samsung NavBar
+Subject: [PATCH 03/11] Set Samsung NavBar
 
 Change-Id: I7b7db7b1050cc43de128a2572f7b7f371ec5ee9e
 ---
@@ -22,5 +22,5 @@ index d2509b89..090d7ce2 100644
  		<variable name="tw_hide_kb" value="0"/>
  		<variable name="screen_width" value="1080"/>
 -- 
-2.11.0
+2.11.1
 

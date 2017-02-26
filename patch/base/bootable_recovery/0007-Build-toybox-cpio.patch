@@ -1,7 +1,7 @@
-From 6e903641a8172803db0cc209fb21805a46ecb866 Mon Sep 17 00:00:00 2001
+From e3cb0f2dd7d7227c609e42ef7de4d535f525b97a Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Mon, 6 Feb 2017 01:41:47 +0100
-Subject: [PATCH 7/7] Build toybox cpio
+Subject: [PATCH 07/11] Build toybox cpio
 
 * Fix MultiROM injection on SDK 25
 ---
@@ -65,5 +65,5 @@ index b34c2c30..5539cd5b 100644
  # Install the symlinks.
  LOCAL_POST_INSTALL_CMD := $(hide) $(foreach t,$(ALL_TOOLS),ln -sf toybox $(TARGET_RECOVERY_ROOT_OUT)/sbin/$(t);)
 -- 
-2.11.0
+2.11.1
 

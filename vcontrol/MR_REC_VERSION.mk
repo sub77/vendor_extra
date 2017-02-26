@@ -43,11 +43,7 @@ cmd_post_run += fi;
 cmd_post_run += $(cmd_put_out)
 
 #rename command
-ifeq ($(TARGET_RECOVERY_IS_MULTIROM),)
-cmd_ren_rec_img  := echo -ne "\n\nMR_REC_VERSION.mk: \nRename output file ->\n" 1>&2; mv -v "$(ANDROID_PRODUCT_OUT)/recovery.img" "$(ANDROID_PRODUCT_OUT)/TWRP$(TW_DEVICE_SPECIFIC_VERSION)_$(TARGET_DEVICE)_`cat $(MR_REC_BUILD_NUMBER_FILE)`.img" 1>&2; echo -ne "\e[32m$(ANDROID_PRODUCT_OUT)/TWRP$(TW_DEVICE_SPECIFIC_VERSION)_$(TARGET_DEVICE)_`cat $(MR_REC_BUILD_NUMBER_FILE)`.img\e[0m" 1>&2;
-else
-cmd_ren_rec_img  := echo -ne "\n\n\e[1mMR_REC_VERSION.mk:\e[0m\nRename output file ->\n" 1>&2; cp "$(ANDROID_PRODUCT_OUT)/recovery.img" "$(ANDROID_PRODUCT_OUT)/TWRPMR$(TW_DEVICE_SPECIFIC_VERSION)_$(TARGET_DEVICE)_`cat $(MR_REC_BUILD_NUMBER_FILE)`.img" 1>&2; echo -ne "\e[32m$(ANDROID_PRODUCT_OUT)/TWRPMR$(TW_DEVICE_SPECIFIC_VERSION)_$(TARGET_DEVICE)_`cat $(MR_REC_BUILD_NUMBER_FILE)`.img\e[0m" 1>&2;
-endif
+cmd_ren_rec_img  := echo -ne "\n\n\e[1mMR_REC_VERSION.mk:\e[0m\nRename output file ->\n" 1>&2; cp "$(ANDROID_PRODUCT_OUT)/recovery.img" "$(ANDROID_PRODUCT_OUT)/twrpmr-$(TW_MAIN_VERSION_STR)-`cat $(MR_REC_BUILD_NUMBER_FILE) | cut -d '-' -f2`-$(TARGET_DEVICE).img" 1>&2; echo -ne "\e[32m$(ANDROID_PRODUCT_OUT)/twrpmr-$(TW_MAIN_VERSION_STR)-`cat $(MR_REC_BUILD_NUMBER_FILE) | cut -d '-' -f2`-$(TARGET_DEVICE).img\e[0m" 1>&2;
 
 #if the build number file doesnt exist create it as 01, if it does then check date
 $(shell $(cmd_pre_run))
@@ -61,3 +57,5 @@ recoveryimage:
 	$(shell echo -ne "\n\n\e[1mMR_REC_VERSION.mk:\e[0m\nIncrease MultiROM Recovery build number to `cat $(MR_REC_BUILD_NUMBER_FILE)` for next build\n\n" 1>&2)
 	
 MR_REC_VERSION := $(shell cat $(MR_REC_BUILD_NUMBER_FILE))
+TW_DEVICE_VERSION := $(shell cat $(MR_REC_BUILD_NUMBER_FILE) | cut -d '-' -f2 | sed -e 's/^0*//')
+TW_VERSION := $(TW_MAIN_VERSION_STR)-$(TW_DEVICE_VERSION)
