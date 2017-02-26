@@ -1,0 +1,26 @@
+From 1083c552f9a397898a45c9f73bb799aadbe96018 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Feb 2017 11:53:10 +0100
+Subject: [PATCH] Add signature Spoofing permission
+
+Change-Id: I371dd998e8c4da43925dcc801f83dd444d6d763b
+---
+ core/res/res/values/config.xml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/core/res/res/values/config.xml b/core/res/res/values/config.xml
+index 863331e80aa..e0f23501fb0 100644
+--- a/core/res/res/values/config.xml
++++ b/core/res/res/values/config.xml
+@@ -1267,6 +1267,8 @@
+     <string-array name="config_locationProviderPackageNames" translatable="false">
+         <!-- The standard AOSP fused location provider -->
+         <item>com.android.location.fused</item>
++        <!-- The (faked) microg fused location provider -->
++        <item>com.google.android.gms</item>
+     </string-array>
+ 
+     <!-- This string array can be overriden to enable test location providers initially. -->
+-- 
+2.11.1
+
