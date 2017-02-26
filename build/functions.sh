@@ -134,7 +134,7 @@ function show_alias()
 
 function func_toolchain()
 {
-    if [ "${have_sdclang}" == "1" ]; then export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; 
+    if [ "${have_sdclang}" == "1" ]; then export SDCLANG="true"; export TARGET_USE_SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; 
     else unset SDCLANG; unset SDCLANG_PATH; fi
     unset have_sdclang
 }
