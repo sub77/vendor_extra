@@ -1,0 +1,44 @@
+From dda02c3ae5fdb9fe005eaba69b5d5225a82f2f7f Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 4 Feb 2017 15:18:28 +0100
+Subject: [PATCH] DUMPVARS
+
+Change-Id: I087d02e2fd1293304548bd9fa37552a221fb50d3
+---
+ core/dumpvar.mk | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 510bc7d08..603cac64c 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -61,6 +61,9 @@ endif
+ 
+ endif # CALLED_FROM_SETUP
+ 
++ifneq ($(BUILD_WITH_COLORS),0)
++    include $(TOP_DIR)vendor/extra/build/colors.mk
++endif
+ 
+ ifneq ($(PRINT_BUILD_CONFIG),)
+ HOST_OS_EXTRA:=$(shell python -c "import platform; print(platform.platform())")
+@@ -84,4 +87,16 @@ $(info   HOST_BUILD_TYPE=$(HOST_BUILD_TYPE))
+ $(info   BUILD_ID=$(BUILD_ID))
+ $(info   OUT_DIR=$(OUT_DIR))
+ $(info ============================================)
++ifdef mypyt
++$(info PYTHON=$(CLR_BOLD)${CLR_YLW}$(mypyt)${CLR_RST})
++endif
++ifdef myjdk
++$(info JDR/JDK=$(CLR_BOLD)${CLR_YLW}$(myjdk)${CLR_RST})
++endif
++ifeq ($(USE_CCACHE),1)
++$(info CCACHE=$(CLR_BOLD)${CLR_YLW}$(CCACHE_DIR)${CLR_RST})
++endif
++ifneq ($(TW_VERSION),)
++$(info TW_VERSION=$(CLR_BOLD)${CLR_YLW}$(TW_VERSION)${CLR_RST})
++endif
+ endif
+-- 
+2.11.0
+
