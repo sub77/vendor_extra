@@ -1,0 +1,26 @@
+From 772d8f888f0d81b541046110d90540971ff2b5d4 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 29 Feb 2016 15:21:35 +0100
+Subject: [PATCH] PROP_VALUE_MAX = 128
+
+Change-Id: I882e9457fcba79786c6497dc6beded6b1a8c0696
+---
+ libc/include/sys/system_properties.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libc/include/sys/system_properties.h b/libc/include/sys/system_properties.h
+index 01c3db3..6d4abe3 100644
+--- a/libc/include/sys/system_properties.h
++++ b/libc/include/sys/system_properties.h
+@@ -36,7 +36,7 @@ __BEGIN_DECLS
+ typedef struct prop_info prop_info;
+ 
+ #define PROP_NAME_MAX   32
+-#define PROP_VALUE_MAX  92
++#define PROP_VALUE_MAX  128
+ 
+ /* Look up a system property by name, copying its value and a
+ ** \0 terminator to the provided pointer.  The total bytes
+-- 
+1.9.1
+

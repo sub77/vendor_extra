@@ -1,0 +1,26 @@
+From c3ffba2160eec70fb424f3ee5d9ad96c861b2c1e Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 8 Feb 2017 02:59:32 +0100
+Subject: [PATCH] 0001-PROP_VALUE_MAX-128
+
+Change-Id: Ibcfe200e49721ca6ee00e0c766312bbb15e29698
+---
+ tools/post_process_props.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/post_process_props.py b/tools/post_process_props.py
+index 8944caf91..cacbb3488 100755
+--- a/tools/post_process_props.py
++++ b/tools/post_process_props.py
+@@ -23,7 +23,7 @@ import sys
+ # The constants in system_properties.h includes the termination NUL,
+ # so we decrease the values by 1 here.
+ PROP_NAME_MAX = 31
+-PROP_VALUE_MAX = 95
++PROP_VALUE_MAX = 128
+ 
+ # Put the modifications that you need to make into the /system/build.prop into this
+ # function. The prop object has get(name) and put(name,value) methods.
+-- 
+2.11.0
+
