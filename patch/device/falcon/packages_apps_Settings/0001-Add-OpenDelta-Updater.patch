@@ -1,0 +1,33 @@
+From 9146c32a4e06549a5f4ae0f3c82b0350fa11bf54 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 1 May 2016 22:56:28 -0500
+Subject: [PATCH] Add OpenDelta Updater
+
+Change-Id: I8d38f6706a79be94991e8f4944b6570ed30098f9
+---
+ res/xml/device_info_settings.xml | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/res/xml/device_info_settings.xml b/res/xml/device_info_settings.xml
+index 3840b81..69487fa 100644
+--- a/res/xml/device_info_settings.xml
++++ b/res/xml/device_info_settings.xml
+@@ -46,6 +46,15 @@
+                     android:targetClass="com.dirtyunicorns.duupdater.MainActivity" />
+         </PreferenceScreen>
+ 
++        <PreferenceScreen
++            android:key="duupdater"
++            android:title="@string/duupdater"
++            android:summary="@string/duupdater_summary">
++            <intent android:action="android.settings.SYSTEM_UPDATE_SETTINGS"
++                    android:targetPackage="eu.chainfire.opendelta"
++                    android:targetClass="eu.chainfire.opendelta.MainActivity" />
++        </PreferenceScreen>
++
+         <!-- DU Share -->
+         <Preference
+             android:key="share"
+-- 
+1.9.1
+

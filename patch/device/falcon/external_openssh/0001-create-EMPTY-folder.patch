@@ -1,0 +1,32 @@
+From b318c5f4300b921f68312c87322aa79d439f65c2 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 25 Apr 2016 17:43:45 -0500
+Subject: [PATCH] Checking for /data/ssh/empty
+
+Change-Id: I571001821d0ab496446462f6d58af13e4551076c
+---
+ start-ssh | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/start-ssh b/start-ssh
+index 62d87da..fc73486 100644
+--- a/start-ssh
++++ b/start-ssh
+@@ -11,6 +11,14 @@ RSA_PUB_KEY=/data/ssh/ssh_host_rsa_key.pub
+ AUTHORIZED_KEYS=/data/ssh/authorized_keys
+ DEFAULT_AUTHORIZED_KEYS=/system/etc/security/authorized_keys.default
+ 
++EMPTY=/data/ssh/empty
++
++if [ ! -d $EMPTY ]; then
++    mkdir -p $EMPTY
++    chmod 700 $EMPTY
++fi
++
++
+ if [ ! -f $DSA_KEY ]; then
+     /system/bin/ssh-keygen -t dsa -f $DSA_KEY -N ""
+     chmod 600 /$DSA_KEY
+-- 
+1.9.1
+
