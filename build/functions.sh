@@ -1,13 +1,38 @@
 function func_setenv()
 {
-    if [ "${rom_type}" == "cm" ]; then myrom="cm based rom"; MY_BUILD="$CM_BUILD";
-    elif [ "${rom_type}" == "du" ]; then myrom="du based rom"; MY_BUILD="$DU_BUILD";
-    elif [ "${rom_type}" == "omni" ]; then myrom="omni based rom"; MY_BUILD="$CUSTOM_BUILD"; 
+    if [ "${rom_type}" == "cm" ]; then myrom="cm"; MY_BUILD="$CM_BUILD";
+    elif [ "${rom_type}" == "du" ]; then myrom="du"; MY_BUILD="$DU_BUILD";
+    elif [ "${rom_type}" == "omni" ]; then myrom="omni"; MY_BUILD="$CUSTOM_BUILD"; 
     else echo -e "${CL_RED} * Error: rom_type not set [vendor/extra/config.sh]${CL_RST}\n"; fi
-    unset rom_type
     if [ "${with_su}" == "1" ]; then myrom="$myrom+SU"; export WITH_SU="true"; else unset WITH_SU; fi
+    unset rom_type
     unset with_su
     unset CCACHE_DIR
+    rom_dir_full=`pwd`
+    rom_dir=`basename $rom_dir_full`
+    MYPYT=`python --version 2&>/tmp/mypyt|cat /tmp/mypyt`
+    MYJDK=`java -version 2&>/tmp/myjdk|cat /tmp/myjdk`
+    c_dir=`ccache -s|grep directory|cut -d '/' -f1-10`
+    c_size=`ccache -s|grep 'cache size'`
+    c_current=`echo $c_size|cut -d ' ' -f3-4`
+    c_max=`echo $c_size|cut -d ' ' -f8-9`
+    ccache -M $ccache_size >/dev/null
+    if [ "${have_sdclang}" == "1" ]; then export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; 
+    else unset SDCLANG; unset SDCLANG_PATH; fi
+    unset have_sdclang
+
+    export REPO_HOME=$rom_dir_full
+    export mypyt=`sed q /tmp/mypyt`
+    export myjdk=`sed q /tmp/myjdk`
+    export MY_ROM=$rom_dir
+    export PATH="$jdk_dir:$PATH"
+    export CCACHE_DIR=$ccache_dir/$rom_dir
+
+    if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then echo -e "${CL_MAG} * Disabled ccache${CL_RST}"; export USE_CCACHE=0;
+    elif [ "${ccache_dir}" == "" ]; then echo -e "${CL_RED} * Error: ccache_dir not set [vendor/extra/config.sh]${CL_RST}\n"; else export USE_CCACHE=1; echo -e "${CL_GRN} * Setup ccache : ${CL_LBL}$c_current${CL_RST} of ${CL_LBL}$c_max${CL_RST} used in ${CL_LBL}$CCACHE_DIR${CL_RST}"; fi
+
+    echo -e "${CL_GRN} * Checking env : ${CL_LBL}$mypyt${CL_RST} | ${CL_LBL}$myjdk${CL_RST} | ${CL_LBL}$myrom${CL_RST}"
+
 }
 
 function patchcommontree()
@@ -43,33 +68,6 @@ function set_stuff_for_environment()
     # With this environment variable new GCC can apply colors to warnings/errors
     export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
     export ASAN_OPTIONS=detect_leaks=0
-}
-
-function func_ccache()
-{
-    rom_dir_full=`pwd`
-    rom_dir=`basename $rom_dir_full`
-    export CCACHE_DIR=$ccache_dir/$rom_dir
-    c_dir=`ccache -s|grep directory|cut -d '/' -f1-10`
-    c_size=`ccache -s|grep 'cache size'`
-    c_current=`echo $c_size|cut -d ' ' -f3-4`
-    c_max=`echo $c_size|cut -d ' ' -f8-9`
-    ccache -M $ccache_size >/dev/null
-
-    if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then echo -e "${CL_MAG} * Disabled ccache${CL_RST}"; export USE_CCACHE=0;
-    elif [ "${ccache_dir}" == "" ]; then echo -e "${CL_RED} * Error: ccache_dir not set [vendor/extra/config.sh]${CL_RST}\n"; else export USE_CCACHE=1; echo -e "${CL_GRN} * Setup ccache : ${CL_LBL}$c_current${CL_RST} of ${CL_LBL}$c_max${CL_RST} used in ${CL_LBL}$CCACHE_DIR${CL_RST}"; fi
-}
-
-function func_java()
-{
-    MYPYT=`python --version 2&>/tmp/mypyt|cat /tmp/mypyt`
-    export mypyt=`sed q /tmp/mypyt`
-    MYJDK=`java -version 2&>/tmp/myjdk|cat /tmp/myjdk`
-    export myjdk=`sed q /tmp/myjdk`
-    export MY_ROM=$rom_dir
-    export PATH="$jdk_dir:$PATH"
-
-        echo -e "${CL_GRN} * Checking env : ${CL_LBL}$mypyt${CL_RST} | ${CL_LBL}$myjdk${CL_RST} | ${CL_LBL}$myrom${CL_RST}"
 }
 
 function func_colors()
@@ -133,13 +131,6 @@ function show_alias()
     echo -e "${CL_LBL}\n   publish${CL_RST}  upload to ftp"
     alias publish="./vendor/extra/build/publish.sh"
     echo -e "${CL_LBL}\n${CL_RST}"
-}
-
-function func_toolchain()
-{
-    if [ "${have_sdclang}" == "1" ]; then export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; 
-    else unset SDCLANG; unset SDCLANG_PATH; fi
-    unset have_sdclang
 }
 
 function func_twrp()
