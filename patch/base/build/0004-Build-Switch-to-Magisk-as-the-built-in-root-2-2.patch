@@ -1,19 +1,18 @@
-From fd451e87f7fd21c21ca98d82f9f8da065a23e763 Mon Sep 17 00:00:00 2001
-From: LorDClockaN <lordclockan@gmail.com>
-Date: Tue, 31 Jan 2017 21:15:02 -0700
-Subject: [PATCH] Build: Switch to Magisk as the built in root [2/2]
+From c281630d020bc6ca1bf0a1434d92068d3a343f98 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 27 Feb 2017 02:27:34 +0000
+Subject: [PATCH] build: Switch to Magisk as the built in root [2/2]
 
 Pretty much identical to https://github.com/DirtyUnicorns/android_build/commit/2871a7b10b1ae6b6bdda049e33421ab37057f4d1
-
 Modified and updated for TWRP 3.0.3-x by @nathanchance
 
 Change-Id: Ic0cc0b6e96723a87298edb5cded9f6ef93c05b9d
 Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
 Signed-off-by: sub77 <sub77@ymail.com>
 ---
- tools/releasetools/edify_generator.py       | 5 +++++
- tools/releasetools/ota_from_target_files.py | 8 ++++++++
- 2 files changed, 13 insertions(+)
+ tools/releasetools/edify_generator.py       |  5 +++++
+ tools/releasetools/ota_from_target_files.py | 11 +++++++++++
+ 2 files changed, 16 insertions(+)
 
 diff --git a/tools/releasetools/edify_generator.py b/tools/releasetools/edify_generator.py
 index f861624e5..88ec1a54c 100644
@@ -32,10 +31,10 @@ index f861624e5..88ec1a54c 100644
      """Update the progress bar, advancing it over 'frac' over the next
      'dur' seconds.  'dur' may be zero to advance it via SetProgress
 diff --git a/tools/releasetools/ota_from_target_files.py b/tools/releasetools/ota_from_target_files.py
-index eb8a9f8f8..b0e64f836 100755
+index eb8a9f8f8..ebd10dbe3 100755
 --- a/tools/releasetools/ota_from_target_files.py
 +++ b/tools/releasetools/ota_from_target_files.py
-@@ -755,6 +755,14 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
+@@ -755,6 +755,17 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
    script.Print("Flashing boot.img")
    script.WriteRawImage("/boot", "boot.img")
  
@@ -45,6 +44,11 @@ index eb8a9f8f8..b0e64f836 100755
 +                 ""+input_zip.read("SYSTEM/addon.d/magisk.zip"))
 +  script.FlashMagisk()
 +  script.Print(" ")
++  script.ShowProgress(0.2, 10)
++  script.Print("Enjoy OMNI ROM!");
++  device_specific.FullOTA_InstallEnd()
++
++
    script.ShowProgress(0.2, 10)
    script.Print("Enjoy OMNI ROM!");
    device_specific.FullOTA_InstallEnd()

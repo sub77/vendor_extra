@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-  <project name="TeamSubstratum/masquerade" path="packages/apps/masquerade" remote="github" revision="n" />
+  <project name="substratum/masquerade" path="packages/apps/masquerade" remote="github" revision="n-rootless" />
 </manifest>

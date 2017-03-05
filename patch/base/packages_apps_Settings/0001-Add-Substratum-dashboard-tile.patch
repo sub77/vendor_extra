@@ -1,0 +1,150 @@
+From 65528ade88530d0d29f822510be8a908a125fff6 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 5 Mar 2017 00:50:58 +0000
+Subject: [PATCH 1/2] Add Substratum dashboard tile
+
+Modified to use parts of @tsubus launching logic
+
+Change-Id: Ie59e48eb4f3d027fcac2ade5afe1d4bd6a543777
+---
+ AndroidManifest.xml                            | 21 +++++++++++++++++++++
+ res/drawable/ic_settings_substratum.xml        | 26 ++++++++++++++++++++++++++
+ res/values/projekt_strings.xml                 |  2 ++
+ src/com/android/settings/Settings.java         |  1 +
+ src/com/android/settings/SettingsActivity.java | 19 +++++++++++++++++++
+ 5 files changed, 69 insertions(+)
+ create mode 100644 res/drawable/ic_settings_substratum.xml
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 8c45c7000..03129a263 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -1965,6 +1965,27 @@
+                 android:value="true" />
+         </activity>
+ 
++        <activity android:name="Settings$SubstratumActivity"
++            android:label="@string/substratum_title"
++            android:icon="@drawable/ic_settings_substratum"
++            android:taskAffinity="">
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++                <category android:name="android.intent.category.DEFAULT" />
++                <category android:name="android.intent.category.VOICE_LAUNCH" />
++                <category android:name="com.android.settings.SHORTCUT" />
++            </intent-filter>
++            <intent-filter android:priority="3">
++                <action android:name="com.android.settings.action.SETTINGS" />
++            </intent-filter>
++            <meta-data android:name="com.android.settings.category"
++                android:value="com.android.settings.category.custom" />
++            <meta-data android:name="com.android.settings.FRAGMENT_CLASS"
++                android:value="com.android.settings.Substratum" />
++            <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
++                android:value="true" />
++        </activity>
++
+         <activity android:name="Settings$SuperSUActivity"
+             android:label="@string/supersu_title"
+             android:icon="@drawable/ic_settings_supersu"
+diff --git a/res/drawable/ic_settings_substratum.xml b/res/drawable/ic_settings_substratum.xml
+new file mode 100644
+index 000000000..64288bed2
+--- /dev/null
++++ b/res/drawable/ic_settings_substratum.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++    Copyright (c) 2016 Project Substratum
++
++    Licensed under the Apache License, Version 2.0 (the "License");
++    you may not use this file except in compliance with the License.
++    You may obtain a copy of the License at
++
++        http://www.apache.org/licenses/LICENSE-2.0
++
++    Unless required by applicable law or agreed to in writing, software
++    distributed under the License is distributed on an "AS IS" BASIS,
++    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++    See the License for the specific language governing permissions and
++    limitations under the License.
++-->
++
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportHeight="24"
++        android:viewportWidth="24">
++    <path
++        android:fillColor="?android:attr/colorAccent"
++        android:pathData="M20.71,4.63L19.37,3.29C19,2.9 18.35,2.9 17.96,3.29L9,12.25L11.75,15L20.71,6.04C21.1,5.65 21.1,5 20.71,4.63M7,14A3,3 0 0,0 4,17C4,18.31 2.84,19 2,19C2.92,20.22 4.5,21 6,21A4,4 0 0,0 10,17A3,3 0 0,0 7,14Z"/>
++</vector>
+diff --git a/res/values/projekt_strings.xml b/res/values/projekt_strings.xml
+index 4c4554415..d52f4ce7b 100644
+--- a/res/values/projekt_strings.xml
++++ b/res/values/projekt_strings.xml
+@@ -25,4 +25,6 @@
+    <string name="menu_show_substratum_icons">Show icon overlays</string>
+    <string name="menu_hide_substratum_icons">Hide icon overlays</string>
+ 
++   <string name="substratum_title">Substratum</string>
++
+ </resources>
+diff --git a/src/com/android/settings/Settings.java b/src/com/android/settings/Settings.java
+index d2e20872f..2074ed2bd 100644
+--- a/src/com/android/settings/Settings.java
++++ b/src/com/android/settings/Settings.java
+@@ -171,5 +171,6 @@ public class Settings extends SettingsActivity {
+     public static class SuperUserActivity extends SettingsActivity { /* empty */ }
+     public static class DevicePartsActivity extends SettingsActivity { /* empty */ }
+     public static class OmniJawsSettingsActivity extends SettingsActivity { /* empty */ }
++    public static class SubstratumActivity extends SettingsActivity { /* empty */ }
+ 
+ }
+diff --git a/src/com/android/settings/SettingsActivity.java b/src/com/android/settings/SettingsActivity.java
+index b70655a69..41b880086 100644
+--- a/src/com/android/settings/SettingsActivity.java
++++ b/src/com/android/settings/SettingsActivity.java
+@@ -242,6 +242,8 @@ public class SettingsActivity extends SettingsDrawerActivity
+     public static final String KEY_COLUMNS_COUNT = "columns_count";
+     public static final String APP_PREFERENCES_NAME = "app_settings";
+ 
++    private static final String SUBSTRATUM_FRAGMENT = "com.android.settings.Substratum";
++
+     private String mFragmentClass;
+ 
+     private CharSequence mInitialTitle;
+@@ -1069,6 +1071,13 @@ public class SettingsActivity extends SettingsDrawerActivity
+             finish();
+             return null;
+         }
++        if (SUBSTRATUM_FRAGMENT.equals(fragmentName)) {
++            Intent subIntent = new Intent();
++            subIntent.setClassName("projekt.substratum", "projekt.substratum.LaunchActivity");
++            startActivity(subIntent);
++            finish();
++            return null;
++        }
+         if (validate && !isValidFragment(fragmentName)) {
+             throw new IllegalArgumentException("Invalid fragment for this activity: "
+                     + fragmentName);
+@@ -1159,6 +1168,16 @@ public class SettingsActivity extends SettingsDrawerActivity
+                         Settings.DevelopmentSettingsActivity.class.getName()),
+                 showDev, isAdmin, pm);
+ 
++        // Substratum
++        boolean subSupported = false;
++        try {
++            subSupported = (getPackageManager().getPackageInfo("projekt.substratum", 0).versionCode > 0);
++        } catch (PackageManager.NameNotFoundException e) {
++        }
++        setTileEnabled(new ComponentName(packageName,
++                        Settings.SubstratumActivity.class.getName()),
++                subSupported, isAdmin, pm);
++
+         // SuperSU
+         boolean suSupported = false;
+         try {
+-- 
+2.11.1
+
