@@ -3,7 +3,7 @@ function func_setenv()
     unset MY_BUILD
     if [ "${rom_type}" == "cm" ]; then myrom="cm"; MYROM="cm"; MY_BUILD="$CM_BUILD";
     elif [ "${rom_type}" == "du" ]; then myrom="du"; MYROM="du"; MY_BUILD="$DU_BUILD";
-    elif [ "${rom_type}" == "omni" ]; then myrom="omni"; MYROM="omni"; MY_BUILD="$CUSTOM_BUILD"; 
+    elif [ "${rom_type}" == "omni" ]; then myrom="omni"; MYROM="omni"; MY_BUILD="$CUSTOM_BUILD";
     else echo -e "${CL_RED} * Error: rom_type not set [vendor/extra/config.sh]${CL_RST}\n"; fi
     unset rom_type
     if [ "${with_su}" == "1" ]; then myrom="$myrom+SU"; export WITH_SU="true"; else unset WITH_SU; fi
@@ -44,6 +44,11 @@ function set_stuff_for_environment()
     # With this environment variable new GCC can apply colors to warnings/errors
     export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
     export ASAN_OPTIONS=detect_leaks=0
+    export TW_MAIN_VERSION="`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'`"
+    export TW_DEV_VERSION="`cat vendor/extra/vcontrol/TW_REC_BUILD_NUMBER-$MY_BUILD.TXT`"
+    export TW_NEW="`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'| sed 's/\.//g'`"
+    export TW_OLD="`cat vendor/extra/vcontrol/TW_REC_MAIN_VERSION-$MY_BUILD.TXT`"
+    export TW_VERSION="$TW_MAIN_VERSION-$TW_DEV_VERSION"
 }
 
 function func_ccache()
@@ -146,21 +151,19 @@ function show_alias()
 
 function func_toolchain()
 {
-    if [ "${have_sdclang}" == "1" ]; then export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; 
+    if [ "${have_sdclang}" == "1" ]; then export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang;
     else unset SDCLANG; unset SDCLANG_PATH; fi
     unset have_sdclang
 }
 
 function func_twrp()
 {
-    unset TW_DEVICE_VERSION
-    export TW_MAIN_VERSION_STR="`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'`"
-    export TW_DEVICE_VERSION="`date -u +%y%m%d%H%M`"
-    export TW_VERSION="$TW_MAIN_VERSION_STR-$TW_DEVICE_VERSION"
-    #TW_MAIN_VERSION_STR=`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9`
-    #TW_DEVICE_VERSION='"-0"'
-    #export TW_DEVICE_VERSION=$(date -u +%y%m%d%H%M)
-    #export TW_VERSION=`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9`-$(date -u +%y%m%d%H%M)
+    #unset TW_DEVICE_VERSION
+    export TW_MAIN_VERSION="`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'`"
+    export TW_DEV_VERSION="`cat vendor/extra/vcontrol/TW_REC_BUILD_NUMBER-$MY_BUILD.TXT`"
+    export TW_NEW="`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'| sed 's/\.//g'`"
+    export TW_OLD="`cat vendor/extra/vcontrol/TW_REC_MAIN_VERSION-$MY_BUILD.TXT`"
+    export TW_VERSION="$TW_MAIN_VERSION-$TW_DEV_VERSION"
 }
 
 function func_init()

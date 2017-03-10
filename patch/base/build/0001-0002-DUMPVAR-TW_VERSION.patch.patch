@@ -1,0 +1,34 @@
+From 746d3dbf6a144c9d9b4e6f720f243fd7e7fddde9 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 5 Mar 2017 13:47:13 +0000
+Subject: [PATCH] 0002-DUMPVAR-TW_VERSION.patch
+
+Change-Id: I8435b4e723331e920dda80e0255259d4d3e6e017
+---
+ core/dumpvar.mk | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 1f1545b96..1baeb86a4 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -35,14 +35,9 @@ print_build_config_vars2 += \
+   TARGET_RECOVERY_IS_MULTIROM
+ endif
+ 
+-ifneq ($(TW_MAIN_VERSION_STR),)
++ifneq ($(TW_VERSION),)
+ print_build_config_vars2 += \
+-  TW_MAIN_VERSION_STR
+-endif
+-
+-ifneq ($(TW_DEVICE_VERSION),)
+-print_build_config_vars2 += \
+-  TW_DEVICE_VERSION
++  TW_VERSION
+ endif
+ 
+ # ---------------------------------------------------------------
+-- 
+2.11.1
+
