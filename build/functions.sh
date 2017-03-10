@@ -2,7 +2,7 @@ function func_setenv()
 {
     if [ "${rom_type}" == "cm" ]; then myrom="cm"; MY_BUILD="$CM_BUILD";
     elif [ "${rom_type}" == "du" ]; then myrom="du"; MY_BUILD="$DU_BUILD";
-    elif [ "${rom_type}" == "omni" ]; then myrom="omni"; MY_BUILD="$CUSTOM_BUILD"; 
+    elif [ "${rom_type}" == "omni" ]; then myrom="omni"; MY_BUILD="$CUSTOM_BUILD";
     else echo -e "${CL_RED} * Error: rom_type not set [vendor/extra/config.sh]${CL_RST}\n"; fi
     if [ "${with_su}" == "1" ]; then myrom="$myrom+SU"; export WITH_SU="true"; else unset WITH_SU; fi
     unset rom_type
@@ -17,7 +17,8 @@ function func_setenv()
     c_current=`echo $c_size|cut -d ' ' -f3-4`
     c_max=`echo $c_size|cut -d ' ' -f8-9`
     ccache -M $ccache_size >/dev/null
-    if [ "${have_sdclang}" == "1" ]; then export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; 
+    sdclang_version=`strings vendor/extra/toolchain/sdclang-3.8/bin/clang|grep Snapdragon|cut -d '"' -s -f 2|cut -b 18-51|sed 's/ /_/g'`
+    if [ "${have_sdclang}" == "1" ]; then export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; export SDCLANG_LTO_DEFS=$sdclang_lto_defs; export SDCLANG_VERSION=$sdclang_version;
     else unset SDCLANG; unset SDCLANG_PATH; fi
     unset have_sdclang
 
@@ -135,7 +136,7 @@ function show_alias()
 
 function func_twrp()
 {
-	unset TW_DEVICE_VERSION
+    unset TW_DEVICE_VERSION
     export TW_MAIN_VERSION_STR="`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'`"
     export TW_DEVICE_VERSION="`date -u +%y%m%d%H%M`"
     export TW_VERSION="$TW_MAIN_VERSION_STR-$TW_DEVICE_VERSION"

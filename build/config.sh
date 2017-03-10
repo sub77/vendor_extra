@@ -8,3 +8,4 @@ rom_type=omni # cm/du/omni
 
 have_sdclang=1
 path_sdclang="vendor/extra/toolchain/sdclang-3.8/bin"
+sdclang_lto_defs="vendor/extra/toolchain/sdllvm-lto-defs.mk"
