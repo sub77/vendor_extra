@@ -1,24 +1,24 @@
 build_root=$(pwd)
 
 # Start frameworks_base
-echo -e ${CL_BLU}"PULLING frameworks_base"${CL_RST}
-cd $build_root/frameworks/base
-git pull https://github.com/sub77/android_frameworks_base.git n-mr1-rootless
-cd $build_root
+#echo -e ${CL_BLU}"PULLING frameworks_base"${CL_RST}
+#cd $build_root/frameworks/base
+#git pull https://github.com/sub77/android_frameworks_base.git n-mr1-rootless
+#cd $build_root
 # End frameworks_base
 
 # Start packages_apps_Settings
-echo -e ${CL_BLU}"PULLING packages_apps_Settings"${CL_RST}
-cd $build_root/packages/apps/Settings
-git pull https://github.com/sub77/android_packages_apps_Settings.git n-mr1-rootless
-cd $build_root
+#echo -e ${CL_BLU}"PULLING packages_apps_Settings"${CL_RST}
+#cd $build_root/packages/apps/Settings
+#git pull https://github.com/sub77/android_packages_apps_Settings.git n-mr1-rootless
+#cd $build_root
 # End packages_apps_Settings
 
 # Start system_sepolicy
-echo -e ${CL_BLU}"PULLING system_sepolicy"${CL_RST}
-cd $build_root/system/sepolicy
-git pull https://github.com/sub77/android_system_sepolicy.git n-mr1-rootless
-cd $build_root
+#echo -e ${CL_BLU}"PULLING system_sepolicy"${CL_RST}
+#cd $build_root/system/sepolicy
+#git pull https://github.com/sub77/android_system_sepolicy.git n-mr1-rootless
+#cd $build_root
 # End system_sepolicy
 
 

@@ -1,7 +1,7 @@
-From 7452d9cb6a463392298d7c1549e1d6df7825ef93 Mon Sep 17 00:00:00 2001
+From 8edb7d4f4870a2306a323a5656b4edd6975dab26 Mon Sep 17 00:00:00 2001
 From: sub77 <darfpunk@gmx.de>
 Date: Fri, 23 Dec 2016 22:45:30 +0000
-Subject: [PATCH 2/2] custom roomservice.py
+Subject: [PATCH 2/4] custom roomservice.py
 
 Change-Id: Ia9de485aa5fee3e1896ffe73bf5dc139324a89bc
 Signed-off-by: sub77 <darfpunk@gmx.de>
@@ -10,7 +10,7 @@ Signed-off-by: sub77 <darfpunk@gmx.de>
  1 file changed, 2 insertions(+)
 
 diff --git a/tools/roomservice.py b/tools/roomservice.py
-index fe5ff49..91ea5e8 100755
+index fe5ff49a3..91ea5e8fc 100755
 --- a/tools/roomservice.py
 +++ b/tools/roomservice.py
 @@ -179,6 +179,8 @@ def write_to_manifest(manifest):
@@ -23,5 +23,5 @@ index fe5ff49..91ea5e8 100755
  
  def parse_device_from_manifest(device):
 -- 
-2.1.4
+2.11.1
 

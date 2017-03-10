@@ -1,4 +1,4 @@
-From 64b80cfe66412555c62273677464b2a2aa82bd21 Mon Sep 17 00:00:00 2001
+From f5f7b608f9a66dec2a2b64cb2ebf430e22c30c95 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Wed, 4 Jan 2017 19:34:11 +0000
 Subject: [PATCH] custom vendor
@@ -9,19 +9,16 @@ Change-Id: I1d93176c4ac1237730d0ffca8decba235273a7c1
  1 file changed, 3 insertions(+)
 
 diff --git a/config/common.mk b/config/common.mk
-index 9bd99a0..6345038 100644
+index 572d9f5..4a15a51 100644
 --- a/config/common.mk
 +++ b/config/common.mk
-@@ -67,6 +67,9 @@ PRODUCT_COPY_FILES += \
- # Versioning
- -include vendor/omni/config/version.mk
- 
+@@ -106,3 +106,6 @@ endif
+ ifeq ($(ROM_BUILDTYPE),HOMEMADE)
+     WITH_DEXPREOPT := false
+ endif
++
 +# Extra Vendor
 +-include vendor/extra/product.mk
-+
- # Add our overlays
- PRODUCT_PACKAGE_OVERLAYS += vendor/omni/overlay/common
- 
 -- 
-2.11.0
+2.11.1
 
