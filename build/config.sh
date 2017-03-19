@@ -1,6 +1,6 @@
 ccache_use=1
 ccache_dir=/home/sub77/ccache
-ccache_size=25
+ccache_size=20
 
 rom_type=omni # cm/du/omni
 

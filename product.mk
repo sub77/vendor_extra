@@ -22,7 +22,15 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/common/magisk.zip:system/addon.d/magisk.zip
 
-# Nano
+# su
+PRODUCT_PACKAGES += \
+    su
+
+# bash
+PRODUCT_COPY_FILES += \
+    vendor/extra/prebuilt/xbin/bash:system/xbin/bash
+
+# nano
 PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/bin/nano:system/bin/nano \
     vendor/extra/prebuilt/bin/nano.bin:system/bin/nano.bin \
@@ -31,16 +39,20 @@ PRODUCT_COPY_FILES += \
 # init.d
 PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/etc/init.d/20selinux:system/etc/init.d/20selinux \
+    vendor/extra/prebuilt/etc/init.d/30dropbear:system/etc/init.d/30dropbear \
     vendor/extra/prebuilt/etc/init.d/80backup:system/etc/init.d/80backup
+
+
 
 # Selinux
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.build.selinux=1
 
+#WITH_CM_CHARGER := true
+
 # Custom off-mode charger
 ifneq ($(WITH_CM_CHARGER),false)
 PRODUCT_PACKAGES += \
-    charger_res_images \
     cm_charger_res_images \
     font_log.png \
     libhealthd.cm
@@ -68,9 +80,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Substratum Verified
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.substratum.verified=true
-
-ADDITIONAL_DEFAULT_PROPERTIES += \
-    ro.masquerade.buildtype.check=true
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.opa.eligible_device=true

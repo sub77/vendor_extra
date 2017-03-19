@@ -7,6 +7,8 @@ function func_setenv()
     if [ "${with_su}" == "1" ]; then myrom="$myrom+SU"; export WITH_SU="true"; else unset WITH_SU; fi
     unset rom_type
     unset with_su
+    unset c_current
+    unset c_size
     unset CCACHE_DIR
     rom_dir_full=`pwd`
     rom_dir=`basename $rom_dir_full`
@@ -145,4 +147,3 @@ function func_twrp()
     #export TW_DEVICE_VERSION=$(date -u +%y%m%d%H%M)
     #export TW_VERSION=`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9`-$(date -u +%y%m%d%H%M)
 }
-
