@@ -1,7 +1,7 @@
-From 5e0b2f08b95a7ae919f12f0b9ddaa2504c25f35d Mon Sep 17 00:00:00 2001
+From 102be58be1f422d79ead75c8b5561f6ad750d402 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Thu, 9 Mar 2017 21:43:23 +0000
-Subject: [PATCH 24/24] Display Snapdragon Clang version if present
+Subject: [PATCH] Display Snapdragon Clang version if present
 
 Change-Id: Ie9b84e5b284f71ab6bec0d6bbc2988f505644b27
 ---
@@ -11,13 +11,13 @@ Change-Id: Ie9b84e5b284f71ab6bec0d6bbc2988f505644b27
  3 files changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/res/values/custom_strings.xml b/res/values/custom_strings.xml
-index a02e0a064..81ec595b7 100644
+index 363d68a6f..5db617096 100644
 --- a/res/values/custom_strings.xml
 +++ b/res/values/custom_strings.xml
-@@ -112,4 +112,8 @@
-     <string name="reset_wallpaper_notice">Default wallpaper restored</string>
-     <string name="columns_menu">Columns layout</string>
-     <string name="hide_summary_menu">Hide summary</string>
+@@ -116,4 +116,8 @@
+ 
+     <string name="heads_up_notifications_enabled_title">Allow peeking</string>
+     <string name="heads_up_notifications_enabled_summary">Allow or disable peeking for all notifications</string>
 +
 +    <!-- SD Clang version -->
 +    <string name="sdc_version">Clang</string>
@@ -84,5 +84,5 @@ index 0bedd65df..e1df58f8b 100644
          removePreferenceIfPropertyMissing(getPreferenceScreen(), KEY_EQUIPMENT_ID,
                  PROPERTY_EQUIPMENT_ID);
 -- 
-2.11.1
+2.12.0
 

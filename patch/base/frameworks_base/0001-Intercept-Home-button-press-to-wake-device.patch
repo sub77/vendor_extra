@@ -1,7 +1,7 @@
-From 738f3fc4ab21ab877ed1c349edb0d6745cce30e0 Mon Sep 17 00:00:00 2001
+From 5abd1db38dd3ddb284b1e1f11487d21b649678b2 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Tue, 7 Mar 2017 14:11:43 +0000
-Subject: [PATCH] Intercept Home button press to wake device
+Subject: [PATCH 1/3] Intercept Home button press to wake device
 
 Change-Id: I55395ca412f8be849ad1ba4499ef67645efd9777
 ---
@@ -9,10 +9,10 @@ Change-Id: I55395ca412f8be849ad1ba4499ef67645efd9777
  1 file changed, 6 insertions(+)
 
 diff --git a/services/core/java/com/android/server/policy/PhoneWindowManager.java b/services/core/java/com/android/server/policy/PhoneWindowManager.java
-index dc73caaaaab..f22f09154e1 100644
+index 040154557ac..2166ab38ab1 100644
 --- a/services/core/java/com/android/server/policy/PhoneWindowManager.java
 +++ b/services/core/java/com/android/server/policy/PhoneWindowManager.java
-@@ -6069,8 +6069,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
+@@ -6085,8 +6085,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
  
          // Basic policy based on interactive state.
          int result;
