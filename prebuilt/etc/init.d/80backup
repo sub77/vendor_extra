@@ -3,50 +3,53 @@
 if [[ ! -f /data/misc/wifi/wpa_supplicant.conf && -f /persist/backup/wpa_supplicant.conf ]]; then
     if cp /persist/backup/wpa_supplicant.conf /data/misc/wifi/wpa_supplicant.conf &> /dev/null; then
         log -p i -t init.d "Restore /persist/backup/wpa_supplicant.conf -> /data/misc/wifi/wpa_supplicant.conf"
+        chown wifi:wifi /data/misc/wifi/wpa_supplicant.conf && chmod 660 /data/misc/wifi/wpa_supplicant.conf
     fi
 fi
 
-if [[ -f /data/misc/wifi/wpa_supplicant.conf && -f /persist/backup/wpa_supplicant.conf ]]; then
+if [[ -f /data/misc/wifi/wpa_supplicant.conf && -f /persist/backup/wpa_supplicant.config ]]; then
     if cat /data/misc/wifi/wpa_supplicant.conf | grep ssid &> /dev/null; then
-        log -p i -t init.d "AP found"
+        log -p i -t init.d "AP found, no data restored"
     else
-        if cp /persist/backup/wpa_supplicant.conf /data/misc/wifi/wpa_supplicant.conf &> /dev/null; then
-            log -p i -t init.d "Restore /persist/backup/wpa_supplicant.conf -> /data/misc/wifi/wpa_supplicant.conf"
-        fi
+        cat /persist/backup/wpa_supplicant.config >> /data/misc/wifi/wpa_supplicant.conf
+        log -p i -t init.d "Restore /persist/backup/wpa_supplicant.config -> /data/misc/wifi/wpa_supplicant.conf"
     fi
 fi
 
 if [[ ! -f /data/system_de/0/accounts_de.db && -f /persist/backup/accounts_de.db ]]; then
-    if cp /persist/backup/accounts_de.db /data/system_de/0/accounts_de.db &> /dev/null; then
-        log -p i -t init.d "Restore /persist/backup/accounts_de.db -> /data/system_de/0/accounts_de.db"
-    fi
-    if cp /persist/backup/accounts_ce.db /data/system_ce/0/accounts_ce.db &> /dev/null; then
-        log -p i -t init.d "Restore /persist/backup/accounts_ce.db -> /data/system_ce/0/accounts_ce.db"
-    fi
+    mkdir -p /data/system_ce/0
+    cp /persist/backup/accounts_de.db /data/system_de/0/accounts_de.db
+    cp /persist/backup/accounts_ce.db /data/system_ce/0/accounts_ce.db
+    chown system:system /data/system_de/0/accounts_de.db && chmod 660 /data/system_de/0/accounts_de.db
+    chown system:system /data/system_ce/0/accounts_ce.db && chmod 660 /data/system_ce/0/accounts_ce.db
+    log -p i -t init.d "Restore /persist/backup/accounts_de.db -> /data/system_de/0/accounts_de.db"
+    log -p i -t init.d "Restore /persist/backup/accounts_ce.db -> /data/system_ce/0/accounts_ce.db"
+
 fi
 
 if [[ -f /data/system_de/0/accounts_de.db && -f /persist/backup/accounts_de.db ]]; then
     if cat /data/system_de/0/accounts_de.db | grep @gmail.com &> /dev/null; then
-        log -p i -t init.d "user account found"
+        log -p i -t init.d "user account found, no data restored"
     else
-        if cp /persist/backup/accounts_de.db /data/system_de/0/accounts_de.db &> /dev/null; then
-            rm /data/system_de/0/accounts_de.db-journal
-            log -p i -t init.d "Restore /persist/backup/accounts_de.db -> /data/system_de/0/accounts_de.db"
-        fi
-        if cp /persist/backup/accounts_ce.db /data/system_ce/0/accounts_ce.db &> /dev/null; then
-            rm /data/system_ce/0/accounts_ce.db-journal
-            log -p i -t init.d "Restore /persist/backup/accounts_ce.db -> /data/system_ce/0/accounts_ce.db"
-        fi
+        mkdir -p /data/system_ce/0
+        cp /persist/backup/accounts_de.db /data/system_de/0/accounts_de.db
+        cp /persist/backup/accounts_ce.db /data/system_ce/0/accounts_ce.db
+        chown system:system /data/system_de/0/accounts_de.db && chmod 660 /data/system_de/0/accounts_de.db
+        chown system:system /data/system_ce/0/accounts_ce.db && chmod 660 /data/system_ce/0/accounts_ce.db
+        rm -f /data/system_de/0/accounts_de.db-journal
+        rm -f /data/system_ce/0/accounts_ce.db-journal
+        log -p i -t init.d "Restore /persist/backup/accounts_de.db -> /data/system_de/0/accounts_de.db"
+        log -p i -t init.d "Restore /persist/backup/accounts_ce.db -> /data/system_ce/0/accounts_ce.db"
     fi
 fi
 
-if [ "$1" == "backup_wifi" ]; then
+if [ "$1" == "backup_wifi" ]; then mkdir -p /persist/backup;
     if cp /data/misc/wifi/wpa_supplicant.conf /persist/backup/wpa_supplicant.conf &> /dev/null; then
         log -p i -t init.d "Backup /data/misc/wifi/wpa_supplicant.conf -> /persist/backup/wpa_supplicant.conf"
     fi
 fi
 
-if [ "$1" == "backup_google" ]; then
+if [ "$1" == "backup_google" ]; then mkdir -p /persist/backup;
     if cp /data/system_de/0/accounts_de.db /persist/backup/accounts_de.db &> /dev/null; then
         log -p i -t init.d "Backup /data/system_de/0/accounts_de.db -> /persist/backup/accounts_de.db"
     fi
