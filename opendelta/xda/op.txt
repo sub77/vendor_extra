@@ -23,12 +23,15 @@
 [*] msim
 [/QUOTE]
 
-[B]Download[/B]
+[B]Downloads[/B]
 [QUOTE]
-[*] [URL="https://www.androidfilehost.com/?w=files&flid=137468"] ROM - AFH [/URL]
+[*] [URL="https://s.basketbuild.com/uploads/devs/sub77/OmniROM/falcon/XDAFILE"] XDAFILE [/URL]
+
+[*] [URL="https://www.androidfilehost.com/?fid=AFHFILE"] XDAFILE [/URL]
 
 [*] [URL="https://basketbuild.com/devs/sub77/OmniRom/falcon"] ROM - BASKETBUILD [/URL]
 
+[*] [URL="https://www.androidfilehost.com/?w=files&flid=137468"] ROM - AFH [/URL]
 
 [*] [URL="http://opengapps.org"] GAPPS [/URL]
 

@@ -52,22 +52,22 @@ def main(argc, argv):
 
     if not showdate:
         showdate = datetime.datetime.now().strftime("%Y-%m-%d").upper()
-    title = "[RECOVERY][%s] TWRP %s touch recovery [%s]" % (device, version, showdate)
+    title = "[%s] %s [%s]" % (device, version, showdate)
     if not device:
-        title = "[RECOVERY] TWRP %s touch recovery [%s]" % (version, showdate)
+        title = "%s [%s]" % (version, showdate)
     api=xdaapi.XdaApi()
     api.login(user, password)
 
     with open ("op.txt", "r") as opfile:
         opdata=opfile.read()
 
-    list = open("list2.txt", "r")
+    list = open("update_op.txt", "r")
     for line in list:
-        forumid, topicid = line.split("=", 1)
-        if not device or device == forumid:
-            print "Working on " + forumid
-            title = "[ROM][7.1.1] OmniROM %s HOMEMADE [%s]" % (version, showdate)
-            api.reply_post(forumid, topicid, title, opdata)
+        currdevice, postid = line.split("=", 1)
+        if not device or device == currdevice:
+            print "Working on " + currdevice
+            title = "[ROM][7.1.1][OMS] OmniROM %s HOMEMADE [%s]" % (version, showdate)
+            api.save_raw_post(postid, title, opdata)
 
     api.logout_user()
     return 0

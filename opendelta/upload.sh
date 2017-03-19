@@ -99,4 +99,7 @@ if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_ZIP -u $my_login1:$my_passw1 $SERVER1/
 echo -e "\n"
 fi
 
+export XDAFILEFTP=$SERVER2/$FTP_DIR_FULL/$FILE_FULL_ZIP
+export XDAFILE=$FILE_FULL_ZIP
+
 exit 0

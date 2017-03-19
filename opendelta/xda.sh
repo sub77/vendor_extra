@@ -34,6 +34,24 @@ if [ -n "$my_account3" ] ; then
 fi
 
 cd xda
-nano op.txt
-python update.py -u $my_login3 -p $my_login3 -v 7
+
+read -p "AFH Download Link:" afhdl
+    if [ -n "$afhdl" ] ; then echo -e "Link=$afhdl | cut -d '=' -f 2" ; else afhdl="none"; fi
+afhurl=`echo $afhdl | cut -d '=' -f 2`
+
+sed -i 's/XDAFILE/'$XDAFILE'/g' op.txt
+sed -i 's/AFHFILE/'$afhurl'/g' op.txt
+#nano op.txt
+python update_op.py -u $my_login3 -p $my_passw3 -v 7
+#cat op.txt
+sed -i 's/'$XDAFILE'/XDAFILE/g' op.txt
+sed -i 's/'$afhurl'/AFHFILE/g' op.txt
+
+sed -i 's/XDAFILE/'$XDAFILE'/g' post.txt
+sed -i 's/AFHFILE/'$afhurl'/g' post.txt
+#nano post.txt
+python update_post.py -u $my_login3 -p $my_passw3 -v 7
+cat post.txt
+sed -i 's/'$XDAFILE'/XDAFILE/g' post.txt
+sed -i 's/'$afhurl'/AFHFILE/g' post.txt
 cd ..
