@@ -22,17 +22,20 @@ HOME=$(pwd)
 SERVER1="ftp://uploads.androidfilehost.com"
 SERVER2="ftp.basketbuild.com"
 FILEMASK="omni-"
+FILE_MATCH="omni-*.zip"
 PATH_DELTA="$HOME/publish/delta/$DEVICE"
 PATH_FULL="$HOME/publish/full/$DEVICE"
+PATH_LAST="$HOME/last/$DEVICE"
 FTP_DIR_DELTA="OmniROM/.delta/$DEVICE/"
 FTP_DIR_FULL="OmniROM/$DEVICE/"
 #VERBOSE="-v"
+#upload="true"
 
 my_rc_file=~/.xdarc
 my_account1="AFH FTP Login"
 my_account2="BB FTP Login"
 #my_account3="XDA Forum Login"
-upload="true"
+
 
 if [ ! -f ${my_rc_file} ]; then touch ${my_rc_file}; chmod 600 ${my_rc_file}; else source ${my_rc_file}; fi
 
@@ -74,6 +77,8 @@ FILE_DELTA_UPDATE=$(getFileName $(ls -1 $PATH_DELTA/*.update))
 FILE_FULL_MD5SUM=$(getFileName $(ls -1 $PATH_FULL/*.md5sum))
 FILE_FULL_ZIP=$(getFileName $(ls -1 $PATH_FULL/*.zip))
 
+FILE_LAST=$(getFileName $(ls -1 $PATH_LAST/$FILE_MATCH))
+
 if [[ "$upload" == "true" ]] ; then
 echo -e "\n"
 echo -n "UPLOADING $FILE_DELTA_DELTA to $SERVER2 "
@@ -99,7 +104,22 @@ if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_ZIP -u $my_login1:$my_passw1 $SERVER1/
 echo -e "\n"
 fi
 
-export XDAFILEFTP=$SERVER2/$FTP_DIR_FULL/$FILE_FULL_ZIP
-export XDAFILE=$FILE_FULL_ZIP
+XDAFILE="$FILE_FULL_ZIP"
+export XDAFILE
+
+LASTFILE="$FILE_LAST"
+
+lfyrs=`echo $LASTFILE|cut -d '-' -f 3|cut -b 1-4`
+lfmon=`echo $LASTFILE|cut -d '-' -f 3|cut -b 5-6`
+lfday=`echo $LASTFILE|cut -d '-' -f 3|cut -b 7-8`
+lastdate=$lfyrs-$lfmon-$lfday
+lastdate2="2017-03-10"
+
+
+cd ..; cd ..; cd ..
+/home/sub77/bin/gitcomp-plain --since=2017-03-01 -10
+# since "$lastdate" 
+#> /tmp/changelog
+cd $HOME
 
 exit 0

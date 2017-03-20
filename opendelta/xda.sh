@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 my_rc_file=~/.xdarc
 
