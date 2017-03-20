@@ -1,13 +1,10 @@
-From 361869ff20814dfd30ac6ed944198e4152561cb2 Mon Sep 17 00:00:00 2001
+From 663719c136e8b37a8d32cd5db8917ab814711790 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Fri, 10 Mar 2017 18:36:16 +0000
-Subject: [PATCH 2/3] Wifi: Introduce a config parameter for
- IpReachabilityMonitor
+Date: Mon, 20 Mar 2017 14:48:21 +0000
+Subject: [PATCH 2/3] [PATCH] Wifi Introduce a config parameter for
+ IpReachability
 
-Introduce a config parameter to enable/disable IpReachabilityMonitor
-feature. By default keep IpReachabilityMonitor disabled.
-
-Change-Id: I9bb9b7408e7a1bed4687d8e6404dda844ef45081
+Change-Id: I33a490cdd3e2f1a99054b697e8981e157ffcd7a6
 ---
  core/res/res/values/config.xml  | 3 +++
  core/res/res/values/symbols.xml | 1 +
@@ -40,5 +37,5 @@ index 27b38d2bbfb..922a39241d2 100644
    <java-symbol type="integer" name="config_wifi_logger_ring_buffer_verbose_size_limit_kb" />
    <java-symbol type="bool" name="config_wifi_turn_off_during_emergency_call" />
 -- 
-2.11.1
+2.12.0
 

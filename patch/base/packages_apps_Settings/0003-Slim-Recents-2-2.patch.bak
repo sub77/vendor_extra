@@ -1,0 +1,623 @@
+From e4eecd5ba5bd4f313e491d69b3aae03c128fa395 Mon Sep 17 00:00:00 2001
+From: ezio84 <brabus84@gmail.com>
+Date: Fri, 3 Mar 2017 10:33:29 +0100
+Subject: [PATCH] Slim Recents [2/2]
+
+Change-Id: I0b20bab068f7f259168c526b62165bf5b60c6a82
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ Android.mk                                         |   2 +-
+ res/drawable/slim_icon.xml                         |  26 ++
+ res/values/custom_arrays.xml                       |  11 +
+ res/values/custom_strings.xml                      |  27 ++
+ res/xml/crdroid_settings_recents.xml               | 107 ++++++++
+ res/xml/slim_recent_panel_settings.xml             |  77 ++++++
+ .../settings/fragments/SlimRecentPanel.java        | 294 +++++++++++++++++++++
+ 7 files changed, 543 insertions(+), 1 deletion(-)
+ create mode 100644 res/drawable/slim_icon.xml
+ create mode 100644 res/xml/crdroid_settings_recents.xml
+ create mode 100644 res/xml/slim_recent_panel_settings.xml
+ create mode 100644 src/com/crdroid/settings/fragments/SlimRecentPanel.java
+
+diff --git a/Android.mk b/Android.mk
+index ea2ed6469..90332f9c8 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -1,7 +1,7 @@
+ LOCAL_PATH:= $(call my-dir)
+ include $(CLEAR_VARS)
+ 
+-LOCAL_JAVA_LIBRARIES := bouncycastle core-oj telephony-common ims-common
++LOCAL_JAVA_LIBRARIES := bouncycastle core-oj telephony-common ims-common org.dirtyunicorns.utils
+ LOCAL_STATIC_JAVA_LIBRARIES := \
+     android-support-v4 \
+     android-support-v13 \
+diff --git a/res/drawable/slim_icon.xml b/res/drawable/slim_icon.xml
+new file mode 100644
+index 000000000..adcc6ae7a
+--- /dev/null
++++ b/res/drawable/slim_icon.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright (C) 2017 crDroid Android Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24.0dp"
++        android:height="24.0dp"
++        android:viewportWidth="24.0"
++        android:viewportHeight="24.0"
++        android:tint="?android:attr/colorAccent">
++    <path
++        android:fillColor="#FFFFFFFF"
++        android:pathData="M3,5A2,2 0 0,1 5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5C3.89,21 3,20.1 3,19V5M12.5,11H11.5A1.5,1.5 0 0,1 10,9.5A1.5,1.5 0 0,1 11.5,8H12.5A1.5,1.5 0 0,1 14,9.5H16A3.5,3.5 0 0,0 12.5,6H11.5A3.5,3.5 0 0,0 8,9.5A3.5,3.5 0 0,0 11.5,13H12.5A1.5,1.5 0 0,1 14,14.5A1.5,1.5 0 0,1 12.5,16H11.5A1.5,1.5 0 0,1 10,14.5H8A3.5,3.5 0 0,0 11.5,18H12.5A3.5,3.5 0 0,0 16,14.5A3.5,3.5 0 0,0 12.5,11Z" />
++</vector>
+diff --git a/res/values/custom_arrays.xml b/res/values/custom_arrays.xml
+index 9c793d40e..5f9a04b42 100644
+--- a/res/values/custom_arrays.xml
++++ b/res/values/custom_arrays.xml
+@@ -26,5 +26,16 @@
+         <item>@string/security_settings_fingerprint_sensor_location_left</item>
+         <item>@string/security_settings_fingerprint_sensor_location_right</item>
+     </string-array>
++     <!-- Slim Recent panel -->
++    <string-array name="recent_panel_expanded_mode_entries">
++        <item>@string/recent_panel_expanded_mode_auto</item>
++        <item>@string/recent_panel_expanded_mode_always</item>
++        <item>@string/recent_panel_expanded_mode_never</item>
++    </string-array>
+ 
++    <string-array name="recent_panel_expanded_mode_values" translatable="false">
++        <item>0</item>
++        <item>1</item>
++        <item>2</item>
++    </string-array>
+ </resources>
+diff --git a/res/values/custom_strings.xml b/res/values/custom_strings.xml
+index 5db617096..91aa88b70 100644
+--- a/res/values/custom_strings.xml
++++ b/res/values/custom_strings.xml
+@@ -120,4 +120,31 @@
+     <!-- SD Clang version -->
+     <string name="sdc_version">Clang</string>
+     <string name="sdc_version_default">None</string>
++
++    <!-- Slim Recent panel -->
++    <string name="slim_recents_title">Slim recents</string>
++    <string name="use_slim_recents_title">Use for recents</string>
++    <string name="use_slim_recents_summary">Use slim recents instead of the default recents view</string>
++    <string name="slim_recents_settings_title">Settings</string>
++    <string name="slim_recents_settings_summary">View the settings for slim recents</string>
++    <string name="recent_panel_category">Slim recent apps panel</string>
++    <string name="show_running_tasks_title">Only show running apps</string>
++    <string name="recents_max_apps_title">Max allowed apps</string>
++    <string name="recent_panel_scale_title">Size</string>
++    <string name="recent_panel_expanded_mode_title">Expanded mode</string>
++    <string name="recent_panel_expanded_mode_summary">Recent tasks expanded preview mode</string>
++    <string name="recent_panel_expanded_mode_auto">Auto (default)</string>
++    <string name="recent_panel_expanded_mode_always">Always</string>
++    <string name="recent_panel_expanded_mode_never">Never</string>
++    <string name="recent_panel_show_topmost_title">Show topmost task</string>
++    <string name="recent_panel_show_topmost_summary">Don\'t exclude the topmost task in recents view</string>
++    <string name="recent_panel_bg_color_title">Panel background color</string>
++    <string name="recent_card_bg_color_title">Card background color</string>
++    <string name="recent_card_text_color_title">Card text color</string>
++    <string name="recent_reset_title">Reset to stock color</string>
++    <string name="recent_reset_confirm">Are you sure you want to reset Slim Recent to stock color?</string>
++
++    <!-- ATTENTION: RTL languages need to replace left with right -->
++    <string name="recent_panel_lefty_mode_title">Show on the left edge</string>
++    <string name="recent_panel_lefty_mode_summary">Show recent apps panel on the left edge</string>
+ </resources>
+diff --git a/res/xml/crdroid_settings_recents.xml b/res/xml/crdroid_settings_recents.xml
+new file mode 100644
+index 000000000..5df69630d
+--- /dev/null
++++ b/res/xml/crdroid_settings_recents.xml
+@@ -0,0 +1,107 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright (C) 2016-2017 crDroid Android Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/recents_title">
++
++    <PreferenceCategory 
++        android:title="@string/recents_default_category">
++
++        <ListPreference
++            android:key="immersive_recents"
++            android:icon="@drawable/recents_icon"
++            android:title="@string/immersive_recents_title"
++            android:summary="@string/immersive_recents_summary"
++            android:dialogTitle="@string/immersive_recents_dialog_title"
++            android:entries="@array/immersive_recents_entries"
++            android:entryValues="@array/immersive_recents_values"
++            android:persistent="false" />
++
++        <PreferenceScreen
++            android:key="hide_app_from_recents"
++            android:icon="@drawable/recents_hide_app_icon"
++            android:title="@string/hide_apps_from_recents_title"
++            android:summary="@string/hide_apps_from_recents_summary" >
++            <intent android:action="android.intent.action.MAIN"
++                android:targetPackage="com.android.settings"
++                android:targetClass="com.crdroid.settings.fragments.HAFRAppListActivity" />
++        </PreferenceScreen>
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="systemui_recents_mem_display"
++            android:icon="@drawable/memory_icon"
++            android:title="@string/systemui_recents_mem_display_title"
++            android:summary="@string/systemui_recents_mem_display_summary"
++            android:defaultValue="false" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="show_clear_all_recents"
++            android:icon="@drawable/recents_clear_all_icon"
++            android:title="@string/show_clear_all_recents_button_title"
++            android:summary="@string/show_clear_all_recents_button_summary"
++            android:defaultValue="true" />
++
++        <ListPreference
++            android:key="recents_clear_all_location"
++            android:icon="@drawable/recents_clear_all_icon"
++            android:title="@string/recents_clear_all_location_title"
++            android:entries="@array/recents_clear_all_location_entries"
++            android:entryValues="@array/recents_clear_all_location_values"
++            android:defaultValue="3"
++            android:dependency="show_clear_all_recents" />
++    </PreferenceCategory>
++
++    <PreferenceCategory 
++        android:title="@string/recents_omni_category">
++
++        <SwitchPreference
++            android:key="recents_use_omniswitch"
++            android:icon="@drawable/omni_icon"
++            android:title="@string/recents_use_omniswitch_title"
++            android:summary="@string/recents_use_omniswitch_summary"
++            android:persistent="false" />
++
++        <Preference
++            android:key="omniswitch_start_settings"
++            android:icon="@drawable/omni_icon"
++            android:title="@string/omniswitch_start_settings_title"
++            android:summary="@string/omniswitch_start_settings_summary"
++            android:persistent="false" />
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="slim_recents"
++        android:title="@string/slim_recents_title">
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="use_slim_recents"
++            android:icon="@drawable/slim_icon"
++            android:title="@string/use_slim_recents_title"
++            android:summary="@string/use_slim_recents_summary"
++            android:defaultValue="false" />
++
++        <PreferenceScreen
++            android:key="slim_recent_panel"
++            android:icon="@drawable/slim_icon"
++            android:title="@string/slim_recents_settings_title"
++            android:summary="@string/slim_recents_settings_summary"
++            android:fragment="com.crdroid.settings.fragments.SlimRecentPanel"
++            android:dependency="use_slim_recents"
++            android:persistent="false" />
++    </PreferenceCategory>
++</PreferenceScreen>
+diff --git a/res/xml/slim_recent_panel_settings.xml b/res/xml/slim_recent_panel_settings.xml
+new file mode 100644
+index 000000000..8df2ca2b2
+--- /dev/null
++++ b/res/xml/slim_recent_panel_settings.xml
+@@ -0,0 +1,77 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright (C) 2015-2017 SlimRoms Project
++               (C) 2017 crDroid Android Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/slim_recents_title" >
++
++    <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++        android:key="show_running_tasks"
++        android:title="@string/show_running_tasks_title"
++        android:defaultValue="false" />
++
++    <com.crdroid.settings.preferences.SeekBarPreference
++        android:key="recents_max_apps"
++        android:title="@string/recents_max_apps_title"
++        android:max="105"
++        settings:min="5"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="recent_panel_expanded_mode"
++        android:entries="@array/recent_panel_expanded_mode_entries"
++        android:entryValues="@array/recent_panel_expanded_mode_values"
++        android:title="@string/recent_panel_expanded_mode_title"
++        android:summary="@string/recent_panel_expanded_mode_summary" />
++
++    <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++        android:key="recent_panel_lefty_mode"
++        android:title="@string/recent_panel_lefty_mode_title"
++        android:summary="@string/recent_panel_lefty_mode_summary"
++        android:defaultValue="false" />
++
++    <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++        android:key="recent_panel_show_topmost"
++        android:title="@string/recent_panel_show_topmost_title"
++        android:summary="@string/recent_panel_show_topmost_summary"
++        android:defaultValue="false" />
++
++    <com.crdroid.settings.preferences.SeekBarPreference
++        android:key="recent_panel_scale"
++        android:title="@string/recent_panel_scale_title"
++        android:max="160"
++        settings:min="60"
++        settings:interval="5"
++        settings:units="%"
++        android:persistent="false" />
++
++    <com.crdroid.settings.preferences.ColorPickerPreference
++        android:key="recent_panel_bg_color"
++        android:title="@string/recent_panel_bg_color_title"
++        android:defaultValue="0x00ffffff" />
++
++    <!--<com.crdroid.settings.preferences.ColorPickerPreference
++        android:key="recent_card_bg_color"
++        android:title="@string/recent_card_bg_color_title"
++        android:defaultValue="0x00ffffff" />
++
++    <com.crdroid.settings.preferences.ColorPickerPreference
++        android:key="recent_card_text_color"
++        android:title="@string/recent_card_text_color_title"
++        android:defaultValue="0x00ffffff" />-->
++</PreferenceScreen>
+diff --git a/src/com/crdroid/settings/fragments/SlimRecentPanel.java b/src/com/crdroid/settings/fragments/SlimRecentPanel.java
+new file mode 100644
+index 000000000..6487e9748
+--- /dev/null
++++ b/src/com/crdroid/settings/fragments/SlimRecentPanel.java
+@@ -0,0 +1,294 @@
++/*
++ * Copyright (C) 2015-2017 SlimRoms Project
++ *           (C) 2017 crDroid Android Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.crdroid.settings.fragments;
++
++import android.app.ActivityManager;
++import android.app.AlertDialog;
++import android.app.Dialog;
++import android.content.ContentResolver;
++import android.content.DialogInterface;
++import android.content.DialogInterface.OnClickListener;
++import android.database.ContentObserver;
++import android.os.Bundle;
++import android.os.UserHandle;
++import android.support.v7.preference.ListPreference;
++import android.support.v7.preference.Preference;
++import android.support.v7.preference.PreferenceCategory;
++import android.support.v7.preference.PreferenceScreen;
++import android.provider.Settings;
++import android.util.Log;
++import android.view.Gravity;
++import android.view.Menu;
++import android.view.MenuItem;
++import android.view.MenuInflater;
++
++import com.android.internal.logging.MetricsProto.MetricsEvent;
++import com.android.settings.R;
++import com.android.settings.SettingsPreferenceFragment;
++
++import com.crdroid.settings.preferences.ColorPickerPreference;
++import com.crdroid.settings.preferences.SystemSettingSwitchPreference;
++import com.crdroid.settings.preferences.SeekBarPreference;
++
++public class SlimRecentPanel extends SettingsPreferenceFragment implements
++        Preference.OnPreferenceChangeListener {
++
++    private static final String TAG = "RecentPanelSettings";
++
++    // Preferences
++    private static final String RECENTS_MAX_APPS = "recents_max_apps";
++    private static final String RECENT_PANEL_LEFTY_MODE =
++            "recent_panel_lefty_mode";
++    private static final String RECENT_PANEL_SCALE =
++            "recent_panel_scale";
++    private static final String RECENT_PANEL_EXPANDED_MODE =
++            "recent_panel_expanded_mode";
++    private static final String RECENT_PANEL_BG_COLOR =
++            "recent_panel_bg_color";
++    /*private static final String RECENT_CARD_BG_COLOR =
++            "recent_card_bg_color";
++    private static final String RECENT_CARD_TEXT_COLOR =
++            "recent_card_text_color";*/
++
++    private static final int MENU_RESET = Menu.FIRST;
++    private static final int DIALOG_RESET_CONFIRM = 1;
++
++    private SeekBarPreference mMaxApps;
++    private SystemSettingSwitchPreference mRecentPanelLeftyMode;
++    private SeekBarPreference mRecentPanelScale;
++    private ListPreference mRecentPanelExpandedMode;
++    private ColorPickerPreference mRecentPanelBgColor;
++    //private ColorPickerPreference mRecentCardBgColor;
++    //private ColorPickerPreference mRecentCardTextColor;
++
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        addPreferencesFromResource(R.xml.slim_recent_panel_settings);
++        initializeAllPreferences();
++
++        if (screenPinningEnabled()) {
++            SystemSettingSwitchPreference pref = (SystemSettingSwitchPreference) findPreference("recent_panel_show_topmost");
++            pref.setChecked(true);
++            pref.setEnabled(false);
++        }
++
++        setHasOptionsMenu(true);
++    }
++
++    @Override
++    public Dialog onCreateDialog(int dialogId) {
++        Dialog dialog = null;
++        switch (dialogId) {
++            case DIALOG_RESET_CONFIRM:
++                AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
++                alertDialog.setTitle(R.string.recent_reset_title);
++                alertDialog.setMessage(R.string.recent_reset_confirm);
++                alertDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
++                    public void onClick(DialogInterface dialog, int id) {
++                        resetSettings();
++                    }
++                });
++                alertDialog.setNegativeButton(R.string.write_settings_off, null);
++                dialog = alertDialog.create();
++                break;
++         }
++        return dialog;
++    }
++
++    @Override
++    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
++        menu.add(0, MENU_RESET, 0, R.string.reset)
++                .setIcon(com.android.internal.R.drawable.ic_menu_refresh)
++                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
++    }
++
++    @Override
++    public boolean onOptionsItemSelected(MenuItem item) {
++        switch (item.getItemId()) {
++            case MENU_RESET:
++                showDialog(DIALOG_RESET_CONFIRM);
++                return true;
++             default:
++                return super.onContextItemSelected(item);
++        }
++    }
++
++    private void resetSettings() {
++        Settings.System.putInt(getContext().getContentResolver(),
++                Settings.System.RECENT_PANEL_BG_COLOR,
++                0x763367d6);
++        mRecentPanelBgColor.setSummary(R.string.default_string);
++        mRecentPanelBgColor.setNewPreviewColor(0x763367d6);
++    }
++
++    public boolean onPreferenceChange(Preference preference, Object newValue) {
++        if (preference == mRecentPanelLeftyMode) {
++            Settings.System.putInt(getContext().getContentResolver(),
++                    Settings.System.RECENT_PANEL_GRAVITY,
++                    ((Boolean) newValue) ? Gravity.LEFT : Gravity.RIGHT);
++            return true;
++        } else if (preference == mRecentPanelScale) {
++            Settings.System.putInt(getContext().getContentResolver(),
++                Settings.System.RECENT_PANEL_SCALE_FACTOR, Integer.valueOf(String.valueOf(newValue)));
++            return true;
++        } else if (preference == mRecentPanelExpandedMode) {
++            int value = Integer.parseInt((String) newValue);
++            Settings.System.putInt(getContext().getContentResolver(),
++                    Settings.System.RECENT_PANEL_EXPANDED_MODE, value);
++            return true;
++        } else if (preference == mRecentPanelBgColor) {
++            String hex = ColorPickerPreference.convertToARGB(
++                    Integer.valueOf(String.valueOf(newValue)));
++            if (hex.equals("#763367d6")) {
++                preference.setSummary(R.string.default_string);
++            } else {
++                preference.setSummary(hex);
++            }
++            int intHex = ColorPickerPreference.convertToColorInt(hex);
++            Settings.System.putInt(getContext().getContentResolver(),
++                    Settings.System.RECENT_PANEL_BG_COLOR,
++                    intHex);
++            return true;
++        /*} else if (preference == mRecentCardBgColor) {
++            String hex = ColorPickerPreference.convertToARGB(
++                    Integer.valueOf(String.valueOf(newValue)));
++            if (hex.equals("#00ffffff")) {
++                preference.setSummary(R.string.default_string);
++            } else {
++                preference.setSummary(hex);
++            }
++            int intHex = ColorPickerPreference.convertToColorInt(hex);
++            Settings.System.putInt(getContext().getContentResolver(),
++                    Settings.System.RECENT_CARD_BG_COLOR,
++                    intHex);
++            return true;
++        } else if (preference == mRecentCardTextColor) {
++            String hex = ColorPickerPreference.convertToARGB(
++                    Integer.valueOf(String.valueOf(newValue)));
++            if (hex.equals("#00ffffff")) {
++                preference.setSummary(R.string.default_string);
++            } else {
++                preference.setSummary(hex);
++            }
++            int intHex = ColorPickerPreference.convertToColorInt(hex);
++            Settings.System.putInt(getContext().getContentResolver(),
++                    Settings.System.RECENT_CARD_TEXT_COLOR,
++                    intHex);
++            return true;*/
++        } else if (preference == mMaxApps) {
++            Settings.System.putInt(getContext().getContentResolver(),
++                Settings.System.RECENTS_MAX_APPS, Integer.valueOf(String.valueOf(newValue)));
++            return true;
++        }
++        return false;
++    }
++
++    private boolean screenPinningEnabled() {
++        return Settings.System.getInt(getContext().getContentResolver(),
++                Settings.System.LOCK_TO_APP_ENABLED, 0) != 0;
++    }
++
++    @Override
++    public void onResume() {
++        super.onResume();
++        updateRecentPanelPreferences();
++    }
++
++    private void updateRecentPanelPreferences() {
++        final boolean recentLeftyMode = Settings.System.getInt(getContext().getContentResolver(),
++                Settings.System.RECENT_PANEL_GRAVITY, Gravity.RIGHT) == Gravity.LEFT;
++        mRecentPanelLeftyMode.setChecked(recentLeftyMode);
++
++        mMaxApps.setValue(Settings.System.getIntForUser(getContext().getContentResolver(),
++                Settings.System.RECENTS_MAX_APPS, 15,
++                UserHandle.USER_CURRENT));
++
++        final int recentScale = Settings.System.getInt(getContext().getContentResolver(),
++                Settings.System.RECENT_PANEL_SCALE_FACTOR, 100);
++        mRecentPanelScale.setValue(recentScale);
++
++        final int recentExpandedMode = Settings.System.getInt(getContext().getContentResolver(),
++                Settings.System.RECENT_PANEL_EXPANDED_MODE, 0);
++        mRecentPanelExpandedMode.setValue(recentExpandedMode + "");
++    }
++
++    private void initializeAllPreferences() {
++        mRecentPanelLeftyMode =
++                (SystemSettingSwitchPreference) findPreference(RECENT_PANEL_LEFTY_MODE);
++        mRecentPanelLeftyMode.setOnPreferenceChangeListener(this);
++
++        mMaxApps = (SeekBarPreference) findPreference(RECENTS_MAX_APPS);
++        mMaxApps.setOnPreferenceChangeListener(this);
++
++        // Recent panel background color
++        mRecentPanelBgColor =
++                (ColorPickerPreference) findPreference(RECENT_PANEL_BG_COLOR);
++        mRecentPanelBgColor.setOnPreferenceChangeListener(this);
++        final int intColor = Settings.System.getInt(getContext().getContentResolver(),
++                Settings.System.RECENT_PANEL_BG_COLOR, 0x763367d6);
++        String hexColor = String.format("#%08x", (0x00ffffff & intColor));
++        if (hexColor.equals("#763367d6")) {
++            mRecentPanelBgColor.setSummary(R.string.default_string);
++        } else {
++            mRecentPanelBgColor.setSummary(hexColor);
++        }
++        mRecentPanelBgColor.setNewPreviewColor(intColor);
++
++        // Recent card background color
++        /*mRecentCardBgColor =
++                (ColorPickerPreference) findPreference(RECENT_CARD_BG_COLOR);
++        mRecentCardBgColor.setOnPreferenceChangeListener(this);
++        final int intColorCard = Settings.System.getInt(getContext().getContentResolver(),
++                Settings.System.RECENT_CARD_BG_COLOR, 0x00ffffff);
++        String hexColorCard = String.format("#%08x", (0x00ffffff & intColorCard));
++        if (hexColorCard.equals("#00ffffff")) {
++            mRecentCardBgColor.setSummary(R.string.default_string);
++        } else {
++            mRecentCardBgColor.setSummary(hexColorCard);
++        }
++        mRecentCardBgColor.setNewPreviewColor(intColorCard);
++
++        // Recent card text color
++        mRecentCardTextColor =
++                (ColorPickerPreference) findPreference(RECENT_CARD_TEXT_COLOR);
++        mRecentCardTextColor.setOnPreferenceChangeListener(this);
++        final int intColorText = Settings.System.getInt(getContext().getContentResolver(),
++                Settings.System.RECENT_CARD_TEXT_COLOR, 0x00ffffff);
++        String hexColorText = String.format("#%08x", (0x00ffffff & intColorText));
++        if (hexColorText.equals("#00ffffff")) {
++            mRecentCardTextColor.setSummary(R.string.default_string);
++        } else {
++            mRecentCardTextColor.setSummary(hexColorText);
++        }
++        mRecentCardTextColor.setNewPreviewColor(intColorText);*/
++
++        mRecentPanelScale =
++                (SeekBarPreference) findPreference(RECENT_PANEL_SCALE);
++        mRecentPanelScale.setOnPreferenceChangeListener(this);
++
++        mRecentPanelExpandedMode =
++                (ListPreference) findPreference(RECENT_PANEL_EXPANDED_MODE);
++        mRecentPanelExpandedMode.setOnPreferenceChangeListener(this);
++    }
++
++    @Override
++    protected int getMetricsCategory() {
++        return MetricsEvent.CRDROID_SETTINGS;
++    }
++}
+-- 
+2.12.0
+
