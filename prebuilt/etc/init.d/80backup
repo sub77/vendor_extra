@@ -44,8 +44,14 @@ if [[ -f /data/system_de/0/accounts_de.db && -f /persist/backup/accounts_de.db ]
 fi
 
 if [ "$1" == "backup_wifi" ]; then mkdir -p /persist/backup;
+    if cp /persist/backup/wpa_supplicant.config /persist/backup/wpa_supplicant.config.bak &> /dev/null; then
+        log -p i -t init.d "Backup /persist/backup/wpa_supplicant.config -> /persist/backup/wpa_supplicant.config.bak"
+    fi
     if cp /data/misc/wifi/wpa_supplicant.conf /persist/backup/wpa_supplicant.conf &> /dev/null; then
         log -p i -t init.d "Backup /data/misc/wifi/wpa_supplicant.conf -> /persist/backup/wpa_supplicant.conf"
+    fi
+    if sed -n '/network/,/}/p' /data/misc/wifi/wpa_supplicant.conf > /persist/backup/wpa_supplicant.config; then
+        log -p i -t init.d "Backup accesspoints -> /persist/backup/wpa_supplicant.config"
     fi
 fi
 
