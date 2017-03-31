@@ -22,7 +22,7 @@ index ce7de9ea5..ed2849a7d 100644
 @@ -2007,6 +2007,27 @@
                  android:resource="@string/su_dashboard_summary" />
          </activity>
- 
+
 +        <activity android:name="Settings$MagiskActivity"
 +            android:label="@string/magisk_title"
 +            android:icon="@drawable/ic_settings_magisk"
@@ -86,31 +86,31 @@ index 81ec595b7..760e451e2 100644
      <string name="superuser_title">Superuser</string>
 +    <string name="magisk_title">Magisk</string>
      <string name="interface_style_title">Style</string>
- 
+
      <!-- Setting checkbox summary for displaying USB debugging notification -->
 diff --git a/src/com/android/settings/Settings.java b/src/com/android/settings/Settings.java
 index d2e20872f..f6d728274 100644
 --- a/src/com/android/settings/Settings.java
 +++ b/src/com/android/settings/Settings.java
 @@ -169,6 +169,7 @@ public class Settings extends SettingsActivity {
- 
+
      public static class SuperSUActivity extends SettingsActivity { /* empty */ }
      public static class SuperUserActivity extends SettingsActivity { /* empty */ }
 +    public static class MagiskActivity extends SettingsActivity { /* empty */ }
      public static class DevicePartsActivity extends SettingsActivity { /* empty */ }
      public static class OmniJawsSettingsActivity extends SettingsActivity { /* empty */ }
- 
+
 diff --git a/src/com/android/settings/SettingsActivity.java b/src/com/android/settings/SettingsActivity.java
 index b70655a69..51207ba9a 100644
 --- a/src/com/android/settings/SettingsActivity.java
 +++ b/src/com/android/settings/SettingsActivity.java
 @@ -236,6 +236,7 @@ public class SettingsActivity extends SettingsDrawerActivity
- 
+
      private static final String SUPERSU_FRAGMENT = "com.android.settings.SuperSU";
      private static final String SUPERUSER_FRAGMENT = "com.android.settings.SuperUser";
 +    private static final String MAGISK_FRAGMENT = "com.android.settings.Magisk";
      private static final String DEVICE_PARTS_FRAGMENT = "org.omnirom.device.DeviceParts";
- 
+
      public static final String KEY_HIDE_SUMMARY = "hide_summary";
 @@ -1062,6 +1063,13 @@ public class SettingsActivity extends SettingsDrawerActivity
              finish();
@@ -118,7 +118,7 @@ index b70655a69..51207ba9a 100644
          }
 +        if (MAGISK_FRAGMENT.equals(fragmentName)) {
 +            Intent magiskIntent = new Intent();
-+            magiskIntent.setClassName("com.topjohnwu.magisk", "com.topjohnwu.magisk.MainActivity");
++            magiskIntent.setClassName("com.topjohnwu.magisk", "com.topjohnwu.magisk.SplashActivity");
 +            startActivity(magiskIntent);
 +            finish();
 +            return null;
@@ -129,7 +129,7 @@ index b70655a69..51207ba9a 100644
 @@ -1179,6 +1187,16 @@ public class SettingsActivity extends SettingsDrawerActivity
                          Settings.SuperUserActivity.class.getName()),
                  phhSupported, isAdmin, pm);
- 
+
 +        // Magisk
 +        boolean magSupported = false;
 +        try {
@@ -143,6 +143,6 @@ index b70655a69..51207ba9a 100644
          // Omni DeviceParts
          boolean devicePartsSupported = false;
          try {
--- 
+--
 2.11.1
 
