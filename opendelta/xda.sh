@@ -49,7 +49,7 @@ sed -i 's/'$afhurl'/AFHFILE/g' op.txt
 
 sed -i 's/XDAFILE/'$XDAFILE'/g' post.txt
 sed -i 's/AFHFILE/'$afhurl'/g' post.txt
-#nano post.txt
+nano post.txt
 python update_post.py -u $my_login3 -p $my_passw3 -v 7
 cat post.txt
 sed -i 's/'$XDAFILE'/XDAFILE/g' post.txt

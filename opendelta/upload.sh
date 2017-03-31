@@ -29,7 +29,7 @@ PATH_LAST="$HOME/last/$DEVICE"
 FTP_DIR_DELTA="OmniROM/.delta/$DEVICE/"
 FTP_DIR_FULL="OmniROM/$DEVICE/"
 #VERBOSE="-v"
-#upload="true"
+upload="true"
 
 my_rc_file=~/.xdarc
 my_account1="AFH FTP Login"
@@ -116,10 +116,10 @@ lastdate=$lfyrs-$lfmon-$lfday
 lastdate2="2017-03-10"
 
 
-cd ..; cd ..; cd ..
-/home/sub77/bin/gitcomp-plain --since=2017-03-01 -10
+#cd ..; cd ..; cd ..
+#/home/sub77/bin/gitcomp-plain --since=2017-03-01 -10
 # since "$lastdate" 
 #> /tmp/changelog
-cd $HOME
+#cd $HOME
 
 exit 0

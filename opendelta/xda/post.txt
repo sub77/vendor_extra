@@ -1,5 +1,9 @@
 [B]Update[/B]
 
-[BB]  [URL="https://s.basketbuild.com/uploads/devs/sub77/OmniROM/falcon/XDAFILE"] XDAFILE [/URL]
+[BB]  [URL="https://s.basketbuild.com/uploads/devs/sub77/OmniROM/falcon/omni-7.1.1-20170320-2223-falcon-HOMEMADE.zip"] omni-7.1.1-20170320-2223-falcon-HOMEMADE.zip [/URL]
 
-[AFH] [URL="https://www.androidfilehost.com/?fid=AFHFILE"] XDAFILE [/URL]
+[AFH] [URL="https://www.androidfilehost.com/?fid=AFHFILE"] omni-7.1.1-20170320-2223-falcon-HOMEMADE.zip [/URL]
+
+* sound issues should be fixed now.
+
+
