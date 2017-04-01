@@ -1,0 +1,8 @@
+ccache_use=1
+ccache_dir=/home/sub77/ccache
+ccache_size=10
+java_home=/usr/lib/jvm/java-8-openjdk
+rom_type=bliss
+with_su=0
+#have_sdclang=0
+#path_sdclang="vendor/extra/toolchain/sdclang-3.8/bin"
