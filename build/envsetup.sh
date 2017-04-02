@@ -29,6 +29,16 @@ function func_toolchain()
   unset have_sdclang
 }
 
+function repo()
+{
+  if [ "$1" == "sync" ]; then
+    echo -e "Warning: using special sync command \n${repo_sync}\n" >&2
+    ${repo_sync}
+  else
+    /usr/bin/repo $1
+  fi
+}
+
 function func_setenv()
 {
 	if [ "${rom_type}" == "cm" ]; then
