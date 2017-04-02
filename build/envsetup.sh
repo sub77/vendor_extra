@@ -69,7 +69,7 @@ function func_setenv()
     if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then $ccmd; echo -e "\033[35m * Disabled ccache\033[0m"; export USE_CCACHE=0;
     elif [ "${ccache_dir}" == "" ]; then echo -e "\e[1;38;5;81m Error: ccache_dir not set [vendor/extra/config.sh]\033[0m\n"; else export USE_CCACHE=1; echo -e "\e[1;38;5;82m Setup ccache : \e[1;38;5;81m$ccur\033[0m of \e[1;38;5;81m$cmax\033[0m used in \e[1;38;5;81m$cdir\033[0m"; fi
 
-    echo -e "\e[1;38;5;82m\n Checking env : \e[1;38;5;81m$mypyt\033[0m | \e[1;38;5;81m$myjdk\033[0m | \e[1;38;5;81m$myrom\033[0m\n"
+    echo -e "\e[1;38;5;82m\n Checking env : \e[1;38;5;81m$mypyt\033[0m | \e[1;38;5;81m$myjdk\033[0m | \e[1;38;5;81m$myrom | ${sdclang_version}\033[0m\n"
 
 }
 

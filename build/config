@@ -5,5 +5,5 @@ java_home=/usr/lib/jvm/java-8-openjdk
 rom_type=bliss
 with_su=0
 repo_sync="/usr/bin/repo sync -c -f -j8 --force-sync --no-clone-bundle --no-tags"
-#have_sdclang=0
-#path_sdclang="vendor/extra/toolchain/sdclang-3.8/bin"
+have_sdclang=1
+path_sdclang="vendor/extra/toolchain/sdclang-3.8/bin"
