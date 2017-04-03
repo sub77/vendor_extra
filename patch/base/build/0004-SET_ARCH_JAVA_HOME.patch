@@ -1,7 +1,7 @@
-From cd0748dacae34e70bd312e7aaaa1e73e58c8b92a Mon Sep 17 00:00:00 2001
+From 056c087a134cbb86b3f8921b934abafd80c987ce Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Mon, 6 Feb 2017 18:41:04 +0100
-Subject: [PATCH 3/4] SET_ARCH_JAVA_HOME
+Subject: [PATCH 4/5] SET_ARCH_JAVA_HOME
 
 Change-Id: I06e145aa9e85371d480dbf92034616ec7e33a923
 ---
@@ -31,5 +31,5 @@ index a7f3c1e76..aac8fd791 100644
          esac
        fi
 -- 
-2.11.1
+2.12.0
 

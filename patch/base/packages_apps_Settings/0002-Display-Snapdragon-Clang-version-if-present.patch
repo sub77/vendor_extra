@@ -1,7 +1,7 @@
-From 102be58be1f422d79ead75c8b5561f6ad750d402 Mon Sep 17 00:00:00 2001
+From 468e892b330a1aa4b0e6ee7b729057221a6875d7 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Thu, 9 Mar 2017 21:43:23 +0000
-Subject: [PATCH] Display Snapdragon Clang version if present
+Subject: [PATCH 2/4] Display Snapdragon Clang version if present
 
 Change-Id: Ie9b84e5b284f71ab6bec0d6bbc2988f505644b27
 ---
@@ -84,5 +84,5 @@ index 0bedd65df..e1df58f8b 100644
          removePreferenceIfPropertyMissing(getPreferenceScreen(), KEY_EQUIPMENT_ID,
                  PROPERTY_EQUIPMENT_ID);
 -- 
-2.12.0
+2.12.1
 

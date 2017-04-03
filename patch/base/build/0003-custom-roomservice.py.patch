@@ -1,7 +1,7 @@
-From 8edb7d4f4870a2306a323a5656b4edd6975dab26 Mon Sep 17 00:00:00 2001
+From ebabb27a20ccc41a4c15831c78e77e72baa92126 Mon Sep 17 00:00:00 2001
 From: sub77 <darfpunk@gmx.de>
 Date: Fri, 23 Dec 2016 22:45:30 +0000
-Subject: [PATCH 2/4] custom roomservice.py
+Subject: [PATCH 3/5] custom roomservice.py
 
 Change-Id: Ia9de485aa5fee3e1896ffe73bf5dc139324a89bc
 Signed-off-by: sub77 <darfpunk@gmx.de>
@@ -23,5 +23,5 @@ index fe5ff49a3..91ea5e8fc 100755
  
  def parse_device_from_manifest(device):
 -- 
-2.11.1
+2.12.0
 
