@@ -1,30 +1,43 @@
-# Remove Apollo
-REMOVE_PACKAGES := \
-    Apollo
-
-PRODUCT_PACKAGES := $(filter-out $(REMOVE_PACKAGES),$(PRODUCT_PACKAGES))
+#REMOVE_PACKAGES := \
+#PRODUCT_PACKAGES := $(filter-out $(REMOVE_PACKAGES),$(PRODUCT_PACKAGES))
 
 # OMS
 PRODUCT_PACKAGES += \
     ThemeInterfacer \
     Substratum
 
-# Add prebuilt packages
+# File Manager
 PRODUCT_PACKAGES += \
-    Mixplorer \
-    ApolloMusic
+    Mixplorer
 
-# Magisk Manager
+# Music Player
+#PRODUCT_PACKAGES += \
+#    Music
+
+#PRODUCT_PACKAGES += \
+#    ApolloMusic
+
+# Magisk
 PRODUCT_PACKAGES += \
     MagiskManager
 
-# Copy Magisk zip
 PRODUCT_COPY_FILES += \
-    vendor/extra/prebuilt/common/magisk.zip:system/addon.d/magisk.zip
+    vendor/extra/prebuilt/zip/magisk.zip:system/addon.d/magisk.zip
+
+# phh's SuperUser
+PRODUCT_PACKAGES += \
+    SuperUser
+
+PRODUCT_COPY_FILES += \
+    vendor/extra/prebuilt/zip/superuser.zip:system/addon.d/superuser.zip
+
+PRODUCT_COPY_FILES += \
+   vendor/extra/prebuilt/zip/UPDATE-SuperSU.zip:system/addon.d/UPDATE-SuperSU.zip \
+   vendor/extra/prebuilt/etc/init.d/99SuperSUDaemon:system/etc/init.d/99SuperSUDaemon
 
 # su
-PRODUCT_PACKAGES += \
-    su
+#PRODUCT_PACKAGES += \
+#    su
 
 # bash
 PRODUCT_COPY_FILES += \
@@ -41,8 +54,6 @@ PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/etc/init.d/20selinux:system/etc/init.d/20selinux \
     vendor/extra/prebuilt/etc/init.d/30dropbear:system/etc/init.d/30dropbear \
     vendor/extra/prebuilt/etc/init.d/80backup:system/etc/init.d/80backup
-
-
 
 # Selinux
 PRODUCT_PROPERTY_OVERRIDES += \
