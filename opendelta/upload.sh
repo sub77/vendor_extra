@@ -70,12 +70,19 @@ getFileName() {
     echo ${1##*/}
 }
 
+getFileNameNoExt() {
+    echo ${1%.*}
+}
+
 FILE_DELTA_DELTA=$(getFileName $(ls -1 $PATH_DELTA/*.delta))
 FILE_DELTA_SIGN=$(getFileName $(ls -1 $PATH_DELTA/*.sign))
 FILE_DELTA_UPDATE=$(getFileName $(ls -1 $PATH_DELTA/*.update))
 
 FILE_FULL_MD5SUM=$(getFileName $(ls -1 $PATH_FULL/*.md5sum))
 FILE_FULL_ZIP=$(getFileName $(ls -1 $PATH_FULL/*.zip))
+FILE_FULL_LOG=$(getFileNameNoExt $(ls -1 $PATH_FULL/*.zip))
+
+mv $PATH_FULL/omni*-Changelog.txt $FILE_FULL_LOG.txt
 
 FILE_LAST=$(getFileName $(ls -1 $PATH_LAST/$FILE_MATCH))
 
@@ -95,6 +102,9 @@ if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_MD5SUM -u $my_login2:$my_passw2 $SERVE
 echo -e "\n"
 echo -n "UPLOADING $FILE_FULL_ZIP to $SERVER2 "
 if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_ZIP -u $my_login2:$my_passw2 $SERVER2/$FTP_DIR_FULL &> /dev/null; then echo -n "SUCCESS"; else echo -n "FAILED"; fi
+echo -e "\n"
+echo -n "UPLOADING $FILE_FULL_LOG to $SERVER2 "
+if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_LOG -u $my_login2:$my_passw2 $SERVER2/$FTP_DIR_FULL &> /dev/null; then echo -n "SUCCESS"; else echo -n "FAILED"; fi
 echo -e "\n"
 echo -n "UPLOADING $FILE_FULL_MD5SUM to $SERVER1 "
 if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_MD5SUM -u $my_login1:$my_passw1 $SERVER1/ &> /dev/null; then echo -n "SUCCESS"; rm $PATH_FULL/$FILE_FULL_MD5SUM; else echo -n "FAILED"; fi
