@@ -2,4 +2,11 @@
 <manifest>
   <!-- Remotes -->
   <remote name="sub" fetch="ssh://git@github.com" />
+  <!-- Vendor -->
+  <project
+   name="sub77/vendor_extra"
+   path="vendor/extra"
+   remote="sub"
+   revision="android-7.1"
+  />
 </manifest>
