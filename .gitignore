@@ -1,0 +1,16 @@
+#build/
+#caf-vendorsetup.sh
+#vendorsetup.sh
+#README.md
+charger/
+config/
+local_manifests/
+opendelta/
+overlay/
+patch/
+prebuilt/
+product.mk
+tmp/
+toolchain/
+tools/
+
