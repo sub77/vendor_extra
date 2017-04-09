@@ -33,7 +33,7 @@ cmd_getmv_out    := mv_str=$TW_OLD;
 cmd_getmvr_out   := mvr_str=$TW_NEW;
 cmd_reset_mv     := echo -ne "\nTW_DEVICE_VERSION.mk: New main version, reset build number to 1\n\n" 1>&2; build_num=1;
 cmd_incr_num     := build_num=$$(( 10\#$$build_num + 1 )); if [ $$build_num -gt 99 ]; then echo -ne "\nTW_DEVICE_VERSION.mk: ERROR: Build number will exceed 99 resetting to 01\n\n" 1>&2; build_num=1; fi;
-cmd_is_new_mv    := `echo $TW_NEW` -gt $$mv_str
+cmd_is_new_mv    := `echo $(TW_NEW)` -gt $$mv_str
 #cmd_is_new_mv    := `cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'| sed 's/\.//g'` -gt $$mv_str
 #cmd_is_new_mv    := mytest=`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9 |sed 's/[".]//g'`; $$mytest -gt $$mv_str
 #cmd_is_new_mv    := echo -ne "\nTW_DEVICE_VERSION.mk: $$testvar\n\n" 1>&2; $$testvar -gt $$mv_str
@@ -73,7 +73,8 @@ cmd_post_run += $(cmd_put_out)
 cmd_post_run += $(cmd_putmv_out)
 
 #rename command
-cmd_ren_rec_img  := echo -ne "\n\n\e[1mTW_DEVICE_VERSION.mk: \e[32m$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).img\e[0m" 1>&2;
+cmd_ren_rec_img  := echo -ne "\n\n\e[1mTW_DEVICE_VERSION.mk: " 1>&2;
+cmd_ren_rec_img  += cp -v $(ANDROID_PRODUCT_OUT)/recovery.img $(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).img 1>&2;
 #cmd_ren_rec_img  := mkdir -p /roms/upload/twrp/$(TARGET_DEVICE); cp -v "$(ANDROID_PRODUCT_OUT)/recovery.img" "/roms/upload/twrp/$(TARGET_DEVICE)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).img" &>/dev/null; echo -ne "\n\n\e[1mTW_DEVICE_VERSION.mk: \e[32m$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).img\e[0m" 1>&2;
 #cmd_ren_rec_img  += mv -v "$(ANDROID_PRODUCT_OUT)/recovery.img" "$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).img" &>/dev/null;
 #cmd_ren_rec_tar  := mkdir -p /roms/upload/twrp/$(TARGET_DEVICE); cp -v "$(ANDROID_PRODUCT_OUT)/recovery.tar" "/roms/upload/twrp/$(TARGET_DEVICE)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).tar" &>/dev/null; echo -ne "\n\n\e[1mTW_DEVICE_VERSION.mk: \e[32m$(ANDROID_PRODUCT_OUT)/twrp-$(TW_MAIN_VERSION_STR)-`cat $(TW_REC_BUILD_NUMBER_FILE)`-$(TARGET_DEVICE).tar\e[0m" 1>&2;
