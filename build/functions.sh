@@ -48,7 +48,7 @@ function set_stuff_for_environment()
     export TW_DEV_VERSION="`cat vendor/extra/vcontrol/TW_REC_BUILD_NUMBER-$MY_BUILD.TXT`"
     export TW_NEW="`cat bootable/recovery/variables.h |grep '#define TW_MAIN_VERSION_STR'|cut -d ' ' -f 9| sed 's/"//g'| sed 's/\.//g'`"
     export TW_OLD="`cat vendor/extra/vcontrol/TW_REC_MAIN_VERSION-$MY_BUILD.TXT`"
-    export TW_VERSION="$TW_MAIN_VERSION-$TW_DEV_VERSION"
+    export TW_VERSION="$TW_MAIN_VERSION-$TW_DEVICE_VERSION"
 }
 
 function func_ccache()
