@@ -1,0 +1,30 @@
+From 78bd8bbf09ffb7c97f992eb19455c67e02fc77fd Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 29 Jan 2017 13:02:20 +0000
+Subject: [PATCH 04/11] Set Vibrate
+
+Change-Id: I6209fd477976cd426a6a117901978234236ab402
+---
+ data.cpp | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/data.cpp b/data.cpp
+index ca742457..9494ef2c 100644
+--- a/data.cpp
++++ b/data.cpp
+@@ -530,9 +530,9 @@ void DataManager::SetDefaultValues()
+ 	mConst.SetValue("false", "0");
+ 
+ 	mConst.SetValue(TW_VERSION_VAR, TW_VERSION_STR);
+-	mPersist.SetValue("tw_button_vibrate", "80");
+-	mPersist.SetValue("tw_keyboard_vibrate", "40");
+-	mPersist.SetValue("tw_action_vibrate", "160");
++	mPersist.SetValue("tw_button_vibrate", "0");
++	mPersist.SetValue("tw_keyboard_vibrate", "0");
++	mPersist.SetValue("tw_action_vibrate", "0");
+ 
+ 	TWPartition *store = PartitionManager.Get_Default_Storage_Partition();
+ 	if (store)
+-- 
+2.11.1
+
