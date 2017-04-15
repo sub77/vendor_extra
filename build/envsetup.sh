@@ -57,9 +57,8 @@ function func_toolchain()
   if [ "${have_sdclang}" == "1" ]; then
     sdclang_version=`strings vendor/extra/toolchain/sdclang-3.8/bin/clang|grep Snapdragon|cut -d '"' -s -f 2|cut -b 18-51|sed 's/ /_/g'`
     export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; export SDCLANG_LTO_DEFS=$sdclang_lto_defs; export SDCLANG_VERSION=$sdclang_version;
-    else unset SDCLANG; unset SDCLANG_PATH
+    else unset SDCLANG; unset SDCLANG_PATH; unset have_sdclang; unset sdclang_version
   fi
-  unset have_sdclang
 }
 
 function repo()
@@ -102,10 +101,10 @@ function func_setenv()
   func_su
   func_toolchain
 
-    if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then $ccmd; echo -e "\033[35m * Disabled ccache\033[0m"; export USE_CCACHE=0;
+    if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then echo -e "\033[35m * Disabled ccache\033[0m"; export USE_CCACHE=0;
     elif [ "${ccache_dir}" == "" ]; then echo -e "\e[1;38;5;81m Error: ccache_dir not set [vendor/extra/config.sh]\033[0m\n"; else export USE_CCACHE=1; echo -e "\e[1;38;5;82m Setup ccache : \e[1;38;5;81m$ccur\033[0m of \e[1;38;5;81m$cmax\033[0m used in \e[1;38;5;81m$cdir\033[0m"; fi
 
-    echo -e "\e[1;38;5;82m\n Checking env : \e[1;38;5;81m$mypyt\033[0m | \e[1;38;5;81m$myjdk\033[0m | \e[1;38;5;81m$myrom | ${sdclang_version}\033[0m\n"
+    echo -e "\e[1;38;5;82m\n Checking env : \e[1;38;5;81m$mypyt\033[0m | \e[1;38;5;81m$myjdk\033[0m | \e[1;38;5;81m$myrom\033[0m | \e[1;38;5;81m${sdclang_version}\033[0m\n"
 
 }
 
@@ -218,7 +217,9 @@ function addcompletions()
     dir="sdk/bash_completion"
     if [ -d ${dir} ]; then
         for f in `/bin/ls ${dir}/[a-z]*.bash 2> /dev/null`; do
-            echo -e "\e[1;38;5;242m including $f\033[0m\n"
+            echo -e $CL_GRN
+            #echo -e " including $f"
+            echo -e $CL_RST
             . $f
         done
     fi
@@ -234,8 +235,8 @@ function analyse_log()
     echo -e $CL_RED
     grep " error" ./compile.log
     grep "forbidden warning" ./compile.log
-    grep "warning:" ./compile.log
-    grep "deprecated:" ./compile.log
+    grep "note: previous definition is here" ./compile.log
+    grep "fatal error:" ./compile.log
     echo -e $CL_RST
 
     echo -e "***************************************************"
@@ -243,8 +244,10 @@ function analyse_log()
 
 function repo()
 {
-  if [ "$1" == "sync" ]; then
-    echo -e "$CL_RED\nWarning: using special sync command \n${repo_sync}\n" >&2
+  if [ "$1" == "sync" ] && [ "${rom_type}" == "bliss" ] ; then
+    echo -e $CL_GRN
+    echo -e "Warning: using special sync command ${repo_sync}" >&2
+    echo -e $CL_RST
     ${repo_sync}
   else
     /usr/bin/repo $1
@@ -254,12 +257,21 @@ function repo()
 function mka_log()
 {
   alias mka='mka'
-  if [[ "$1" == "bootimage" || "$1" == "xbacon" ]]; then
-    echo -e "$CL_GRN\nLogging to ./compile.log\n$CL_RST" >&2
+  if [[ "$1" == "bootimage" || "$1" == "b" ]]; then
+    echo -e $CL_GRN
+    echo -e "Logging to ./compile.log" >&2
+    echo -e $CL_RST
     mka bootimage 2>&1 | tee ./compile.log; analyse_log
-  elif [[ "$1" == "bootimagec" || "$1" == "cxbacon" ]]; then
-    echo -e "$CL_GRN\nLogging to ./compile.log\n$CL_RST" >&2
-    mka clobber; sleep 3; mka bootimage 2>&1 | tee ./compile.log; analyse_log
+  elif [[ "$1" == "bacon" || "$1" == "ba" ]]; then
+    echo -e $CL_GRN
+    echo -e "Logging to ./compile.log" >&2
+    echo -e $CL_RST
+    mka bacon 2>&1 | tee ./compile.log; analyse_log
+  elif [[ "$1" == "clobber" || "$1" == "c" ]]; then
+    echo -e $CL_GRN
+    echo -e "Logging off" >&2
+    echo -e $CL_RST
+    mka clobber
   else
     mka $1
   fi
