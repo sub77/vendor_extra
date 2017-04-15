@@ -1,10 +1,15 @@
 ccache_use=1
 ccache_dir=/home/sub77/ccache
-ccache_size=20
+ccache_size=10
 java_home=/usr/lib/jvm/java-8-openjdk
-rom_type=omni
+rom_type=bliss
 with_su=0
 repo_sync="/usr/bin/repo sync -c -f -j8 --force-sync --no-clone-bundle --no-tags"
 have_sdclang=0
 path_sdclang="vendor/extra/toolchain/sdclang-3.8/bin"
 sdclang_lto_defs="vendor/extra/toolchain/sdllvm-lto-defs.mk"
+system_kati=1
+inject_lunch=1
+inject_tmux=1
+build_colors=1
+export_home=1

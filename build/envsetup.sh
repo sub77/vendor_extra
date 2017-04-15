@@ -1,6 +1,6 @@
 function func_config()
 {
-  echo -e "\033[32m Sourcing vendor/extra/build/config\033[0m\n"
+  echo -e ${ylw}"including vendor/extra/build/config"${txtrst}
   source "vendor/extra/build/config"
   func_setenv
 }
@@ -34,6 +34,7 @@ if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
     cyarev=${rev}$(tput setaf 6)
     ylwrev=${rev}$(tput setaf 3)
     blurev=${rev}$(tput setaf 4)
+    ab="\n"
 fi
 }
 
@@ -50,6 +51,16 @@ function func_ccache()
   csiz=$(ccache -s|grep 'cache size')
   ccur=$(echo $csiz|cut -d ' ' -f 3-4)
   cmax=$(echo $csiz|cut -d ' ' -f 8-9)
+
+  if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then
+    echo -e ${ylw}" * Disabled ccache"${txtrst};
+    export USE_CCACHE=0;
+  elif [ "${ccache_dir}" == "" ]; then
+    echo -e ${red}"Error: ccache_dir not set [vendor/extra/config]"${txtrst};
+  else
+  export USE_CCACHE=1;
+  echo -e ${ylw}"Setup ccache : \e[1;38;5;81m$ccur\033[0m of \e[1;38;5;81m$cmax\033[0m used in \e[1;38;5;81m$cdir"${txtrst};
+  fi
 }
 
 function func_toolchain()
@@ -71,6 +82,84 @@ function repo()
   fi
 }
 
+function func_inject()
+{
+injection=$(echo -e'
+function luxx {\n
+    if [ "$DEVICE" == "" ]; then\n
+        if [ "$1" != "" ]; then\n
+            DEVICE="$1"\n
+        fi\n
+    fi\n
+    if [ "$DEVICE" == "" ]; then\n
+        echo -e "Abort: no device\n Try luxx falcon" >&2\n
+    else\n
+        if [ ! "$myrom" ]; then\n
+            source build/envsetup.sh\n
+        fi\n
+        lunch "$myrom"_"$1"-userdebug\n
+    fi\n
+}\n
+export -f luxx\n
+')
+
+    if [ "${OLD_HOME}" ]; then
+        userhome=${OLD_HOME}
+    else
+        userhome=${HOME}
+    fi
+
+    if ! cat ${userhome}/.bashrc | grep -e "function luxx" &>/dev/null; then
+        echo $injection >> ${userhome}/.bashrc
+        source ${userhome}/.bashrc
+        echo -e "... lunch function injected to .bashrc!"
+    fi
+    inject_luxx="luxx"
+}
+
+function func_inject_tmux()
+{
+injection_exitd=$(echo -e'
+function exitd() {\n
+    if [[ -z $TMUX ]]; then\n
+        builtin exit\n
+    else\n
+        /usr/bin/tmux detach\n
+    fi\n
+}\n
+export -f exitd\n
+')
+
+injection_exitk=$(echo -e'
+function exitk() {\n
+    if [[ ! -z $TMUX ]]; then\n
+        builtin exit\n
+    fi\n
+}\n
+export -f exitk\n
+')
+
+    if [ "${OLD_HOME}" ]; then
+        userhome=${OLD_HOME}
+    else
+        userhome=${HOME}
+    fi
+
+    if ! cat ${userhome}/.bashrc | grep -e "function exitd" &>/dev/null; then
+        echo $injection_exitd >> ${userhome}/.bashrc
+        source ${userhome}/.bashrc
+        echo -e "... tmux exitd function injected to .bashrc!"
+    fi
+    if ! cat ${userhome}/.bashrc | grep -e "function exitk" &>/dev/null; then
+        echo $injection_exitk >> ${userhome}/.bashrc
+        source ${userhome}/.bashrc
+        echo -e "... tmux exitk function injected to .bashrc!"
+    fi
+    inject_tmux="tmux"
+    alias exit='exitd'
+}
+
+
 function func_setenv()
 {
     if [ "${rom_type}" == "cm" ]; then
@@ -84,28 +173,69 @@ function func_setenv()
     else echo -e "\e[1;38;5;81m * Error: rom_type not set [vendor/extra/build/config]\033[0m\n";
     fi
 
+    if [ "${system_kati}" == "1" ]; then
+        system_kati="system kati"; export USE_SYSTEM_KATI="true";
+    fi
+
+    if [ "${inject_lunch}" == "1" ]; then
+        func_inject
+    fi
+
+    if [ "${inject_tmux}" == "1" ]; then
+        func_inject_tmux
+    fi
+
+    if [ "${build_colors}" == "1" ]; then
+        build_colors="colored"
+        export BUILD_WITH_COLORS="1"
+    else
+        build_colors=""
+        export BUILD_WITH_COLORS="0"
+    fi
+
     mypyt=$(python --version 2>&1)
     myjdk=$(java -version 2>&1 | sed q | cut -d ' ' -f 1,3 | sed 's/["]//g')
 
     rom_dir_full=`pwd`
     rom_dir=`basename $rom_dir_full`
 
+    export MY_TMUX="$rom_type"
+
     export REPO_HOME=$rom_dir_full
     export MY_ROM=$rom_dir
     export PATH="$jdk_dir:$PATH"
+    rom_dir_len=$(expr length "$rom_dir_full")
 
-    alias mka='mka_log'
+    $(/usr/bin/tmux set-environment rom_dir_full $rom_dir_full)
+    $(/usr/bin/tmux set-environment rom_dir_len $rom_dir_len)
+    $(/usr/bin/tmux set-environment rom_dir $rom_dir)
+    $(/usr/bin/tmux set-environment my_rom $rom_dir)
+
+    if [ "${export_home}" == "1" ]; then
+        export_home="HOME: ${rom_dir_full}"
+        OLD_HOME=$HOME
+        NEW_HOME=$rom_dir_full;
+        export HOME=$NEW_HOME
+        #$(/usr/bin/tmux set-environment OLD_HOME $OLD_HOME)
+        #$(/usr/bin/tmux set-environment NEW_HOME $NEW_HOME)
+        #$(/usr/bin/tmux set-environment HOME $HOME)
+    fi
 
   func_colors
   func_ccache
   func_su
   func_toolchain
 
-    if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then echo -e "\033[35m * Disabled ccache\033[0m"; export USE_CCACHE=0;
-    elif [ "${ccache_dir}" == "" ]; then echo -e "\e[1;38;5;81m Error: ccache_dir not set [vendor/extra/config.sh]\033[0m\n"; else export USE_CCACHE=1; echo -e "\e[1;38;5;82m Setup ccache : \e[1;38;5;81m$ccur\033[0m of \e[1;38;5;81m$cmax\033[0m used in \e[1;38;5;81m$cdir\033[0m"; fi
+    echo -e ${ylw}"Checking env : \e[1;38;5;81m$mypyt\033[0m | \e[1;38;5;81m$myjdk\033[0m | \e[1;38;5;81m$myrom\033[0m | \e[1;38;5;81m${system_kati}\033[0m | \e[1;38;5;81m${export_home}\033[0m | \e[1;38;5;81m${inject_luxx} ${inject_tmux}\033[0m | \e[1;38;5;81m${sdclang_version}"${txtrst};
 
-    echo -e "\e[1;38;5;82m\n Checking env : \e[1;38;5;81m$mypyt\033[0m | \e[1;38;5;81m$myjdk\033[0m | \e[1;38;5;81m$myrom\033[0m | \e[1;38;5;81m${sdclang_version}\033[0m\n"
+}
 
+function afterlunch()
+{
+    if [ -n "$TARGET_PRODUCT" ]; then
+        TARGET_PRODUCT=$TARGET_PRODUCT
+        $(/usr/bin/tmux set-environment TARGET_PRODUCT $TARGET_PRODUCT)
+    fi
 }
 
 function patchcommontree()
@@ -136,7 +266,7 @@ function set_stuff_for_environment()
     setpaths
     set_sequence_number
   if [ "${rom_type}" ]; then
-    #func_setenv
+    afterlunch
     patchcommontree
     patchdevicetree
   fi
@@ -217,9 +347,9 @@ function addcompletions()
     dir="sdk/bash_completion"
     if [ -d ${dir} ]; then
         for f in `/bin/ls ${dir}/[a-z]*.bash 2> /dev/null`; do
-            echo -e $CL_GRN
+            echo -e ${CL_GRN}
             #echo -e " including $f"
-            echo -e $CL_RST
+            echo -e ${CL_RST}
             . $f
         done
     fi
@@ -232,12 +362,15 @@ function analyse_log()
     echo -e "${CL_GRN}Check for compile errors:"
 
     #cd $ROOT_PATH
-    echo -e $CL_RED
+    echo -e ${CL_RED}
     grep " error" ./compile.log
     grep "forbidden warning" ./compile.log
     grep "note: previous definition is here" ./compile.log
     grep "fatal error:" ./compile.log
-    echo -e $CL_RST
+    grep "terminate" ./compile.log
+    grep "ninja: error:" ./compile.log
+    grep "needed" ./compile.log
+    echo -e ${CL_RST}
 
     echo -e "***************************************************"
 }
@@ -245,37 +378,50 @@ function analyse_log()
 function repo()
 {
   if [ "$1" == "sync" ] && [ "${rom_type}" == "bliss" ] ; then
-    echo -e $CL_GRN
+    echo -e ${CL_GRN}
     echo -e "Warning: using special sync command ${repo_sync}" >&2
-    echo -e $CL_RST
+    echo -e ${CL_RST}
     ${repo_sync}
   else
     /usr/bin/repo $1
   fi
 }
 
+# Make using all available CPUs
+function mka() {
+    case `uname -s` in
+        Darwin)
+            make -j `sysctl hw.ncpu|cut -d" " -f2` "$@"
+            ;;
+        *)
+            schedtool -B -n 1 -e ionice -n 1 make -j `cat /proc/cpuinfo | grep "^processor" | wc -l` "$@" | tee ./compile.log
+            #DISPLAY=:0 ssh -Y grill uxterm -geometry 20x2 -cr black -fg grey -bg black -e 'ssh arch tail -f $(echo cat /roms/bliss/compile.log) | cut -c 1-18'
+            analyse_log
+            ;;
+    esac
+}
+
 function mka_log()
 {
-  alias mka='mka'
   if [[ "$1" == "bootimage" || "$1" == "b" ]]; then
-    echo -e $CL_GRN
+    echo -e ${CL_GRN}
     echo -e "Logging to ./compile.log" >&2
-    echo -e $CL_RST
-    mka bootimage 2>&1 | tee ./compile.log; analyse_log
+    echo -e ${CL_RST}
+    alias mka='mka'; mka bootimage 2>&1 | tee ./compile.log; alias mka='mka_log'; analyse_log
   elif [[ "$1" == "bacon" || "$1" == "ba" ]]; then
-    echo -e $CL_GRN
+    echo -e ${CL_GRN}
     echo -e "Logging to ./compile.log" >&2
-    echo -e $CL_RST
-    mka bacon 2>&1 | tee ./compile.log; analyse_log
+    echo -e ${CL_RST}
+    make -j8 bacon 2>&1 | tee ./compile.log
+    analyse_log
   elif [[ "$1" == "clobber" || "$1" == "c" ]]; then
-    echo -e $CL_GRN
+    echo -e ${CL_GRN}
     echo -e "Logging off" >&2
-    echo -e $CL_RST
-    mka clobber
+    echo -e ${CL_RST}
+    make -j8 clobber
   else
-    mka $1
+    make -j8 $1
   fi
-  alias mka='mka_log'
 }
 
 unset -f
