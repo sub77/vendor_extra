@@ -1,6 +1,7 @@
 function func_config()
 {
   echo -e ${ylw}"including vendor/extra/build/config"${txtrst}
+  unset repo_sync
   source "vendor/extra/build/config"
   func_setenv
 }
@@ -69,16 +70,6 @@ function func_toolchain()
     sdclang_version=`strings vendor/extra/toolchain/sdclang-3.8/bin/clang|grep Snapdragon|cut -d '"' -s -f 2|cut -b 18-51|sed 's/ /_/g'`
     export SDCLANG="true"; export SDCLANG_PATH=$path_sdclang; export SDCLANG_LTO_DEFS=$sdclang_lto_defs; export SDCLANG_VERSION=$sdclang_version;
     else unset SDCLANG; unset SDCLANG_PATH; unset have_sdclang; unset sdclang_version
-  fi
-}
-
-function repo()
-{
-  if [ "$1" == "sync" ]; then
-    echo -e "Warning: using special sync command \n${repo_sync}\n" >&2
-    ${repo_sync}
-  else
-    /usr/bin/repo $1
   fi
 }
 
@@ -213,12 +204,12 @@ function func_setenv()
 
     if [ "${export_home}" == "1" ]; then
         export_home="HOME: ${rom_dir_full}"
-        OLD_HOME=$HOME
+        if [ ! -n "$OLD_HOME" ]; then
+            export OLD_HOME=$HOME
+        fi
         NEW_HOME=$rom_dir_full;
         export HOME=$NEW_HOME
-        #$(/usr/bin/tmux set-environment OLD_HOME $OLD_HOME)
-        #$(/usr/bin/tmux set-environment NEW_HOME $NEW_HOME)
-        #$(/usr/bin/tmux set-environment HOME $HOME)
+        ln -sf ${OLD_HOME}/.gitconfig ${NEW_HOME}/.gitconfig
     fi
 
   func_colors
@@ -377,11 +368,25 @@ function analyse_log()
 
 function repo()
 {
-  if [ "$1" == "sync" ] && [ "${rom_type}" == "bliss" ] ; then
-    echo -e ${CL_GRN}
-    echo -e "Warning: using special sync command ${repo_sync}" >&2
-    echo -e ${CL_RST}
-    ${repo_sync}
+  if [ "$1" == "sync" ] && [ -n "$repo_sync" ]; then
+    read -r -p "check for uncommited changes? [y/N] " response
+        response=${response,,}    # tolower
+        if [[ "$response" =~ ^(yes|y)$ ]]; then
+            repo diff | grep project
+            if [[ "$?" == "0" ]]; then
+                read -r -p "found uncommited changes, abort repo sync? [y/N] " response
+                response=${response,,}    # tolower
+                if [[ "$response" =~ ^(yes|y)$ ]]; then
+                    echo "sync aborted"
+                else
+                    echo -e "Warning: using special sync command \n${repo_sync}\n" >&2
+                    ${repo_sync}
+                fi
+            fi
+        else
+            echo -e "Warning: using special sync command \n${repo_sync}\n" >&2
+            ${repo_sync}
+        fi
   else
     /usr/bin/repo $1
   fi
