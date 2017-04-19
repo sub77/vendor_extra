@@ -1,6 +1,6 @@
 function func_config()
 {
-  echo -e ${ylw}"including vendor/extra/build/config"${txtrst}
+  echo -e ${txtbld}"including vendor/extra/build/config"${rst}${pa}
   unset repo_sync
   source "vendor/extra/build/config"
   func_setenv
@@ -22,6 +22,7 @@ if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
     blu=$(tput setaf 4)             #  blue
     ppl=$(tput setaf 5)             #  purple
     cya=$(tput setaf 6)             #  cyan
+    rst=$(tput sgr0)                #  Reset
     txtbld=$(tput bold)             #  Bold
     bldred=${txtbld}$(tput setaf 1) #  red
     bldgrn=${txtbld}$(tput setaf 2) #  green
@@ -35,7 +36,8 @@ if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
     cyarev=${rev}$(tput setaf 6)
     ylwrev=${rev}$(tput setaf 3)
     blurev=${rev}$(tput setaf 4)
-    ab="\n"
+    pa="\n"
+    par=$(tput sgr0)${pa}
 fi
 }
 
@@ -60,7 +62,7 @@ function func_ccache()
     echo -e ${red}"Error: ccache_dir not set [vendor/extra/config]"${txtrst};
   else
   export USE_CCACHE=1;
-  echo -e ${ylw}"Setup ccache : \e[1;38;5;81m$ccur\033[0m of \e[1;38;5;81m$cmax\033[0m used in \e[1;38;5;81m$cdir"${txtrst};
+  echo -e ${txtbld}"Setup ccache : ${rst}${cya}$ccur$ /${cya} $cmax$ ($cdir)"${rst};
   fi
 }
 
@@ -217,8 +219,7 @@ function func_setenv()
   func_su
   func_toolchain
 
-    echo -e ${ylw}"Checking env : \e[1;38;5;81m$mypyt\033[0m | \e[1;38;5;81m$myjdk\033[0m | \e[1;38;5;81m$myrom\033[0m | \e[1;38;5;81m${system_kati}\033[0m | \e[1;38;5;81m${export_home}\033[0m | \e[1;38;5;81m${inject_luxx} ${inject_tmux}\033[0m | \e[1;38;5;81m${sdclang_version}"${txtrst};
-
+    echo -e ${txtbld}"Checking env : ${rst}${cya}$mypyt${rst} | ${cya}$myjdk${rst} | ${cya}$myrom${rst} | ${cya}${system_kati}${rst} | ${cya}${export_home}${rst} | ${cya}${inject_luxx} ${inject_tmux}${rst} | ${cya}${sdclang_version}"${txtrst};
 }
 
 function afterlunch()
@@ -229,22 +230,35 @@ function afterlunch()
     fi
 }
 
-function patchcommontree()
+function patchbase()
 {
-    for f in `test -d vendor && find -L vendor/extra/patch/*/ -maxdepth 1 -name 'apply.sh' 2> /dev/null`
+    for f in `test -d vendor && find -L vendor/extra/patch/base/ -maxdepth 1 -name 'apply.sh' 2> /dev/null`
     do
-        echo -e "\e[1;38;5;242m\nPatching $f\033[0m"
+        echo -e ${cya}"applying base patches"${par}
+        pvar=$(dirname $f)
         . $f
     done
     unset f
 }
 
-function patchdevicetree()
+function patchcommon()
+{
+    for f in `test -d vendor && find -L vendor/extra/patch/common/ -maxdepth 1 -name 'apply.sh' 2> /dev/null`
+    do
+        echo -e ${cya}${pa}"applying common patches"${par}
+        pvar=$(dirname $f)
+        . $f
+    done
+    unset f
+}
+
+function patchdevice()
 {
     for f in `test -d device && find -L device/*/$MY_BUILD/patch -maxdepth 4 -name 'apply.sh' 2> /dev/null | sort` \
              `test -d vendor && find -L vendor/extra/patch/device/$MY_BUILD -maxdepth 1 -name 'apply.sh' 2> /dev/null | sort`
     do
-        echo -e "\e[1;38;5;242m\nPatching $f\033[0m"
+        echo -e ${cya}${pa}"applying device patches"${par}
+        pvar=$(dirname $f)
         . $f
     done
     unset f
@@ -258,8 +272,9 @@ function set_stuff_for_environment()
     set_sequence_number
   if [ "${rom_type}" ]; then
     afterlunch
-    patchcommontree
-    patchdevicetree
+    patchbase
+    patchcommon
+    patchdevice
   fi
   if [[ "${rom_type}" == "bliss" || "${rom_type}" == "omni" ]]; then
     export ANDROID_BUILD_TOP=$(gettop)
