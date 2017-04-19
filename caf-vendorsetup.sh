@@ -1,2 +1,2 @@
-echo -e "\033[32m\n Sourcing vendor/extra/build/envsetup.sh\033[0m\n"
+echo -e ${rst}"including vendor/extra/build/envsetup.sh"${rst}
 . vendor/extra/build/envsetup.sh
