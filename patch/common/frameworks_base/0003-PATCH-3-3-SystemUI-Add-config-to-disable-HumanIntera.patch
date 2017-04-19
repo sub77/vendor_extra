@@ -1,17 +1,9 @@
-From f853a30056a28f64db906a656b6962fa6bbddb62 Mon Sep 17 00:00:00 2001
+From 9a13b646c2cf90048d55a34101f3597584552910 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Fri, 10 Mar 2017 18:42:28 +0000
-Subject: [PATCH 3/3] SystemUI: Add config to disable
- HumanInteractionClassifier
+Date: Sat, 15 Apr 2017 10:37:15 +0000
+Subject: [PATCH] SystemUI: Add config to disable HumanInteractionClassifier
 
-On some devices HumaInteractionClassifier is more of a nuisance than a
-useful feature by making the screen hard to unlock at random. Add a
-config that allows to define the default state of HIC, which currently
-can only be disabled running the following command:
-
-  settings put global HIC_enable 0
-
-Change-Id: I75132129b1fba3709345d2eca622b099869eac0b
+Change-Id: Ibc788c7933341bb5903e8ad5975c8faf4c7f8f0b
 ---
  core/res/res/values/config.xml                                     | 3 +++
  core/res/res/values/custom_symbols.xml                             | 3 +++
@@ -19,22 +11,22 @@ Change-Id: I75132129b1fba3709345d2eca622b099869eac0b
  3 files changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/core/res/res/values/config.xml b/core/res/res/values/config.xml
-index 4c4ee901dfd..4910a588824 100644
+index 7c2b65b0d6f..23e5482b7be 100644
 --- a/core/res/res/values/config.xml
 +++ b/core/res/res/values/config.xml
-@@ -2588,4 +2588,7 @@
-     <bool name="config_sim_phonebook_batch_operation">true</bool>
-     <bool name="config_volte_preferred">false</bool>
+@@ -2719,4 +2719,7 @@
+          is installed. -->
+     <bool name="config_permissionReviewRequired">false</bool>
  
 +    <!-- Whether to enable HumanInteractionController by default -->
 +    <bool name="config_HICEnabledDefault">true</bool>
 +
  </resources>
 diff --git a/core/res/res/values/custom_symbols.xml b/core/res/res/values/custom_symbols.xml
-index 63261ee709e..a7d0608b546 100644
+index f320c0a0957..b561abe4f7e 100644
 --- a/core/res/res/values/custom_symbols.xml
 +++ b/core/res/res/values/custom_symbols.xml
-@@ -118,4 +118,7 @@
+@@ -129,4 +129,7 @@
    <java-symbol type="string" name="operator_config_url" />
    <java-symbol type="string" name="operator_ping_url" />
    <java-symbol type="bool" name="config_zero_balance_operator"/>
@@ -70,5 +62,5 @@ index 851ab771882..fe615f9105c 100644
  
      public void setType(int type) {
 -- 
-2.11.1
+2.12.2
 
