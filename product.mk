@@ -55,6 +55,10 @@ PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/etc/init.d/30dropbear:system/etc/init.d/30dropbear \
     vendor/extra/prebuilt/etc/init.d/80backup:system/etc/init.d/80backup
 
+# OmniROM prop
+PRODUCT_COPY_FILES += \
+    vendor/extra/prebuilt/common/omnirom.prop:system/addon.d/omnirom.prop
+
 # Selinux
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.build.selinux=1
