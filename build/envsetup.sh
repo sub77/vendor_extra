@@ -6,6 +6,70 @@ function func_config()
   func_setenv
 }
 
+apply () {
+  filename=$1
+  shift
+  patch_args=$*
+
+  gotSubject=no
+  msg=""
+
+  unset debug
+  debug=&>/dev/null
+
+  cat $filename | while read line; do
+  if [ "$line" == "---" ]; then
+
+    # do some dry-tests to figure out if fuzzy or binary is needed to patch
+    if patch $patch_args -p1 < $filename --dry-run | grep -e 'applied' ${debug}; then
+        echo -e $(tput setaf 6)"Previously applied patch detected!"${rst}
+        #break
+    #fi
+    elif patch $patch_args -p1 < $filename --dry-run --quiet | grep -e 'binary' ${debug}; then
+        if git am -3 $filename &>/dev/null; then echo -e $(tput setaf 6)"patched (bin)!"${rst}; patched="1";fi
+    elif patch $patch_args -p1 < $filename --dry-run --quiet ${debug}; then
+        if patch $patch_args -p1 < $filename --version-control=never ${debug}; then echo -e $(tput setaf 6)"patched (nor)!"${rst}; patched="1";fi
+    elif ! patch $patch_args -p1 < $filename --dry-run --quiet ${debug}; then
+        if patch $patch_args -p1 < $filename --version-control=never -F3 ${debug}; then echo -e $(tput setaf 6)"patched (fuz)!"${rst}; patched="1";fi
+    fi
+    if [ "$patched" == "1" ]; then
+      git commit -a -m "$msg" ${debug}
+        fi
+      break
+    fi
+    if [ "$gotSubject" == "no" ]; then
+      hdr=(${line//:/ })
+      if [ "${hdr[0]}" == "Subject" ]; then
+        gotSubject=yes
+        msg="${hdr[@]:3}"
+      fi
+    else
+      msg="$msg $line"
+    fi
+  done
+}
+
+function func_alias()
+{
+# GIT
+alias gs='git status'
+alias gl='git log --oneline'
+alias gr='git remote -v'
+alias gb='git branch -a'
+alias rb='repo branches'
+alias gcp='git cherry-pick --signoff'
+alias gcpa='git cherry-pick --abort'
+alias gcpc='git add --all && git cherry-pick --continue'
+alias gres='git reset'
+alias gd='git diff'
+alias gca='git commit --amend'
+alias gprr='git push $1 "$2:$2" -f'
+# TMUX
+alias tml='tmux ls'
+alias tmk='tmux kill-session'
+alias tmux="env TERM=xterm-256color tmux"
+}
+
 function func_colors()
 {
 if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
@@ -48,12 +112,16 @@ function func_su()
 
 function func_ccache()
 {
-  export CCACHE_DIR=$ccache_dir/$rom_dir
+  if [[ ! -f $(which ccache &>/dev/null) ]]; then
+    alias ccache='./prebuilts/misc/linux-x86/ccache/ccache'
+  fi
+
   ccmd=$(ccache -M $ccache_size 2>&1)
   cdir=$(ccache -s|grep directory|cut -d '/' -f 3-10)
   csiz=$(ccache -s|grep 'cache size')
   ccur=$(echo $csiz|cut -d ' ' -f 3-4)
   cmax=$(echo $csiz|cut -d ' ' -f 8-9)
+
 
   if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then
     echo -e ${ylw}" * Disabled ccache"${txtrst};
@@ -61,8 +129,10 @@ function func_ccache()
   elif [ "${ccache_dir}" == "" ]; then
     echo -e ${red}"Error: ccache_dir not set [vendor/extra/config]"${txtrst};
   else
-  export USE_CCACHE=1;
-  echo -e ${txtbld}"Setup ccache : ${rst}${cya}$ccur$ /${cya} $cmax$ ($cdir)"${rst};
+    export USE_CCACHE=1;
+    export CCACHE_DIR=${ccache_dir}/${rom_dir};
+    mkdir -p $CCACHE_DIR
+    echo -e ${txtbld}"Setup ccache : ${rst}${cya}$ccur /${cya} $cmax ($cdir)"${rst};
   fi
 }
 
@@ -174,8 +244,12 @@ function func_setenv()
         func_inject
     fi
 
-    if [ "${inject_tmux}" == "1" ]; then
+    if [[ "${use_tmux}" == "1" && "${inject_tmux}" == "1" ]]; then
         func_inject_tmux
+    fi
+
+    if [ "${set_alias}" == "1" ]; then
+        func_alias
     fi
 
     if [ "${build_colors}" == "1" ]; then
@@ -192,8 +266,8 @@ function func_setenv()
     rom_dir_full=`pwd`
     rom_dir=`basename $rom_dir_full`
 
+  if [ "${use_tmux}" == "1" ]; then
     export MY_TMUX="$rom_type"
-
     export REPO_HOME=$rom_dir_full
     export MY_ROM=$rom_dir
     export PATH="$jdk_dir:$PATH"
@@ -213,6 +287,7 @@ function func_setenv()
         export HOME=$NEW_HOME
         ln -sf ${OLD_HOME}/.gitconfig ${NEW_HOME}/.gitconfig
     fi
+  fi
 
   func_colors
   func_ccache
@@ -226,16 +301,18 @@ function afterlunch()
 {
     if [ -n "$TARGET_PRODUCT" ]; then
         TARGET_PRODUCT=$TARGET_PRODUCT
+        if [ "${use_tmux}" == "1" ]; then
         $(/usr/bin/tmux set-environment TARGET_PRODUCT $TARGET_PRODUCT)
+        fi
     fi
 }
 
 function patchbase()
 {
-    for f in `test -d vendor && find -L vendor/extra/patch/base/ -maxdepth 1 -name 'apply.sh' 2> /dev/null`
+    for f in `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
     do
-        echo -e ${cya}"applying base patches"${par}
-        pvar=$(dirname $f)
+        echo -e ${cya}"applying base patches"${rst}
+        pvar=$(dirname $f)/base
         . $f
     done
     unset f
@@ -243,10 +320,10 @@ function patchbase()
 
 function patchcommon()
 {
-    for f in `test -d vendor && find -L vendor/extra/patch/common/ -maxdepth 1 -name 'apply.sh' 2> /dev/null`
+    for f in `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
     do
-        echo -e ${cya}${pa}"applying common patches"${par}
-        pvar=$(dirname $f)
+        echo -e ${cya}${pa}"applying common patches"${rst}
+        pvar=$(dirname $f)/common
         . $f
     done
     unset f
@@ -255,10 +332,10 @@ function patchcommon()
 function patchdevice()
 {
     for f in `test -d device && find -L device/*/$MY_BUILD/patch -maxdepth 4 -name 'apply.sh' 2> /dev/null | sort` \
-             `test -d vendor && find -L vendor/extra/patch/device/$MY_BUILD -maxdepth 1 -name 'apply.sh' 2> /dev/null | sort`
+             `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null | sort`
     do
-        echo -e ${cya}${pa}"applying device patches"${par}
-        pvar=$(dirname $f)
+        echo -e ${cya}${pa}"applying $MY_BUILD patches"${rst}
+        pvar=$(dirname $f)/device/$MY_BUILD
         . $f
     done
     unset f
@@ -403,7 +480,7 @@ function repo()
             ${repo_sync}
         fi
   else
-    /usr/bin/repo $1
+    /home/sub77/bin/repo $1
   fi
 }
 
