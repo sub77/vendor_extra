@@ -23,12 +23,15 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
           commit_id=$(git format-patch -1 --stdout $commit_hash |git patch-id|cut -d ' ' -f 1)
           patch_id=$(git patch-id < $absolute_patch_path|cut -d ' ' -f 1)
           if [ "$commit_id" = "$patch_id" ]; then
-            echo -en ${bldgrn}"...patched"${par}
+              echo -en ${bldgrn}"Previously applied patch detected!"${par}
           else
-            echo -e ${CL_RED}"PATCH MISMATCH!: done"${CL_RST}
-            git am $absolute_patch_path
+    	  if patch $patch_args -p1 < $filename --dry-run | grep -e 'applied' &>/dev/null; then
+          	echo -en ${bldgrn}"Previously applied patch detected!"${par}
+			else
+            git am $absolute_patch_path || git am --abort
           fi
-      else
+      fi
+    else
         echo "Unable to get commit hash for '$title'! Something went wrong!"
         sleep 20
     fi
@@ -42,6 +45,7 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
                     if ! git am -3 $absolute_patch_path; then
                         echo -e ${CL_RED}"Failed -3, aborting git am"${CL_RST}
                         git am --abort
+                        apply $absolute_patch_path $*
                     fi
         fi
     fi

@@ -2,8 +2,6 @@ From 8912bbb2cee063c74e233c0442c3f1fb9cffb54d Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Sat, 15 Apr 2017 10:33:09 +0000
 Subject: [PATCH 2/4] Display Snapdragon Clang version if present
-
-Change-Id: Iff94adc89f0239dc50a334c9d59057b0034d7c0b
 ---
  res/values/custom_strings.xml                    |  4 ++++
  res/xml/device_info_settings.xml                 | 10 +++++++++-

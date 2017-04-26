@@ -2,10 +2,6 @@ From 1add926e3046430d31ac4cbbc1a10dd9cc550b34 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Fri, 10 Mar 2017 18:07:57 +0000
 Subject: [PATCH 1/4] Add Magisk to settings dashboard
-
-*used root icon from phh superuser
-
-Change-Id: I09fb2c0c183de9bc7b401a3cb2eb8b90ec131921
 ---
  AndroidManifest.xml                            | 21 +++++++++++++++++++++
  res/drawable/ic_settings_magisk.xml            | 23 +++++++++++++++++++++++

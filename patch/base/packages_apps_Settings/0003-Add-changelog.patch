@@ -2,8 +2,6 @@ From de5799e372cf4c8207ac6c68a1f457aee2d57942 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Fri, 31 Mar 2017 10:10:03 +0000
 Subject: [PATCH 3/4] Add changelog
-
-Change-Id: I7c91cfcea5ef14d383864ae8c1b6dc9288b442c6
 ---
  res/values/custom_strings.xml           |  5 ++
  res/xml/device_info_settings.xml        |  7 +++

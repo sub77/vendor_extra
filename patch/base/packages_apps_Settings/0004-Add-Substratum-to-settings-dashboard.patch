@@ -2,8 +2,6 @@ From 0074f9560222d46099ed776ff5cfd3d51eb77d09 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Sun, 2 Apr 2017 00:39:30 +0000
 Subject: [PATCH 4/4] Add Substratum to settings dashboard
-
-Change-Id: I9c6f906dabc37cb89bddd58dad411540fdf1687b
 ---
  AndroidManifest.xml                            | 20 ++++++++++++++++++++
  res/drawable/ic_settings_substratum.xml        | 26 ++++++++++++++++++++++++++
