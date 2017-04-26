@@ -6,7 +6,7 @@ function func_config()
   func_setenv
 }
 
-apply () {
+apply-test () {
   filename=$1
   shift
   patch_args=$*
@@ -20,6 +20,16 @@ apply () {
   cat $filename | while read line; do
   if [ "$line" == "---" ]; then
 
+    title=$(sed -rn "s/Subject: (\[[^]]+] *)*//p" "$patch")
+    absolute_patch_path="$patches_path/$patch"
+    repo_to_patch="$(if dirname $patch|grep -q /; then dirname $patch; else dirname $patch |tr '_' '/'|tr '+' '_'; fi)"
+
+    printf "%-45s %-75s %s" "${bldblu}$repo_to_patch${rst}" "$title"
+
+        if [ ! -d $build_root/$repo_to_patch ] ; then
+                echo "$repo_to_patch NOT EXIST! Go away and check your manifests. Skipping this patch."
+                continue
+        fi
     # do some dry-tests to figure out if fuzzy or binary is needed to patch
     if patch $patch_args -p1 < $filename --dry-run | grep -e 'applied' ${debug}; then
         echo -e $(tput setaf 6)"Previously applied patch detected!"${rst}
@@ -33,9 +43,37 @@ apply () {
         if patch $patch_args -p1 < $filename --version-control=never -F3 ${debug}; then echo -e $(tput setaf 6)"patched (fuz)!"${rst}; patched="1";fi
     fi
     if [ "$patched" == "1" ]; then
-      git commit -a -m "$msg" ${debug}
+      git add --all; git commit -a -m "$msg" ${debug}
         fi
       break
+    fi
+    if [ "$gotSubject" == "no" ]; then
+      hdr=(${line//:/ })
+      if [ "${hdr[0]}" == "Subject" ]; then
+        gotSubject=yes
+        msg="${hdr[@]:3}"
+      fi
+    else
+      msg="$msg $line"
+    fi
+  done
+}
+
+apply () {
+  filename=$1
+  shift
+  patch_args=$*
+
+  gotSubject=no
+  msg=""
+
+  cat $filename | while read line; do
+  if [ "$line" == "---" ]; then
+
+
+    patch $patch_args -p1 < $filename --no-backup-if-mismatch --version-control=never -F3 &>/dev/null
+    git commit -a -m "$msg" &>/dev/null
+    break
     fi
     if [ "$gotSubject" == "no" ]; then
       hdr=(${line//:/ })
