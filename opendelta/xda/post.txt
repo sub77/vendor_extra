@@ -1,8 +1,8 @@
 [B]Update[/B]
 
-[BB]  [URL="down"] omni-7.1.2-20170415-1752-falcon-HOMEMADE.zip [/URL] -> DOWN - NO OTA UPDATE
+[BB]  [URL="https://basketbuild.com/filedl/devs?dev=sub77&dl=sub77/OmniROM/falcon/omni-7.1.2-20170521-0022-falcon-HOMEMADE.zip"] omni-7.1.2-20170521-0022-falcon-HOMEMADE.zip [/URL]
 
-[AFH] [URL="https://www.androidfilehost.com/?fid=AFHFILE"] omni-7.1.1-20170331-1410-falcon-HOMEMADE.zip [/URL]
+[AFH] [URL="https://www.androidfilehost.com/?fid=AFHFILE"] omni-7.1.2-20170521-0022-falcon-HOMEMADE.zip [/URL]
 
 [NOTES]
 

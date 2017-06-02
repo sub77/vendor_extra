@@ -28,7 +28,7 @@ PATH_FULL="$HOME/publish/full/$DEVICE"
 PATH_LAST="$HOME/last/$DEVICE"
 FTP_DIR_DELTA="OmniROM/.delta/$DEVICE/"
 FTP_DIR_FULL="OmniROM/$DEVICE/"
-#VERBOSE="-v"
+VERBOSE="-v"
 upload="true"
 
 my_rc_file=~/.xdarc
