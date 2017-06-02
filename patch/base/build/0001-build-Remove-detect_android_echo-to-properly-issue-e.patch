@@ -1,0 +1,28 @@
+From 89d3f2036eb9980e4a8d933fb706494b3616a062 Mon Sep 17 00:00:00 2001
+From: hamaji <shinichiro.hamaji@gmail.com>
+Date: Wed, 24 Aug 2016 11:36:27 -0400
+Subject: [PATCH] build: Remove --detect_android_echo to properly issue echo
+ commands
+
+Change-Id: Id027158cf9cfb5b5f8449ad4b9351a2379925add
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ core/ninja.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/ninja.mk b/core/ninja.mk
+index 56016f7ce..a8e0c9494 100644
+--- a/core/ninja.mk
++++ b/core/ninja.mk
+@@ -170,7 +170,7 @@ ifeq ($(KATI_EMULATE_FIND),false)
+ endif
+ $(KATI_BUILD_NINJA): $(KATI) $(MAKEPARALLEL) $(DUMMY_OUT_MKS) $(SOONG_ANDROID_MK) FORCE
+ 	@echo Running kati to generate build$(KATI_NINJA_SUFFIX).ninja...
+-	+$(hide) $(KATI_MAKEPARALLEL) $(KATI) --ninja --ninja_dir=$(OUT_DIR) --ninja_suffix=$(KATI_NINJA_SUFFIX) --regen --ignore_dirty=$(OUT_DIR)/% --no_ignore_dirty=$(SOONG_ANDROID_MK) --ignore_optional_include=$(OUT_DIR)/%.P --detect_android_echo $(KATI_FIND_EMULATOR) -f build/core/main.mk $(KATI_GOALS) --gen_all_targets BUILDING_WITH_NINJA=true SOONG_ANDROID_MK=$(SOONG_ANDROID_MK)
++	+$(hide) $(KATI_MAKEPARALLEL) $(KATI) --ninja --ninja_dir=$(OUT_DIR) --ninja_suffix=$(KATI_NINJA_SUFFIX) --regen --ignore_dirty=$(OUT_DIR)/% --no_ignore_dirty=$(SOONG_ANDROID_MK) --ignore_optional_include=$(OUT_DIR)/%.P $(KATI_FIND_EMULATOR) -f build/core/main.mk $(KATI_GOALS) --gen_all_targets BUILDING_WITH_NINJA=true SOONG_ANDROID_MK=$(SOONG_ANDROID_MK)
+ 
+ ifneq ($(USE_SOONG_FOR_KATI),true)
+ KATI_CXX := $(CLANG_CXX) $(CLANG_HOST_GLOBAL_CFLAGS) $(CLANG_HOST_GLOBAL_CPPFLAGS)
+-- 
+2.13.0
+
