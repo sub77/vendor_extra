@@ -1,0 +1,990 @@
+From 5d14f0fd38dd6d32e8cbe487cb2fded0959459bc Mon Sep 17 00:00:00 2001
+From: Carlo Savignano <carlosavignano@aospa.co>
+Date: Sun, 27 Dec 2015 14:21:19 +0100
+Subject: [PATCH] settings: Add buttons customization fragment
+
+* Add fragment for buttons control.
+* Includes various key codes within customizable double tap and
+  long press behaviors (menu, back, home, app switch, assist and
+  camera), swap alert slider order, toggle navigation bar with
+  hw keys and viceversa on devices with hw navigation keys and
+  button backlight.
+
+TODO> Implement index provider.
+
+Change-Id: Id966ec0b3ffea6b2409cb8a006f8efd699821507
+Signed-off-by: Carlo Savignano <carlosavignano@aospa.co>
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ AndroidManifest.xml                                |  39 ++
+ res/drawable/ic_settings_buttons.xml               |  27 +-
+ res/values/custom_arrays.xml                       |  25 +
+ res/values/custom_strings.xml                      |  31 ++
+ res/xml/buttons_settings.xml                       | 177 +++++++
+ src/com/android/settings/ButtonsSettings.java      | 518 +++++++++++++++++++++
+ src/com/android/settings/Settings.java             |   3 +
+ src/com/android/settings/SettingsActivity.java     |   2 +
+ src/com/android/settings/search/Ranking.java       |   3 +
+ .../settings/search/SearchIndexableResources.java  |   8 +
+ 10 files changed, 827 insertions(+), 6 deletions(-)
+ create mode 100644 res/xml/buttons_settings.xml
+ create mode 100644 src/com/android/settings/ButtonsSettings.java
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index f3a098535..a8ecd6868 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -3137,6 +3137,45 @@
+             <meta-data android:name="com.android.settings.summary"
+                        android:resource="@string/gesture_preference_summary" />
+         </activity>
++      
++        <!-- Buttons settings activity -->
++        <activity android:name="Settings$ButtonsSettingsActivity"
++                android:label="@string/buttons_pref_title"
++                android:icon="@drawable/ic_settings_buttons"
++                android:taskAffinity=""
++                android:exported="true">
++            <intent-filter android:priority="1">
++                <action android:name="com.android.settings.BUTTONS_SETTINGS" />
++                <action android:name="android.settings.BUTTONS_SETTINGS" />
++                <category android:name="android.intent.category.DEFAULT" />
++            </intent-filter>
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++                <category android:name="android.intent.category.DEFAULT" />
++                <category android:name="android.intent.category.VOICE_LAUNCH" />
++                <category android:name="com.android.settings.SHORTCUT" />
++            </intent-filter>
++            <intent-filter android:priority="7">
++                <action android:name="com.android.settings.action.SETTINGS" />
++            </intent-filter>
++            <meta-data android:name="com.android.settings.category"
++                       android:value="com.android.settings.category.device" />
++            <meta-data android:name="com.android.settings.FRAGMENT_CLASS"
++                android:value="com.android.settings.ButtonsSettings" />
++            <meta-data android:name="com.android.settings.summary"
++                       android:resource="@string/buttons_pref_summary" />
++            <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
++                android:value="true" />
++        </activity>
++
++        <!-- Keep compatibility with old shortcuts. -->
++        <activity-alias android:name="ButtonsSettings"
++                android:label="@string/buttons_pref_title"
++                android:exported="true"
++                android:targetActivity="Settings$ButtonsSettingsActivity">
++            <meta-data android:name="com.android.settings.FRAGMENT_CLASS"
++                android:value="com.android.settings.ButtonsSettings" />
++        </activity-alias>
+ 
+         <activity android:name="BackupSettingsActivity"
+                   android:label="@string/privacy_settings_title"
+diff --git a/res/drawable/ic_settings_buttons.xml b/res/drawable/ic_settings_buttons.xml
+index 9d939cbaa..2fddf6743 100644
+--- a/res/drawable/ic_settings_buttons.xml
++++ b/res/drawable/ic_settings_buttons.xml
+@@ -14,12 +14,27 @@
+     limitations under the License.
+ -->
+ <vector xmlns:android="http://schemas.android.com/apk/res/android"
+-        android:width="48.0dp"
+-        android:height="48.0dp"
+-        android:viewportWidth="24.0"
+-        android:viewportHeight="24.0"
+-        android:tint="?android:attr/colorAccent">
++    xmlns:app="http://schemas.android.com/apk/res-auto"
++    android:width="24dp"
++    android:height="24dp"
++    android:viewportWidth="24"
++    android:viewportHeight="24"
++    android:tint="?android:attr/colorAccent">
++
+     <path
++        android:name="Icon"
+         android:fillColor="#FFFFFFFF"
+-        android:pathData="M6,16H18V18H6V16M6,13V15H2V13H6M7,15V13H10V15H7M11,15V13H13V15H11M14,15V13H17V15H14M18,15V13H22V15H18M2,10H5V12H2V10M19,12V10H22V12H19M18,12H16V10H18V12M8,12H6V10H8V12M12,12H9V10H12V12M15,12H13V10H15V12M2,9V7H4V9H2M5,9V7H7V9H5M8,9V7H10V9H8M11,9V7H13V9H11M14,9V7H16V9H14M17,9V7H22V9H17Z" />
++        android:pathData="M12,5 C13.1045695,5 14,4.1045695 14,3 C14,1.8954305 13.1045695,1 12,1
++                C10.8954305,1 10,1.8954305 10,3 C10,4.1045695 10.8954305,5 12,5 Z M12,23
++                C13.1045695,23 14,22.1045695 14,21 C14,19.8954305 13.1045695,19 12,19
++                C10.8954305,19 10,19.8954305 10,21 C10,22.1045695 10.8954305,23 12,23 Z M12,11
++                C13.1045695,11 14,10.1045695 14,9 C14,7.8954305 13.1045695,7 12,7 C10.8954305,7
++                10,7.8954305 10,9 C10,10.1045695 10.8954305,11 12,11 Z M6,11 C7.1045695,11
++                8,10.1045695 8,9 C8,7.8954305 7.1045695,7 6,7 C4.8954305,7 4,7.8954305 4,9
++                C4,10.1045695 4.8954305,11 6,11 Z M6,17 C7.1045695,17 8,16.1045695 8,15
++                C8,13.8954305 7.1045695,13 6,13 C4.8954305,13 4,13.8954305 4,15 C4,16.1045695
++                4.8954305,17 6,17 Z M18,11 C19.1045695,11 20,10.1045695 20,9 C20,7.8954305
++                19.1045695,7 18,7 C16.8954305,7 16,7.8954305 16,9 C16,10.1045695 16.8954305,11
++                18,11 Z M12,17 C13.1045695,17 14,16.1045695 14,15 C14,13.8954305 13.1045695,13
++                12,13 C10.8954305,13 10,13.8954305 10,15 C10,16.1045695 10.8954305,17 12,17 Z" />
+ </vector>
+diff --git a/res/values/custom_arrays.xml b/res/values/custom_arrays.xml
+index 9c793d40e..9014c22c0 100644
+--- a/res/values/custom_arrays.xml
++++ b/res/values/custom_arrays.xml
+@@ -27,4 +27,29 @@
+         <item>@string/security_settings_fingerprint_sensor_location_right</item>
+     </string-array>
+ 
++    <!-- Buttons -->
++    <string-array name="action_entries" translatable="false">
++        <item>@string/action_nothing</item>
++        <item>@string/action_menu</item>
++        <item>@string/action_app_switch</item>
++        <item>@string/action_search</item>
++        <item>@string/action_voice_search</item>
++        <item>@string/action_in_app_search</item>
++        <item>@string/action_launch_camera</item>
++        <item>@string/action_last_app</item>
++        <item>@string/action_splitscreen</item>
++    </string-array>
++
++    <string-array name="action_values" translatable="false">
++        <item>0</item>
++        <item>1</item>
++        <item>2</item>
++        <item>3</item>
++        <item>4</item>
++        <item>5</item>
++        <item>6</item>
++        <item>7</item>
++        <item>8</item>
++    </string-array>
++
+ </resources>
+diff --git a/res/values/custom_strings.xml b/res/values/custom_strings.xml
+index 98e9b0064..39d5624c6 100644
+--- a/res/values/custom_strings.xml
++++ b/res/values/custom_strings.xml
+@@ -125,4 +125,35 @@
+     <string name="changelog_title">Changelog</string>
+     <string name="changelog_summary">View recent changes in ROM</string>
+     <string name="changelog_error">Unable to load changelog</string>
++
++    <!-- Buttons -->
++    <string name="buttons_pref_title">Buttons</string>
++    <string name="buttons_pref_summary">Customize your device keys and buttons</string>
++    <string name="enable_navigation_bar_title">Enable software keys</string>
++    <string name="enable_navigation_bar_summary">Enable on-screen navigation keys</string>
++    <string name="swap_navigation_keys_title">Swap keys</string>
++    <string name="swap_navigation_keys_summary">Swap back and recents keys</string>
++    <string name="swap_slider_order_title">Swap slider</string>
++    <string name="swap_slider_order_summary">Swap the alert slider modes order</string>
++    <string name="hardware_brightness_keys_title">Backlight</string>
++    <string name="hardware_brightness_keys_summary">Enable navigation keys backlight</string>
++    <string name="home_key_title">Home button</string>
++    <string name="back_key_title">Back button</string>
++    <string name="menu_key_title">Menu button</string>
++    <string name="assist_key_title">Assist button</string>
++    <string name="app_switch_key_title">Recents button</string>
++    <string name="camera_key_title">Camera button</string>
++    <string name="short_press_title">Short press action</string>
++    <string name="long_press_title">Long press action</string>
++    <string name="double_tap_title">Double tap action</string>
++    <string name="action_nothing">No action</string>
++    <string name="action_menu">Open/close menu</string>
++    <string name="action_app_switch">Recents</string>
++    <string name="action_search">Search assistant</string>
++    <string name="action_voice_search">Voice search</string>
++    <string name="action_in_app_search">In-app search</string>
++    <string name="action_launch_camera">Open camera</string>
++    <string name="action_last_app">Launch last app</string>
++    <string name="action_splitscreen">Splitscreen</string>
++
+ </resources>
+diff --git a/res/xml/buttons_settings.xml b/res/xml/buttons_settings.xml
+new file mode 100644
+index 000000000..e33112294
+--- /dev/null
++++ b/res/xml/buttons_settings.xml
+@@ -0,0 +1,177 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright 2013,2014,2015, The ParanoidAndroid Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
++        xmlns:settings="http://schemas.android.com/apk/res/com.android.settings">
++
++    <SwitchPreference
++        android:key="navigation_bar"
++        android:title="@string/enable_navigation_bar_title"
++        android:summary="@string/enable_navigation_bar_summary"
++        android:defaultValue="false" />
++
++    <SwitchPreference
++        android:key="swap_navigation_keys"
++        android:title="@string/swap_navigation_keys_title"
++        android:summary="@string/swap_navigation_keys_summary"
++        android:persistent="false" />
++
++    <SwitchPreference
++        android:key="swap_slider_order"
++        android:title="@string/swap_slider_order_title"
++        android:summary="@string/swap_slider_order_summary"
++        android:persistent="false" />
++
++    <SwitchPreference
++        android:key="button_brightness"
++        android:title="@string/hardware_brightness_keys_title"
++        android:summary="@string/hardware_brightness_keys_summary"
++        android:persistent="false" />
++
++    <PreferenceCategory
++        android:key="home_key"
++        android:title="@string/home_key_title" >
++
++        <ListPreference
++            android:key="home_key_long_press"
++            android:dialogTitle="@string/long_press_title"
++            android:title="@string/long_press_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++        <ListPreference
++            android:key="home_key_double_tap"
++            android:dialogTitle="@string/double_tap_title"
++            android:title="@string/double_tap_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="back_key"
++        android:title="@string/back_key_title" >
++
++    <ListPreference
++        android:key="back_key_long_press"
++        android:dialogTitle="@string/long_press_title"
++        android:title="@string/long_press_title"
++        android:entries="@array/action_entries"
++        android:entryValues="@array/action_values"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="back_key_double_tap"
++        android:dialogTitle="@string/double_tap_title"
++        android:title="@string/double_tap_title"
++        android:entries="@array/action_entries"
++        android:entryValues="@array/action_values"
++        android:persistent="false" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="menu_key"
++        android:title="@string/menu_key_title" >
++
++        <ListPreference
++            android:key="menu_key_long_press"
++            android:dialogTitle="@string/long_press_title"
++            android:title="@string/long_press_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++        <ListPreference
++            android:key="menu_key_double_tap"
++            android:dialogTitle="@string/double_tap_title"
++            android:title="@string/double_tap_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="assist_key"
++        android:title="@string/assist_key_title" >
++
++        <ListPreference
++            android:key="assist_key_long_press"
++            android:dialogTitle="@string/long_press_title"
++            android:title="@string/long_press_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++        <ListPreference
++            android:key="assist_key_double_tap"
++            android:dialogTitle="@string/double_tap_title"
++            android:title="@string/double_tap_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="app_switch_key"
++        android:title="@string/app_switch_key_title" >
++
++        <ListPreference
++            android:key="app_switch_key_long_press"
++            android:dialogTitle="@string/long_press_title"
++            android:title="@string/long_press_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++        <ListPreference
++            android:key="app_switch_key_double_tap"
++            android:dialogTitle="@string/double_tap_title"
++            android:title="@string/double_tap_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="camera_key"
++        android:title="@string/camera_key_title">
++
++        <ListPreference
++            android:key="camera_key_long_press"
++            android:dialogTitle="@string/long_press_title"
++            android:title="@string/long_press_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++        <ListPreference
++            android:key="camera_key_double_tap"
++            android:dialogTitle="@string/double_tap_title"
++            android:title="@string/double_tap_title"
++            android:entries="@array/action_entries"
++            android:entryValues="@array/action_values"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++</PreferenceScreen>
+diff --git a/src/com/android/settings/ButtonsSettings.java b/src/com/android/settings/ButtonsSettings.java
+new file mode 100644
+index 000000000..fad26a598
+--- /dev/null
++++ b/src/com/android/settings/ButtonsSettings.java
+@@ -0,0 +1,518 @@
++/*
++ * Copyright (C) 2014 ParanoidAndroid Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings;
++
++import android.content.ContentResolver;
++import android.content.Context;
++import android.content.res.Resources;
++import android.os.Bundle;
++import android.os.RemoteException;
++import android.os.Handler;
++import android.os.UserHandle;
++import android.os.UserManager;
++import android.provider.SearchIndexableResource;
++import android.provider.Settings;
++import android.support.v7.preference.Preference;
++import android.support.v7.preference.ListPreference;
++import android.support.v7.preference.Preference.OnPreferenceChangeListener;
++import android.support.v7.preference.PreferenceCategory;
++import android.support.v7.preference.PreferenceScreen;
++import android.support.v14.preference.SwitchPreference;
++import android.util.Log;
++import android.text.TextUtils;
++
++import com.android.settings.R;
++import com.android.settings.search.BaseSearchIndexProvider;
++import com.android.settings.search.Indexable;
++import com.android.settings.SettingsPreferenceFragment;
++import com.android.settings.Utils;
++
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.List;
++
++public class ButtonsSettings extends SettingsPreferenceFragment implements
++        OnPreferenceChangeListener, Indexable {
++    private static final String TAG = "SystemSettings";
++
++    private static final int KEY_MASK_HOME = 0x01;
++    private static final int KEY_MASK_BACK = 0x02;
++    private static final int KEY_MASK_MENU = 0x04;
++    private static final int KEY_MASK_ASSIST = 0x08;
++    private static final int KEY_MASK_APP_SWITCH = 0x10;
++    private static final int KEY_MASK_CAMERA = 0x20;
++
++    private static final String KEY_NAVIGATION_BAR         = "navigation_bar";
++    private static final String KEY_SWAP_NAVIGATION_KEYS   = "swap_navigation_keys";
++    private static final String KEY_SWAP_SLIDER_ORDER      = "swap_slider_order";
++    private static final String KEY_BUTTON_BRIGHTNESS      = "button_brightness";
++
++    private static final String KEY_HOME_LONG_PRESS        = "home_key_long_press";
++    private static final String KEY_HOME_DOUBLE_TAP        = "home_key_double_tap";
++    private static final String KEY_BACK_LONG_PRESS        = "back_key_long_press";
++    private static final String KEY_BACK_DOUBLE_TAP        = "back_key_double_tap";
++    private static final String KEY_MENU_LONG_PRESS        = "menu_key_long_press";
++    private static final String KEY_MENU_DOUBLE_TAP        = "menu_key_double_tap";
++    private static final String KEY_ASSIST_LONG_PRESS      = "assist_key_long_press";
++    private static final String KEY_ASSIST_DOUBLE_TAP      = "assist_key_double_tap";
++    private static final String KEY_APP_SWITCH_LONG_PRESS  = "app_switch_key_long_press";
++    private static final String KEY_APP_SWITCH_DOUBLE_TAP  = "app_switch_key_double_tap";
++    private static final String KEY_CAMERA_LONG_PRESS      = "camera_key_long_press";
++    private static final String KEY_CAMERA_DOUBLE_TAP      = "camera_key_double_tap";
++
++    private static final String KEY_CATEGORY_HOME          = "home_key";
++    private static final String KEY_CATEGORY_BACK          = "back_key";
++    private static final String KEY_CATEGORY_MENU          = "menu_key";
++    private static final String KEY_CATEGORY_ASSIST        = "assist_key";
++    private static final String KEY_CATEGORY_APP_SWITCH    = "app_switch_key";
++    private static final String KEY_CATEGORY_CAMERA        = "camera_key";
++
++    private static final String EMPTY_STRING = "";
++
++    private Handler mHandler;
++
++    private int mDeviceHardwareKeys;
++
++    private boolean mHasAlertSlider = false;
++
++    private ListPreference mHomeLongPressAction;
++    private ListPreference mHomeDoubleTapAction;
++    private ListPreference mBackLongPressAction;
++    private ListPreference mBackDoubleTapAction;
++    private ListPreference mMenuLongPressAction;
++    private ListPreference mMenuDoubleTapAction;
++    private ListPreference mAssistLongPressAction;
++    private ListPreference mAssistDoubleTapAction;
++    private ListPreference mAppSwitchLongPressAction;
++    private ListPreference mAppSwitchDoubleTapAction;
++    private ListPreference mCameraLongPressAction;
++    private ListPreference mCameraDoubleTapAction;
++
++    private SwitchPreference mNavigationBar;
++    private SwitchPreference mSwapNavigationkeys;
++    private SwitchPreference mSwapSliderOrder;
++    private SwitchPreference mButtonBrightness;
++
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++
++        addPreferencesFromResource(R.xml.buttons_settings);
++
++        mHandler = new Handler();
++
++        final Resources res = getActivity().getResources();
++        final ContentResolver resolver = getActivity().getContentResolver();
++        final PreferenceScreen prefScreen = getPreferenceScreen();
++
++        mDeviceHardwareKeys = res.getInteger(
++                com.android.internal.R.integer.config_deviceHardwareKeys);
++
++        mHasAlertSlider = res.getBoolean(com.android.internal.R.bool.config_hasAlertSlider)
++                && !TextUtils.isEmpty(res.getString(com.android.internal.R.string.alert_slider_state_path))
++                && !TextUtils.isEmpty(res.getString(com.android.internal.R.string.alert_slider_uevent_match_path));
++
++        /* Navigation Bar */
++        mNavigationBar = (SwitchPreference) findPreference(KEY_NAVIGATION_BAR);
++        if (mNavigationBar != null) {
++            if (mDeviceHardwareKeys != 0) {
++                mNavigationBar.setOnPreferenceChangeListener(this);
++            } else {
++                mNavigationBar = null;
++                removePreference(KEY_NAVIGATION_BAR);
++            }
++        }
++
++        /* Swap Navigation Keys */
++        mSwapNavigationkeys = (SwitchPreference) findPreference(KEY_SWAP_NAVIGATION_KEYS);
++        if (mSwapNavigationkeys != null) {
++            mSwapNavigationkeys.setOnPreferenceChangeListener(this);
++        }
++
++        /* Swap Slider order */
++        mSwapSliderOrder = (SwitchPreference) findPreference(KEY_SWAP_SLIDER_ORDER);
++        if (mSwapSliderOrder != null) {
++            if (mHasAlertSlider) {
++                mSwapSliderOrder.setOnPreferenceChangeListener(this);
++            } else {
++                mSwapSliderOrder = null;
++                removePreference(KEY_SWAP_SLIDER_ORDER);
++            }
++        }
++
++        /* Button Brightness */
++        mButtonBrightness = (SwitchPreference) findPreference(KEY_BUTTON_BRIGHTNESS);
++        if (mButtonBrightness != null) {
++            int defaultButtonBrightness = res.getInteger(
++                    com.android.internal.R.integer.config_buttonBrightnessSettingDefault);
++            if (defaultButtonBrightness > 0) {
++                mButtonBrightness.setOnPreferenceChangeListener(this);
++            } else {
++                prefScreen.removePreference(mButtonBrightness);
++            }
++        }
++
++        /* Home Key Long Press */
++        int defaultLongPressOnHomeKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_longPressOnHomeKeyBehavior);
++        int longPressOnHomeKeyBehavior = Settings.System.getIntForUser(resolver,
++                    Settings.System.KEY_HOME_LONG_PRESS_ACTION,
++                    defaultLongPressOnHomeKeyBehavior,
++                    UserHandle.USER_CURRENT);
++        mHomeLongPressAction = initActionList(KEY_HOME_LONG_PRESS, longPressOnHomeKeyBehavior);
++
++        /* Home Key Double Tap */
++        int defaultDoubleTapOnHomeKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_doubleTapOnHomeKeyBehavior);
++        int doubleTapOnHomeKeyBehavior = Settings.System.getIntForUser(resolver,
++                    Settings.System.KEY_HOME_DOUBLE_TAP_ACTION,
++                    defaultDoubleTapOnHomeKeyBehavior,
++                    UserHandle.USER_CURRENT);
++        mHomeDoubleTapAction = initActionList(KEY_HOME_DOUBLE_TAP, doubleTapOnHomeKeyBehavior);
++
++        /* Back Key Long Press */
++        int defaultLongPressOnBackKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_longPressOnBackKeyBehavior);
++        int longPressOnBackKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_BACK_LONG_PRESS_ACTION,
++                defaultLongPressOnBackKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mBackLongPressAction = initActionList(KEY_BACK_LONG_PRESS, longPressOnBackKeyBehavior);
++
++        /* Back Key Double Tap */
++        int defaultDoubleTapOnBackKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_doubleTapOnBackKeyBehavior);
++        int doubleTapOnBackKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_BACK_DOUBLE_TAP_ACTION,
++                defaultDoubleTapOnBackKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mBackDoubleTapAction = initActionList(KEY_BACK_DOUBLE_TAP, doubleTapOnBackKeyBehavior);
++
++        /* Menu Key Long Press */
++        int defaultLongPressOnMenuKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_longPressOnMenuKeyBehavior);
++        int longPressOnMenuKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_MENU_LONG_PRESS_ACTION,
++                defaultLongPressOnMenuKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mMenuLongPressAction = initActionList(KEY_MENU_LONG_PRESS, longPressOnMenuKeyBehavior);
++
++        /* Menu Key Double Tap */
++        int defaultDoubleTapOnMenuKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_doubleTapOnMenuKeyBehavior);
++        int doubleTapOnMenuKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_MENU_DOUBLE_TAP_ACTION,
++                defaultDoubleTapOnMenuKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mMenuDoubleTapAction = initActionList(KEY_MENU_DOUBLE_TAP, doubleTapOnMenuKeyBehavior);
++
++        /* Assist Key Long Press */
++        int defaultLongPressOnAssistKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_longPressOnAssistKeyBehavior);
++        int longPressOnAssistKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_ASSIST_LONG_PRESS_ACTION,
++                defaultLongPressOnAssistKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mAssistLongPressAction = initActionList(KEY_ASSIST_LONG_PRESS, longPressOnAssistKeyBehavior);
++
++        /* Assist Key Double Tap */
++        int defaultDoubleTapOnAssistKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_doubleTapOnAssistKeyBehavior);
++        int doubleTapOnAssistKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_ASSIST_DOUBLE_TAP_ACTION,
++                defaultDoubleTapOnAssistKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mAssistDoubleTapAction = initActionList(KEY_ASSIST_DOUBLE_TAP, doubleTapOnAssistKeyBehavior);
++
++        /* AppSwitch Key Long Press */
++        int defaultLongPressOnAppSwitchKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_longPressOnAppSwitchKeyBehavior);
++        int longPressOnAppSwitchKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_APP_SWITCH_LONG_PRESS_ACTION,
++                defaultLongPressOnAppSwitchKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mAppSwitchLongPressAction = initActionList(KEY_APP_SWITCH_LONG_PRESS, longPressOnAppSwitchKeyBehavior);
++
++        /* AppSwitch Key Double Tap */
++        int defaultDoubleTapOnAppSwitchKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_doubleTapOnAppSwitchKeyBehavior);
++        int doubleTapOnAppSwitchKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_APP_SWITCH_DOUBLE_TAP_ACTION,
++                defaultDoubleTapOnAppSwitchKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mAppSwitchDoubleTapAction = initActionList(KEY_APP_SWITCH_DOUBLE_TAP, doubleTapOnAppSwitchKeyBehavior);
++
++        /* Camera Key Long Press */
++        int defaultLongPressOnCameraKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_longPressOnCameraKeyBehavior);
++        int longPressOnCameraKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_CAMERA_LONG_PRESS_ACTION,
++                defaultLongPressOnCameraKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mCameraLongPressAction = initActionList(KEY_CAMERA_LONG_PRESS, longPressOnCameraKeyBehavior);
++
++        /* Camera Key Double Tap */
++        int defaultDoubleTapOnCameraKeyBehavior = res.getInteger(
++                com.android.internal.R.integer.config_doubleTapOnCameraKeyBehavior);
++        int doubleTapOnCameraKeyBehavior = Settings.System.getIntForUser(resolver,
++                Settings.System.KEY_CAMERA_DOUBLE_TAP_ACTION,
++                defaultDoubleTapOnCameraKeyBehavior,
++                UserHandle.USER_CURRENT);
++        mCameraDoubleTapAction = initActionList(KEY_CAMERA_DOUBLE_TAP, doubleTapOnCameraKeyBehavior);
++    }
++
++    @Override
++    public void onResume() {
++        super.onResume();
++        reload();
++    }
++
++    @Override
++    protected int getMetricsCategory() {
++        return -1;
++    }
++
++    private ListPreference initActionList(String key, int value) {
++        ListPreference list = (ListPreference) getPreferenceScreen().findPreference(key);
++        if (list != null) {
++            list.setValue(Integer.toString(value));
++            list.setSummary(list.getEntry());
++            list.setOnPreferenceChangeListener(this);
++        }
++        return list;
++    }
++
++    private boolean handleOnPreferenceTreeClick(Preference preference) {
++        if (preference != null && preference == mNavigationBar) {
++            mNavigationBar.setEnabled(false);
++            mHandler.postDelayed(new Runnable() {
++                @Override
++                public void run() {
++                    mNavigationBar.setEnabled(true);
++                }
++            }, 1000);
++            return true;
++        }
++        return false;
++    }
++
++    private boolean handleOnPreferenceChange(Preference preference, Object newValue) {
++        final String setting = getSystemPreferenceString(preference);
++
++        if (TextUtils.isEmpty(setting)) {
++            // No system setting.
++            return false;
++        }
++
++        if (preference != null && preference instanceof ListPreference) {
++            ListPreference listPref = (ListPreference) preference;
++            String value = (String) newValue;
++            int index = listPref.findIndexOfValue(value);
++            listPref.setSummary(listPref.getEntries()[index]);
++            Settings.System.putIntForUser(getContentResolver(), setting, Integer.valueOf(value),
++                    UserHandle.USER_CURRENT);
++        } else if (preference != null && preference instanceof SwitchPreference) {
++            boolean state = false;
++            if (newValue instanceof Boolean) {
++                state = (Boolean) newValue;
++            } else if (newValue instanceof String) {
++                state = Integer.valueOf((String) newValue) != 0;
++            }
++            Settings.System.putIntForUser(getContentResolver(), setting, state ? 1 : 0,
++                    UserHandle.USER_CURRENT);
++        }
++
++        return true;
++    }
++
++    private String getSystemPreferenceString(Preference preference) {
++        if (preference == null) {
++            return EMPTY_STRING;
++        } else if (preference == mNavigationBar) {
++            return Settings.System.NAVIGATION_BAR_ENABLED;
++        } else if (preference == mSwapNavigationkeys) {
++            return Settings.System.SWAP_NAVIGATION_KEYS;
++        } else if (preference == mSwapSliderOrder) {
++            return Settings.System.ALERT_SLIDER_ORDER;
++        } else if (preference == mButtonBrightness) {
++            return Settings.System.BUTTON_BRIGHTNESS_ENABLED;
++        } else if (preference == mHomeLongPressAction) {
++            return Settings.System.KEY_HOME_LONG_PRESS_ACTION;
++        } else if (preference == mHomeDoubleTapAction) {
++            return Settings.System.KEY_HOME_DOUBLE_TAP_ACTION;
++        } else if (preference == mBackLongPressAction) {
++            return Settings.System.KEY_BACK_LONG_PRESS_ACTION;
++        } else if (preference == mBackDoubleTapAction) {
++            return Settings.System.KEY_BACK_DOUBLE_TAP_ACTION;
++        } else if (preference == mMenuLongPressAction) {
++            return Settings.System.KEY_MENU_LONG_PRESS_ACTION;
++        } else if (preference == mMenuDoubleTapAction) {
++            return Settings.System.KEY_MENU_DOUBLE_TAP_ACTION;
++        } else if (preference == mAssistLongPressAction) {
++            return Settings.System.KEY_ASSIST_LONG_PRESS_ACTION;
++        } else if (preference == mAssistDoubleTapAction) {
++            return Settings.System.KEY_ASSIST_DOUBLE_TAP_ACTION;
++        } else if (preference == mAppSwitchLongPressAction) {
++            return Settings.System.KEY_APP_SWITCH_LONG_PRESS_ACTION;
++        } else if (preference == mAppSwitchDoubleTapAction) {
++            return Settings.System.KEY_APP_SWITCH_DOUBLE_TAP_ACTION;
++        } else if (preference == mCameraLongPressAction) {
++            return Settings.System.KEY_CAMERA_LONG_PRESS_ACTION;
++        } else if (preference == mCameraDoubleTapAction) {
++            return Settings.System.KEY_CAMERA_DOUBLE_TAP_ACTION;
++        }
++
++        return EMPTY_STRING;
++    }
++
++    private void reload() {
++        final ContentResolver resolver = getActivity().getContentResolver();
++        final Resources res = getActivity().getResources();
++
++        final boolean defaultToNavigationBar = res.getBoolean(com.android.internal.R.bool.config_defaultToNavigationBar);
++        final boolean navigationBarEnabled = Settings.System.getIntForUser(resolver,
++                Settings.System.NAVIGATION_BAR_ENABLED, defaultToNavigationBar ? 1 : 0, UserHandle.USER_CURRENT) != 0;
++
++        final boolean hasHome = (mDeviceHardwareKeys & KEY_MASK_HOME) != 0 || navigationBarEnabled;
++        final boolean hasMenu = (mDeviceHardwareKeys & KEY_MASK_MENU) != 0;
++        final boolean hasBack = (mDeviceHardwareKeys & KEY_MASK_BACK) != 0 || navigationBarEnabled;
++        final boolean hasAssist = (mDeviceHardwareKeys & KEY_MASK_ASSIST) != 0;
++        final boolean hasAppSwitch = (mDeviceHardwareKeys & KEY_MASK_APP_SWITCH) != 0 || navigationBarEnabled;
++        final boolean hasCamera = (mDeviceHardwareKeys & KEY_MASK_CAMERA) != 0;
++
++        final boolean swapNavigationkeysEnabled = Settings.System.getIntForUser(resolver,
++                Settings.System.SWAP_NAVIGATION_KEYS, 0, UserHandle.USER_CURRENT) != 0;
++
++        final boolean swapSliderOrderEnabled = Settings.System.getIntForUser(resolver,
++                Settings.System.ALERT_SLIDER_ORDER, 0, UserHandle.USER_CURRENT) != 0;
++
++        final boolean buttonBrightnessEnabled = Settings.System.getIntForUser(resolver,
++                Settings.System.BUTTON_BRIGHTNESS_ENABLED, 1, UserHandle.USER_CURRENT) != 0;
++
++        if (mNavigationBar != null) {
++            mNavigationBar.setChecked(navigationBarEnabled);
++        }
++
++        if (mSwapNavigationkeys != null) {
++            mSwapNavigationkeys.setChecked(swapNavigationkeysEnabled);
++            // Disable when navigation bar is disabled and no hw back and recents available.
++            mSwapNavigationkeys.setEnabled(navigationBarEnabled
++                    || hasBack && hasAppSwitch);
++        }
++
++        if (mSwapSliderOrder != null) {
++            mSwapSliderOrder.setChecked(swapSliderOrderEnabled);
++        }
++
++        if (mButtonBrightness != null) {
++            mButtonBrightness.setChecked(buttonBrightnessEnabled);
++        }
++
++        final PreferenceScreen prefScreen = getPreferenceScreen();
++
++        final PreferenceCategory homeCategory =
++                (PreferenceCategory) prefScreen.findPreference(KEY_CATEGORY_HOME);
++
++        final PreferenceCategory backCategory =
++                (PreferenceCategory) prefScreen.findPreference(KEY_CATEGORY_BACK);
++
++        final PreferenceCategory menuCategory =
++                (PreferenceCategory) prefScreen.findPreference(KEY_CATEGORY_MENU);
++
++        final PreferenceCategory assistCategory =
++                (PreferenceCategory) prefScreen.findPreference(KEY_CATEGORY_ASSIST);
++
++        final PreferenceCategory appSwitchCategory =
++                (PreferenceCategory) prefScreen.findPreference(KEY_CATEGORY_APP_SWITCH);
++
++        final PreferenceCategory cameraCategory =
++                (PreferenceCategory) prefScreen.findPreference(KEY_CATEGORY_CAMERA);
++
++        if (mDeviceHardwareKeys != 0 && mButtonBrightness != null) {
++            mButtonBrightness.setEnabled(!navigationBarEnabled);
++        } else if (mDeviceHardwareKeys == 0 && mButtonBrightness != null) {
++            prefScreen.removePreference(mButtonBrightness);
++        }
++
++        if (!hasHome && homeCategory != null) {
++            prefScreen.removePreference(homeCategory);
++        }
++
++        if (!hasBack && backCategory != null) {
++            prefScreen.removePreference(backCategory);
++        }
++
++        if (!hasMenu && menuCategory != null) {
++            prefScreen.removePreference(menuCategory);
++        }
++
++        if (!hasAssist && assistCategory != null) {
++            prefScreen.removePreference(assistCategory);
++        }
++
++        if (!hasAppSwitch && appSwitchCategory != null) {
++            prefScreen.removePreference(appSwitchCategory);
++        }
++
++        if (!hasCamera && cameraCategory != null) {
++            prefScreen.removePreference(cameraCategory);
++        }
++    }
++
++    @Override
++    public boolean onPreferenceChange(Preference preference, Object newValue) {
++        final boolean handled = handleOnPreferenceChange(preference, newValue);
++        if (handled) {
++            reload();
++        }
++        return handled;
++    }
++
++    @Override
++    public boolean onPreferenceTreeClick(Preference preference) {
++        final boolean handled = handleOnPreferenceTreeClick(preference);
++        // return super.onPreferenceTreeClick(preferenceScreen, preference);
++        return handled;
++    }
++
++    /**
++     * For Search.
++     */
++    public static final Indexable.SearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++        new BaseSearchIndexProvider() {
++            @Override
++            public List<SearchIndexableResource> getXmlResourcesToIndex(
++                    Context context, boolean enabled) {
++                SearchIndexableResource sir = new SearchIndexableResource(context);
++                sir.xmlResId = R.xml.buttons_settings;
++                return Arrays.asList(sir);
++            }
++
++            @Override
++            public List<String> getNonIndexableKeys(Context context) {
++                final ArrayList<String> result = new ArrayList<String>();
++
++                final UserManager um = (UserManager) context.getSystemService(Context.USER_SERVICE);
++                final int myUserId = UserHandle.myUserId();
++                final boolean isSecondaryUser = myUserId != UserHandle.USER_OWNER;
++
++                // TODO: Implement search index provider.
++
++                return result;
++            }
++        };
++}
+diff --git a/src/com/android/settings/Settings.java b/src/com/android/settings/Settings.java
+index f6d728274..c7c59a261 100644
+--- a/src/com/android/settings/Settings.java
++++ b/src/com/android/settings/Settings.java
+@@ -173,4 +173,7 @@ public class Settings extends SettingsActivity {
+     public static class DevicePartsActivity extends SettingsActivity { /* empty */ }
+     public static class OmniJawsSettingsActivity extends SettingsActivity { /* empty */ }
+ 
++    // Aospa additions
++    public static class ButtonsSettingsActivity extends SettingsActivity { /* empty */ }
++
+ }
+diff --git a/src/com/android/settings/SettingsActivity.java b/src/com/android/settings/SettingsActivity.java
+index afed8fa4e..87089153b 100644
+--- a/src/com/android/settings/SettingsActivity.java
++++ b/src/com/android/settings/SettingsActivity.java
+@@ -257,6 +257,7 @@ public class SettingsActivity extends SettingsDrawerActivity
+             Settings.SimSettingsActivity.class.getName(),
+             Settings.WirelessSettingsActivity.class.getName(),
+             //device_section
++            Settings.ButtonsSettingsActivity.class.getName(),
+             Settings.HomeSettingsActivity.class.getName(),
+             Settings.SoundSettingsActivity.class.getName(),
+             Settings.DisplaySettingsActivity.class.getName(),
+@@ -390,6 +391,7 @@ public class SettingsActivity extends SettingsDrawerActivity
+             StyleSettings.class.getName(),
+             LightsSettings.class.getName(),
+             OmniJawsSettings.class.getName(),
++            ButtonsSettings.class.getName()
+     };
+ 
+ 
+diff --git a/src/com/android/settings/search/Ranking.java b/src/com/android/settings/search/Ranking.java
+index f3feea664..698696b15 100644
+--- a/src/com/android/settings/search/Ranking.java
++++ b/src/com/android/settings/search/Ranking.java
+@@ -16,6 +16,7 @@
+ 
+ package com.android.settings.search;
+ 
++import com.android.settings.ButtonsSettings;
+ import com.android.settings.ChooseLockGeneric;
+ import com.android.settings.DateTimeSettings;
+ import com.android.settings.DevelopmentSettings;
+@@ -103,6 +104,7 @@ public final class Ranking {
+     public static final int RANK_DEVICE_INFO = 23;
+     public static final int RANK_GESTURE = 24;
+     public static final int RANK_OMNI = 25;
++    public static final int RANK_BUTTONS = 26;
+ 
+     public static final int RANK_UNDEFINED = -1;
+     public static final int RANK_OTHERS = 1024;
+@@ -215,6 +217,7 @@ public final class Ranking {
+         sRankMap.put(StyleSettings.class.getName(), RANK_OMNI);
+         sRankMap.put(LightsSettings.class.getName(), RANK_OMNI);
+         sRankMap.put(MoreSettings.class.getName(), RANK_OMNI);
++        sRankMap.put(ButtonsSettings.class.getName(), RANK_BUTTONS);
+ 
+         sBaseRankMap.put("com.android.settings", 0);
+     }
+diff --git a/src/com/android/settings/search/SearchIndexableResources.java b/src/com/android/settings/search/SearchIndexableResources.java
+index e55ba87bc..4b9252f8a 100644
+--- a/src/com/android/settings/search/SearchIndexableResources.java
++++ b/src/com/android/settings/search/SearchIndexableResources.java
+@@ -17,6 +17,8 @@
+ package com.android.settings.search;
+ 
+ import android.provider.SearchIndexableResource;
++
++import com.android.settings.ButtonsSettings;
+ import com.android.settings.DateTimeSettings;
+ import com.android.settings.DevelopmentSettings;
+ import com.android.settings.DeviceInfoSettings;
+@@ -440,6 +442,12 @@ public final class SearchIndexableResources {
+                         MoreSettings.class.getName(),
+                         R.drawable.ic_settings_more));
+ 
++        sResMap.put(ButtonsSettings.class.getName(),
++                new SearchIndexableResource(
++                        Ranking.getRankForClassName(ButtonsSettings.class.getName()),
++                        R.xml.buttons_settings,
++                        ButtonsSettings.class.getName(),
++                        R.drawable.ic_settings_buttons));
+     }
+ 
+     private SearchIndexableResources() {
+-- 
+2.13.2
+
