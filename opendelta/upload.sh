@@ -20,7 +20,7 @@ fi
 HOME=$(pwd)
 
 SERVER1="ftp://uploads.androidfilehost.com"
-SERVER2="ftp.basketbuild.com"
+SERVER2="ftp://basketbuild.com"
 FILEMASK="omni-"
 FILE_MATCH="omni-*.zip"
 PATH_DELTA="$HOME/publish/delta/$DEVICE"
@@ -57,7 +57,7 @@ if [ -n "$my_account2" ] ; then
 fi
 if [ -n "$my_account3" ] ; then
     if [[ ! -n "$my_login3" || ! -n "$my_passw3" ]] ; then
-    echo -e "\e[1;38;5;81m"$my_account3"\e[0m"
+    echo -e "$my_account3"
     read -p "Username:" my_login3
     read -p "Password:" my_passw3
         if [ -n "$my_login3" ] && [ -n "$my_login3" ] ; then echo -e "my_login3=$my_login3\nmy_passw3=$my_passw3" >> ${my_rc_file} ; echo "USERDATA written to ${my_rc_file}"; else echo "ERROR. no data written!"; fi
@@ -102,9 +102,9 @@ if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_MD5SUM -u $my_login2:$my_passw2 $SERVE
 echo -e "\n"
 echo -n "UPLOADING $FILE_FULL_ZIP to $SERVER2 "
 if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_ZIP -u $my_login2:$my_passw2 $SERVER2/$FTP_DIR_FULL &> /dev/null; then echo -n "SUCCESS"; else echo -n "FAILED"; fi
-echo -e "\n"
-echo -n "UPLOADING $FILE_FULL_LOG to $SERVER2 "
-if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_LOG -u $my_login2:$my_passw2 $SERVER2/$FTP_DIR_FULL &> /dev/null; then echo -n "SUCCESS"; else echo -n "FAILED"; fi
+#echo -e "\n"
+#echo -n "UPLOADING $FILE_FULL_LOG to $SERVER2 "
+#if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_LOG -u $my_login2:$my_passw2 $SERVER2/$FTP_DIR_FULL &> /dev/null; then echo -n "SUCCESS"; else echo -n "FAILED"; fi
 echo -e "\n"
 echo -n "UPLOADING $FILE_FULL_MD5SUM to $SERVER1 "
 if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_MD5SUM -u $my_login1:$my_passw1 $SERVER1/ &> /dev/null; then echo -n "SUCCESS"; rm $PATH_FULL/$FILE_FULL_MD5SUM; else echo -n "FAILED"; fi
