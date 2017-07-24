@@ -2,9 +2,9 @@
 #PRODUCT_PACKAGES := $(filter-out $(REMOVE_PACKAGES),$(PRODUCT_PACKAGES))
 
 # OMS
-PRODUCT_PACKAGES += \
-    ThemeInterfacer \
-    Substratum
+#PRODUCT_PACKAGES += \
+#    ThemeInterfacer \
+#    Substratum
 
 # File Manager
 PRODUCT_PACKAGES += \
@@ -93,8 +93,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     media.sf.extractor-plugin=libffmpeg_extractor.so
 
 # Substratum Verified
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.substratum.verified=true
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    ro.substratum.verified=true
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.opa.eligible_device=true
