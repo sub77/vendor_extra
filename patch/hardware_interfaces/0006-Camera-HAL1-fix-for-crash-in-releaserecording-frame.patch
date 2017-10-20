@@ -1,0 +1,38 @@
+From 0fd2facb46bee1f39fd30cf5dcf3d650195d40a9 Mon Sep 17 00:00:00 2001
+From: Sauhard Pande <sauhardp@codeaurora.org>
+Date: Fri, 14 Apr 2017 03:17:06 +0530
+Subject: [PATCH 6/7] Camera: HAL1 fix for crash in releaserecording frame
+
+Issue:
+During stoprecording deallocate meta is called which
+erases the entry from map in CameraDevice and also
+releases metadatabuffer. Thus when releaseRecordingframe
+is called the entry is not found in the map causing crash
+due to null pointer reference
+
+Fix:
+If there is no entry for that buffer in map then return
+
+Change-Id: I937754bbc68bdf2fd54e22a1ffc674f90730fb37
+---
+ camera/device/1.0/default/CameraDevice.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/camera/device/1.0/default/CameraDevice.cpp b/camera/device/1.0/default/CameraDevice.cpp
+index 9843748..ae1f8e8 100644
+--- a/camera/device/1.0/default/CameraDevice.cpp
++++ b/camera/device/1.0/default/CameraDevice.cpp
+@@ -854,6 +854,10 @@ void CameraDevice::releaseRecordingFrameLocked(
+         return;
+     }
+     if (mDevice->ops->release_recording_frame) {
++        if (mMemoryMap.count(memId) == 0) {
++            ALOGE("Buffer with id %d already released", memId);
++            return;
++        }
+         CameraHeapMemory* camMemory = mMemoryMap.at(memId);
+         if (bufferIndex >= camMemory->mNumBufs) {
+             ALOGE("%s: bufferIndex %d exceeds number of buffers %d",
+-- 
+1.8.3.1
+

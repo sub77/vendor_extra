@@ -1,0 +1,191 @@
+From 2ac09d1cd0e554aaa137e8010e8c20773e21d472 Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Fri, 8 Sep 2017 15:37:16 +0100
+Subject: [PATCH] Telecomm: Squashed phone_type switch support
+
+ * This is still required for some legacy MSIM devices and instructs
+   the audio HAL's MSIM voice extension which VOICE_CALL usecase should
+   be used when placing phone calls.
+
+ * Current change is based on the following commits, with some slight
+   simplifications and the necessary changes to adapt to the new code.
+
+   Author: Simon Shields <keepcalm444@gmail.com>
+   Date:   Fri Jan 27 22:12:40 2017 +1100
+
+       CallAudioModeStateMachineTest: fix compilation
+
+       Change-Id: Ie58189ce192469762aedfede18db7ce417d86f5d
+
+   Author: Gabriele M <moto.falcon.git@gmail.com>
+   Date:   Tue Jan 3 21:29:12 2017 +0100
+
+       Telecomm: Set MSIM audio params using the proper ID
+
+       It is assumed that the ID of every PhoneAccountHandle is the string
+       equivalent of an int, however, the ID can also includes hex chars or,
+       in case of the emergency account handle, it's just "E". This causes
+       issues when we try to get the sub ID using Integer.parseInt(),
+       so don't do it.
+
+       Change-Id: Iae6cfacaf65bb2791b6fa9ae491bb4ad6edbe936
+
+   Author: hawst1 <hawst1@gmail.com>
+   Date: 2015-11-02 22:39:58 +0700
+
+       - Fix SIP soft-reboot on call
+
+       Change-Id: Ic78c52bbbe6b93b78bfdb8fdef479ef93ce1bd9f
+
+   Author: Bruno Martins <bgcngm@gmail.com>
+   Date: 2015-08-20 19:38:07 +0100
+
+       Telecomm: Avoid NPE when invoking setAudioParameters
+
+        * This exception would occur when preferred SIM for calls was set to
+          "Ask every time" and if dialog was dismissed before starting the call
+
+       Change-Id: Iee9968a7ad95fa16a085ecd7e765873904e0b88a
+
+   Author: Bruno Martins <bgcngm@gmail.com>
+   Date: 2015-08-06 23:26:41 +0100
+
+       Telecomm: Make phone_type switch generic
+
+       Change-Id: I78129aaab82493c1107699932f7ae8d780006c8f
+
+   Author: ljzyal <ljzyal@gmail.com>
+   Date:   Mon Jul 20 17:02:50 2015 +0800
+
+       Telecomm: Support Samsung Dual Sims Phone phone_type switch
+
+       Change-Id: Id6a91a47a5d9ebbb39869a66c05eeec14e1366e2
+
+Change-Id: I65c7137c40cc4200d571cc3e5d8a05e728c51ad7
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ .../server/telecom/CallAudioModeStateMachine.java  | 28 +++++++++++++++++++++-
+ src/com/android/server/telecom/CallsManager.java   |  3 ++-
+ .../tests/CallAudioModeStateMachineTest.java       |  6 +++--
+ 3 files changed, 33 insertions(+), 4 deletions(-)
+
+diff --git a/src/com/android/server/telecom/CallAudioModeStateMachine.java b/src/com/android/server/telecom/CallAudioModeStateMachine.java
+index b5c7e7a..cb667f4 100644
+--- a/src/com/android/server/telecom/CallAudioModeStateMachine.java
++++ b/src/com/android/server/telecom/CallAudioModeStateMachine.java
+@@ -18,9 +18,15 @@ package com.android.server.telecom;
+ 
+ import android.media.AudioManager;
+ import android.os.Message;
++import android.os.SystemProperties;
+ import android.telecom.Log;
+ import android.telecom.Logging.Runnable;
+ import android.telecom.Logging.Session;
++import android.telecom.PhoneAccount;
++import android.telecom.PhoneAccountHandle;
++import android.telecom.TelecomManager;
++import android.telephony.SubscriptionManager;
++import android.telephony.TelephonyManager;
+ import android.util.SparseArray;
+ 
+ import com.android.internal.util.IState;
+@@ -286,8 +292,26 @@ public class CallAudioModeStateMachine extends StateMachine {
+         @Override
+         public void enter() {
+             Log.i(LOG_TAG, "Audio focus entering SIM CALL state");
++            boolean setMsimAudioParams = SystemProperties
++                    .getBoolean("ro.multisim.set_audio_params", false);
++            Call call = mCallAudioManager.getForegroundCall();
++
+             mAudioManager.requestAudioFocusForCall(AudioManager.STREAM_VOICE_CALL,
+                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
++
++            if (call != null && call.getTargetPhoneAccount() != null && setMsimAudioParams) {
++                PhoneAccountHandle handle = call.getTargetPhoneAccount();
++                PhoneAccount account = mTelecomManager.getPhoneAccount(handle);
++                int subId = TelephonyManager.getDefault().getSubIdForPhoneAccount(account);
++                int phoneId = SubscriptionManager.getPhoneId(subId);
++                Log.d(LOG_TAG, "setAudioParameters phoneId=" + phoneId);
++                if (phoneId == 0) {
++                    mAudioManager.setParameters("phone_type=cp1");
++                } else if (phoneId == 1) {
++                    mAudioManager.setParameters("phone_type=cp2");
++                }
++            }
++
+             mAudioManager.setMode(AudioManager.MODE_IN_CALL);
+             mMostRecentMode = AudioManager.MODE_IN_CALL;
+             mCallAudioManager.setCallAudioRouteFocusState(CallAudioRouteStateMachine.ACTIVE_FOCUS);
+@@ -463,14 +487,16 @@ public class CallAudioModeStateMachine extends StateMachine {
+     private final BaseState mOtherFocusState = new OtherFocusState();
+ 
+     private final AudioManager mAudioManager;
++    private final TelecomManager mTelecomManager;
+     private CallAudioManager mCallAudioManager;
+ 
+     private int mMostRecentMode;
+     private boolean mIsInitialized = false;
+ 
+-    public CallAudioModeStateMachine(AudioManager audioManager) {
++    public CallAudioModeStateMachine(AudioManager audioManager, TelecomManager telecomManager) {
+         super(CallAudioModeStateMachine.class.getSimpleName());
+         mAudioManager = audioManager;
++        mTelecomManager = telecomManager;
+         mMostRecentMode = AudioManager.MODE_NORMAL;
+ 
+         addState(mUnfocusedState);
+diff --git a/src/com/android/server/telecom/CallsManager.java b/src/com/android/server/telecom/CallsManager.java
+index e89075d..00e1874 100644
+--- a/src/com/android/server/telecom/CallsManager.java
++++ b/src/com/android/server/telecom/CallsManager.java
+@@ -353,7 +353,8 @@ public class CallsManager extends Call.ListenerBase
+ 
+         mCallAudioManager = new CallAudioManager(callAudioRouteStateMachine,
+                 this,new CallAudioModeStateMachine((AudioManager)
+-                        mContext.getSystemService(Context.AUDIO_SERVICE)),
++                        mContext.getSystemService(Context.AUDIO_SERVICE),
++                        (TelecomManager) mContext.getSystemService(Context.TELECOM_SERVICE)),
+                 playerFactory, mRinger, new RingbackPlayer(playerFactory), mDtmfLocalTonePlayer);
+ 
+         mHeadsetMediaButton = headsetMediaButtonFactory.create(context, this, mLock);
+diff --git a/tests/src/com/android/server/telecom/tests/CallAudioModeStateMachineTest.java b/tests/src/com/android/server/telecom/tests/CallAudioModeStateMachineTest.java
+index af1d3a2..b32cbbf 100644
+--- a/tests/src/com/android/server/telecom/tests/CallAudioModeStateMachineTest.java
++++ b/tests/src/com/android/server/telecom/tests/CallAudioModeStateMachineTest.java
+@@ -17,6 +17,7 @@
+ package com.android.server.telecom.tests;
+ 
+ import android.media.AudioManager;
++import android.telecom.TelecomManager;
+ import android.test.suitebuilder.annotation.LargeTest;
+ import android.test.suitebuilder.annotation.SmallTest;
+ 
+@@ -89,6 +90,7 @@ public class CallAudioModeStateMachineTest extends StateMachineTestBase<CallAudi
+ 
+     @Mock private AudioManager mAudioManager;
+     @Mock private CallAudioManager mCallAudioManager;
++    @Mock private TelecomManager mTelecomManager;
+ 
+     @Override
+     public void setUp() throws Exception {
+@@ -104,7 +106,7 @@ public class CallAudioModeStateMachineTest extends StateMachineTestBase<CallAudi
+ 
+     @SmallTest
+     public void testNoFocusWhenRingerSilenced() throws Throwable {
+-        CallAudioModeStateMachine sm = new CallAudioModeStateMachine(mAudioManager);
++        CallAudioModeStateMachine sm = new CallAudioModeStateMachine(mAudioManager, mTelecomManager);
+         sm.setCallAudioManager(mCallAudioManager);
+         sm.sendMessage(CallAudioModeStateMachine.ABANDON_FOCUS_FOR_TESTING);
+         waitForStateMachineActionCompletion(sm, CallAudioModeStateMachine.RUN_RUNNABLE);
+@@ -543,7 +545,7 @@ public class CallAudioModeStateMachineTest extends StateMachineTestBase<CallAudi
+     @Override
+     protected void runParametrizedTestCase(TestParameters _params) {
+         ModeTestParameters params = (ModeTestParameters) _params;
+-        CallAudioModeStateMachine sm = new CallAudioModeStateMachine(mAudioManager);
++        CallAudioModeStateMachine sm = new CallAudioModeStateMachine(mAudioManager, mTelecomManager);
+         sm.setCallAudioManager(mCallAudioManager);
+         sm.sendMessage(params.initialAudioState);
+         waitForStateMachineActionCompletion(sm, CallAudioModeStateMachine.RUN_RUNNABLE);
+-- 
+1.8.3.1
+

@@ -1,0 +1,29 @@
+From 0406863860f939aae463319b212007990fb2f67d Mon Sep 17 00:00:00 2001
+From: Aditya Bavanari <abavanar@codeaurora.org>
+Date: Wed, 19 Jul 2017 18:10:33 +0530
+Subject: [PATCH 5/7] audio: Add OEM Diag group ID to Audio service
+
+Add OEM Diag group ID to Audio Service in order to
+access /dev/diag node.
+
+Change-Id: Iadc99e26bbf855dc3fcb05f21122e9b876fa3a55
+---
+ audio/2.0/default/android.hardware.audio@2.0-service.rc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/audio/2.0/default/android.hardware.audio@2.0-service.rc b/audio/2.0/default/android.hardware.audio@2.0-service.rc
+index eeaf71b..7b5adf2 100644
+--- a/audio/2.0/default/android.hardware.audio@2.0-service.rc
++++ b/audio/2.0/default/android.hardware.audio@2.0-service.rc
+@@ -2,7 +2,7 @@ service audio-hal-2-0 /vendor/bin/hw/android.hardware.audio@2.0-service
+     class hal
+     user audioserver
+     # media gid needed for /dev/fm (radio) and for /data/misc/media (tee)
+-    group audio camera drmrpc inet media mediadrm net_bt net_bt_admin net_bw_acct
++    group audio camera drmrpc inet media mediadrm net_bt net_bt_admin net_bw_acct oem_2901
+     ioprio rt 4
+     writepid /dev/cpuset/foreground/tasks /dev/stune/foreground/tasks
+     # audioflinger restarts itself when it loses connection with the hal
+-- 
+1.8.3.1
+

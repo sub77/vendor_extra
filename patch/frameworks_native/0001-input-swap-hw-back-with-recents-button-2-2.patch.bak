@@ -1,0 +1,121 @@
+From c704ac4a575f4c9b4d2daa020f66ab05576a82ed Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 5 Oct 2017 06:54:28 +0000
+Subject: [PATCH] input: swap hw back with recents button [2/2]
+
+Change-Id: I602244202452aee3306e96b0eef35b6029d46a9c
+Signed-off-by: Carlo Savignano <carlosavignano@aospa.co>
+---
+ services/inputflinger/InputReader.cpp | 23 ++++++++++++++++++++++-
+ services/inputflinger/InputReader.h   | 16 +++++++++++++---
+ 2 files changed, 35 insertions(+), 4 deletions(-)
+
+diff --git a/services/inputflinger/InputReader.cpp b/services/inputflinger/InputReader.cpp
+index 73255dd..8c243e4 100644
+--- a/services/inputflinger/InputReader.cpp
++++ b/services/inputflinger/InputReader.cpp
+@@ -2220,6 +2220,10 @@ void KeyboardInputMapper::configure(nsecs_t when,
+             mOrientation = DISPLAY_ORIENTATION_0;
+         }
+     }
++
++	if (!changes || (changes & InputReaderConfiguration::CHANGE_SWAP_KEYS)) {
++        mSwapKeys = config->swapKeys;
++    }
+ }
+ 
+ void KeyboardInputMapper::configureParameters() {
+@@ -2374,10 +2378,27 @@ void KeyboardInputMapper::processKey(nsecs_t when, bool down, int32_t scanCode,
+ 
+     NotifyKeyArgs args(when, getDeviceId(), mSource, policyFlags,
+             down ? AKEY_EVENT_ACTION_DOWN : AKEY_EVENT_ACTION_UP,
+-            AKEY_EVENT_FLAG_FROM_SYSTEM, keyCode, scanCode, keyMetaState, downTime);
++            AKEY_EVENT_FLAG_FROM_SYSTEM, getAdjustedKeyCode(keyCode),
++            scanCode, keyMetaState, downTime);
+     getListener()->notifyKey(&args);
+ }
+ 
++int KeyboardInputMapper::getAdjustedKeyCode(int keyCode) {
++    switch (keyCode) {
++        case AKEYCODE_BACK:
++            if (mSwapKeys) {
++                return AKEYCODE_APP_SWITCH;
++            }
++            break;
++        case AKEYCODE_APP_SWITCH:
++            if (mSwapKeys) {
++                return AKEYCODE_BACK;
++            }
++            break;
++    }
++    return keyCode;
++}
++
+ ssize_t KeyboardInputMapper::findKeyDown(int32_t scanCode) {
+     size_t n = mKeyDowns.size();
+     for (size_t i = 0; i < n; i++) {
+diff --git a/services/inputflinger/InputReader.h b/services/inputflinger/InputReader.h
+index edb6fcc..ccd4d63 100644
+--- a/services/inputflinger/InputReader.h
++++ b/services/inputflinger/InputReader.h
+@@ -81,8 +81,11 @@ struct InputReaderConfiguration {
+         // The presence of an external stylus has changed.
+         CHANGE_EXTERNAL_STYLUS_PRESENCE = 1 << 7,
+ 
++		// Swap keys changed.
++        CHANGE_SWAP_KEYS = 1 << 8,
++		
+         // The pointer capture mode has changed.
+-        CHANGE_POINTER_CAPTURE = 1 << 8,
++        CHANGE_POINTER_CAPTURE = 1 << 9,
+ 
+         // All devices must be reopened.
+         CHANGE_MUST_REOPEN = 1 << 31,
+@@ -174,6 +177,9 @@ struct InputReaderConfiguration {
+     // True if pointer capture is enabled.
+     bool pointerCapture;
+ 
++	// Swap back with recents button
++    bool swapKeys;
++
+     InputReaderConfiguration() :
+             virtualKeyQuietTime(0),
+             pointerVelocityControlParameters(1.0f, 500.0f, 3000.0f, 3.0f),
+@@ -190,14 +196,14 @@ struct InputReaderConfiguration {
+             pointerGestureSwipeMaxWidthRatio(0.25f),
+             pointerGestureMovementSpeedRatio(0.8f),
+             pointerGestureZoomSpeedRatio(0.3f),
+-            showTouches(false) { }
++			showTouches(false),
++			swapKeys(false) { }
+ 
+     bool getDisplayViewport(ViewportType viewportType, const String8* displayId,
+             DisplayViewport* outViewport) const;
+     void setPhysicalDisplayViewport(ViewportType viewportType, const DisplayViewport& viewport);
+     void setVirtualDisplayViewports(const Vector<DisplayViewport>& viewports);
+ 
+-
+     void dump(String8& dump) const;
+     void dumpViewport(String8& dump, const DisplayViewport& viewport) const;
+ 
+@@ -1086,6 +1092,8 @@ private:
+ 
+     int32_t mOrientation; // orientation for dpad keys
+ 
++    bool mSwapKeys; // swap back with recents button
++
+     Vector<KeyDown> mKeyDowns; // keys that are down
+     int32_t mMetaState;
+     nsecs_t mDownTime; // time of most recent key down
+@@ -1116,6 +1124,8 @@ private:
+ 
+     bool updateMetaStateIfNeeded(int32_t keyCode, bool down);
+ 
++    int getAdjustedKeyCode(int keyCode);
++
+     ssize_t findKeyDown(int32_t scanCode);
+ 
+     void resetLedState();
+-- 
+1.8.3.1
+

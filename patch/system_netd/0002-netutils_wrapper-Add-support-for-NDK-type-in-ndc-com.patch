@@ -1,0 +1,55 @@
+From 9e9f9a34d281a0e68c1a4ce5f4e1279ff66ec364 Mon Sep 17 00:00:00 2001
+From: Subash Abhinov Kasiviswanathan <subashab@codeaurora.org>
+Date: Tue, 8 Aug 2017 11:06:42 -0600
+Subject: [PATCH 2/3] netutils_wrapper: Add support for NDK type in ndc
+ commands
+
+This fixes the following error -
+
+~:/system/bin/ndc-wrapper-1.0 network interface add handle8606370526 r_rmnet_data0
+NetUtilsWrapper: Unexpected command: /system/bin/ndc network interface add handle8606370526 r_rmnet_data0
+
+Bug: 36682246
+Test: netutils_wrapper_test passes
+CRs-fixed: 2089423
+Change-Id: I0b0bb76ed47cdead672dd97ed0c040330ec0b8de
+---
+ netutils_wrappers/NetUtilsWrapper-1.0.cpp     | 6 +++---
+ netutils_wrappers/NetUtilsWrapperTest-1.0.cpp | 4 ++++
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/netutils_wrappers/NetUtilsWrapper-1.0.cpp b/netutils_wrappers/NetUtilsWrapper-1.0.cpp
+index a9fbf3f..ccf32ad 100644
+--- a/netutils_wrappers/NetUtilsWrapper-1.0.cpp
++++ b/netutils_wrappers/NetUtilsWrapper-1.0.cpp
+@@ -52,9 +52,9 @@ const char *netcmds[] = {
+ const char *EXPECTED_REGEXPS[] = {
+ #define CMD "^" SYSTEM_DIRNAME
+     // Create, delete, and manage OEM networks.
+-    CMD "ndc network (create|destroy) oem[0-9]+( |$)",
+-    CMD "ndc network interface (add|remove) oem[0-9]+ " VENDOR_IFACE,
+-    CMD "ndc network route (add|remove) oem[0-9]+ ",
++    CMD "ndc network (create|destroy) (oem|handle)[0-9]+( |$)",
++    CMD "ndc network interface (add|remove) (oem|handle)[0-9]+ " VENDOR_IFACE,
++    CMD "ndc network route (add|remove) (oem|handle)[0-9]+ ",
+     CMD "ndc ipfwd (enable|disable) ",
+     CMD "ndc ipfwd (add|remove) .*" VENDOR_IFACE,
+ 
+diff --git a/netutils_wrappers/NetUtilsWrapperTest-1.0.cpp b/netutils_wrappers/NetUtilsWrapperTest-1.0.cpp
+index a32cc3b..6ccf8ac 100644
+--- a/netutils_wrappers/NetUtilsWrapperTest-1.0.cpp
++++ b/netutils_wrappers/NetUtilsWrapperTest-1.0.cpp
+@@ -47,6 +47,10 @@ std::vector<Command> COMMANDS = {
+     {VALID,   "/system/bin/ndc network interface add oem10 oem9"},
+     {INVALID, "/system/bin/ndc network interface add 100 v_oem9"},
+     {VALID,   "/system/bin/ndc network interface add oem10 r_rmnet_data0"},
++    {VALID,   "/system/bin/ndc network interface add handle42966108894 v_oem9"},
++    {VALID,   "/system/bin/ndc network interface add handle42966108894 oem9"},
++    {VALID,   "/system/bin/ndc network interface add handle42966108894 r_rmnet_data0"}
++    {INVALID, "/system/bin/ndc network interface add handle42966108894"},
+     {VALID,   "/system/bin/ip xfrm state"},
+ };
+ 
+-- 
+2.1.2
+

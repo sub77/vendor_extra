@@ -1,0 +1,39 @@
+From cab2893a71102b3ccf1051f2f28a01b08859fb9d Mon Sep 17 00:00:00 2001
+From: Stefan Berger <s.berger81@gmail.com>
+Date: Tue, 5 Sep 2017 23:49:19 +0200
+Subject: [PATCH 2/2] softap: Add missing liblog dependency
+
+Change-Id: I3c295332eef87f63394da4bdbb8e1d5671736598
+---
+ softap/jni/Android.mk | 2 +-
+ softap/sdk/Android.mk | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/softap/jni/Android.mk b/softap/jni/Android.mk
+index a967bb9..87df958 100644
+--- a/softap/jni/Android.mk
++++ b/softap/jni/Android.mk
+@@ -15,6 +15,6 @@ LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include \
+                     $(JNI_H_INCLUDE)
+ 
+ LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+-LOCAL_SHARED_LIBRARIES := libsysutils libcutils libnetutils libcrypto
++LOCAL_SHARED_LIBRARIES := libsysutils libcutils libnetutils libcrypto liblog
+ 
+ include $(BUILD_SHARED_LIBRARY)
+diff --git a/softap/sdk/Android.mk b/softap/sdk/Android.mk
+index d7d4a73..f26a3b0 100755
+--- a/softap/sdk/Android.mk
++++ b/softap/sdk/Android.mk
+@@ -63,7 +63,7 @@ LOCAL_SRC_FILES := qsap_api.c \
+ 
+ LOCAL_PRELINK_MODULE := false
+ 
+-LOCAL_SHARED_LIBRARIES := libnetutils libutils libbinder libcutils libhardware_legacy libnl
++LOCAL_SHARED_LIBRARIES := libnetutils libutils libbinder libcutils libhardware_legacy libnl liblog
+ 
+ include $(BUILD_SHARED_LIBRARY)
+ 
+-- 
+2.9.5
+

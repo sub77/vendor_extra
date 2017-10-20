@@ -1,0 +1,26 @@
+From f498320e31849a0addb0dff3e437172458117b1a Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 9 Sep 2017 21:46:06 +0000
+Subject: [PATCH] Add missing liblog depencency
+
+Change-Id: I0f91ab01ffb04abdce1031ae7dafd3441cee8c87
+---
+ cnefeatureconfig/Android.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cnefeatureconfig/Android.mk b/cnefeatureconfig/Android.mk
+index 07e7e89..16c4764 100644
+--- a/cnefeatureconfig/Android.mk
++++ b/cnefeatureconfig/Android.mk
+@@ -8,7 +8,7 @@ LOCAL_SRC_FILES:= \
+ LOCAL_MODULE:= libcnefeatureconfig
+ LOCAL_MODULE_TAGS := optional
+ 
+-LOCAL_SHARED_LIBRARIES := libc libcutils
++LOCAL_SHARED_LIBRARIES := libc libcutils liblog
+ 
+ LOCAL_C_INCLUDES := \
+         external/connectivity/cnefeatureconfig/inc
+-- 
+2.9.5
+

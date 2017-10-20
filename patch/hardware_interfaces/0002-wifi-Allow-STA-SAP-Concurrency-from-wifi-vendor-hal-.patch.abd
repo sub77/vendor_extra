@@ -1,0 +1,108 @@
+From fedb165ed703a14f175d5642b266bd7fe6b341d2 Mon Sep 17 00:00:00 2001
+From: Purushottam Kushwaha <pkushwah@codeaurora.org>
+Date: Wed, 12 Jul 2017 12:15:34 +0530
+Subject: [PATCH 2/7] wifi: Allow STA + SAP Concurrency from wifi vendor hal
+ service.
+
+This commit adds a new feature flag wifiStaSapConcurrency, to enable
+support of STA + SAP concurrency via wifi vendor hal. This also
+enhances AP combination to include STA in list of allowed combination.
+
+CRs-Fixed: 2075317
+Change-Id: I8bcef59116fbe474e787a17f979f1d69d687669b
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ wifi/1.0/default/wifi_chip.cpp        | 22 ++++++++++++++++++----
+ wifi/1.0/default/wifi_feature_flags.h |  3 +++
+ wifi/1.0/default/wifi_legacy_hal.cpp  | 10 +++++++---
+ 3 files changed, 28 insertions(+), 7 deletions(-)
+
+diff --git a/wifi/1.0/default/wifi_chip.cpp b/wifi/1.0/default/wifi_chip.cpp
+index 770c83f..3edbda6 100644
+--- a/wifi/1.0/default/wifi_chip.cpp
++++ b/wifi/1.0/default/wifi_chip.cpp
+@@ -411,8 +411,14 @@ WifiChip::getAvailableModesInternal() {
+   // AP mode iface combinations.
+   const IWifiChip::ChipIfaceCombinationLimit ap_chip_iface_combination_limit = {
+       {IfaceType::AP}, 1};
+-  const IWifiChip::ChipIfaceCombination ap_chip_iface_combination = {
+-      {ap_chip_iface_combination_limit}};
++  IWifiChip::ChipIfaceCombination ap_chip_iface_combination;
++  if (WifiFeatureFlags::wifiStaSapConcurrency) {
++    ap_chip_iface_combination = {
++        {ap_chip_iface_combination_limit, sta_chip_iface_combination_limit_1}};
++  } else {
++    ap_chip_iface_combination = {
++        {ap_chip_iface_combination_limit}};
++  }
+   const IWifiChip::ChipMode ap_chip_mode = {kApChipModeId,
+                                             {ap_chip_iface_combination}};
+   return {createWifiStatus(WifiStatusCode::SUCCESS),
+@@ -653,7 +659,11 @@ WifiStatus WifiChip::removeP2pIfaceInternal(const std::string& ifname) {
+ }
+ 
+ std::pair<WifiStatus, sp<IWifiStaIface>> WifiChip::createStaIfaceInternal() {
+-  if (current_mode_id_ != kStaChipModeId || sta_iface_.get()) {
++  // Do no restrict with kStaChipModeId in case of wifiStaSapConcurrency feature.
++  // In case of wifiStaSapConcurrency, both kStaChipModeId and kApChipModeId are
++  // valid combinations to create STA interface.
++  if ((!(WifiFeatureFlags::wifiStaSapConcurrency) &&
++       current_mode_id_ != kStaChipModeId) || sta_iface_.get()) {
+     return {createWifiStatus(WifiStatusCode::ERROR_NOT_AVAILABLE), {}};
+   }
+   std::string ifname = legacy_hal_.lock()->getStaIfaceName();
+@@ -807,7 +817,11 @@ WifiStatus WifiChip::handleChipConfiguration(ChipModeId mode_id) {
+   // Currently the underlying implementation has a deadlock issue.
+   // We should return ERROR_NOT_SUPPORTED if chip is already configured in
+   // a different mode.
+-  if (current_mode_id_ != kInvalidModeId) {
++
++  // handleChipConfiguration assumes that initial mode is kInvalidModeId.
++  // This limitation is not applicable for wifiStaSapConcurrency feature.
++  if (!(WifiFeatureFlags::wifiStaSapConcurrency) &&
++      current_mode_id_ != kInvalidModeId) {
+     // TODO(b/37446050): Fix the deadlock.
+     return createWifiStatus(WifiStatusCode::ERROR_NOT_SUPPORTED);
+   }
+diff --git a/wifi/1.0/default/wifi_feature_flags.h b/wifi/1.0/default/wifi_feature_flags.h
+index 3502fbd..95cb59d 100644
+--- a/wifi/1.0/default/wifi_feature_flags.h
++++ b/wifi/1.0/default/wifi_feature_flags.h
+@@ -30,6 +30,9 @@ class WifiFeatureFlags {
+ #else
+   static const bool wifiHidlFeatureAware = false;
+ #endif // WIFI_HIDL_FEATURE_AWARE
++
++  // Feature flag to allow STA + SAP combination from wifi vendor hal service
++  static const bool wifiStaSapConcurrency = true;
+ };
+ 
+ }  // namespace implementation
+diff --git a/wifi/1.0/default/wifi_legacy_hal.cpp b/wifi/1.0/default/wifi_legacy_hal.cpp
+index 875de5c..ed1d7ec 100644
+--- a/wifi/1.0/default/wifi_legacy_hal.cpp
++++ b/wifi/1.0/default/wifi_legacy_hal.cpp
+@@ -334,13 +334,17 @@ wifi_error WifiLegacyHal::initialize() {
+ }
+ 
+ wifi_error WifiLegacyHal::start() {
+-  // Ensure that we're starting in a good state.
+-  CHECK(global_func_table_.wifi_initialize && !global_handle_ &&
+-        !wlan_interface_handle_ && !awaiting_event_loop_termination_);
+   if (is_started_) {
+     LOG(DEBUG) << "Legacy HAL already started";
+     return WIFI_SUCCESS;
+   }
++  // Ensure that we're starting in a good state.
++  // In case of wifiStaSapConcurrency, if one of the interface is already active,
++  // then below check will always fail, as this check assumes that wifiLegacyHal
++  // is stopped before calling start. Since we don't need to start WifiLegacyHal
++  // move this check here and return from is_started_ check.
++  CHECK(global_func_table_.wifi_initialize && !global_handle_ &&
++        !wlan_interface_handle_ && !awaiting_event_loop_termination_);
+   LOG(DEBUG) << "Starting legacy HAL";
+   if (!iface_tool_.SetWifiUpState(true)) {
+     LOG(ERROR) << "Failed to set WiFi interface up";
+-- 
+1.8.3.1
+

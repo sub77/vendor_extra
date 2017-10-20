@@ -1,0 +1,24 @@
+From a7f0f269f2d944e5971a0ded4fa76bace55f580d Mon Sep 17 00:00:00 2001
+From: Sauhard Pande <sauhardp@codeaurora.org>
+Date: Mon, 19 Jun 2017 13:18:46 +0530
+Subject: [PATCH 4/7] Camera: change group for camera provide to top-app for
+ power consumption change
+
+Change-Id: I0bf4ff59361b1355ad65bed5390f9eab3d7d8425
+---
+ .../2.4/default/android.hardware.camera.provider@2.4-service.rc         | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/camera/provider/2.4/default/android.hardware.camera.provider@2.4-service.rc b/camera/provider/2.4/default/android.hardware.camera.provider@2.4-service.rc
+index 2bf309b..8dcd84f 100644
+--- a/camera/provider/2.4/default/android.hardware.camera.provider@2.4-service.rc
++++ b/camera/provider/2.4/default/android.hardware.camera.provider@2.4-service.rc
+@@ -4,4 +4,4 @@ service camera-provider-2-4 /vendor/bin/hw/android.hardware.camera.provider@2.4-
+     group audio camera input drmrpc
+     ioprio rt 4
+     capabilities SYS_NICE
+-    writepid /dev/cpuset/camera-daemon/tasks /dev/stune/top-app/tasks
++    writepid /dev/cpuset/camera-daemon/tasks /dev/stune/foreground/tasks
+-- 
+1.8.3.1
+

@@ -1,0 +1,25 @@
+From f5f831716a26c7031e4a73344d2d60d7f9a907b4 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 20 Sep 2017 18:53:25 +0000
+Subject: [PATCH] fix compilation issue
+
+Change-Id: Iae09b37bff7e62f5703946620dde79b85c0fbd9e
+---
+ jni/feature_mos/src/mosaic_renderer/SurfaceTextureRenderer.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/jni/feature_mos/src/mosaic_renderer/SurfaceTextureRenderer.h b/jni/feature_mos/src/mosaic_renderer/SurfaceTextureRenderer.h
+index ea2b81a..9dbe9eb 100755
+--- a/jni/feature_mos/src/mosaic_renderer/SurfaceTextureRenderer.h
++++ b/jni/feature_mos/src/mosaic_renderer/SurfaceTextureRenderer.h
+@@ -8,6 +8,7 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ 
+ class SurfaceTextureRenderer: public Renderer {
+   public:
+-- 
+1.8.3.1
+

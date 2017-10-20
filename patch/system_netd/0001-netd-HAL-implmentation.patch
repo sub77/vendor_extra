@@ -1,0 +1,364 @@
+From 237de3e116a313d3b606787927f05ed101732ed5 Mon Sep 17 00:00:00 2001
+From: Niranjan Pendharkar <npendhar@codeaurora.org>
+Date: Mon, 24 Jul 2017 11:40:05 -0700
+Subject: [PATCH 1/3] netd: HAL implmentation
+
+Implement Netd HAL server and register service.
+OEM network create and destroy
+
+Test: ran VtsHalNetNetdV1_0TargetTest, netd_unit_test, netd_integration_test
+Bug: 36682246
+CRs-fixed: 2070022
+Change-Id: I35681f0fbffbe09bf6db0ad25a276844ea997398
+---
+ server/Android.mk            |   4 ++
+ server/NetdHwService.cpp     | 109 +++++++++++++++++++++++++++++++++++++++++++
+ server/NetdHwService.h       |  52 +++++++++++++++++++++
+ server/NetworkController.cpp |  42 +++++++++++++++--
+ server/NetworkController.h   |   3 ++
+ server/main.cpp              |  11 +++++
+ 6 files changed, 217 insertions(+), 4 deletions(-)
+ create mode 100644 server/NetdHwService.cpp
+ create mode 100644 server/NetdHwService.h
+
+diff --git a/server/Android.mk b/server/Android.mk
+index 6dc7c49..52555ca 100644
+--- a/server/Android.mk
++++ b/server/Android.mk
+@@ -67,9 +67,12 @@ LOCAL_CPPFLAGS += -DCONFIG_NO_FRA_UID_RANGE_SUPPORT
+ endif
+ 
+ LOCAL_SHARED_LIBRARIES := \
++        android.system.net.netd@1.0 \
+         libbinder \
+         libcutils \
+         libdl \
++        libhidlbase \
++        libhidltransport \
+         liblog \
+         liblogwrap \
+         libmdnssd \
+@@ -100,6 +103,7 @@ LOCAL_SRC_FILES := \
+         NatController.cpp \
+         NetdCommand.cpp \
+         NetdConstants.cpp \
++        NetdHwService.cpp \
+         NetdNativeService.cpp \
+         NetlinkHandler.cpp \
+         NetlinkManager.cpp \
+diff --git a/server/NetdHwService.cpp b/server/NetdHwService.cpp
+new file mode 100644
+index 0000000..d0a8eff
+--- /dev/null
++++ b/server/NetdHwService.cpp
+@@ -0,0 +1,109 @@
++/*
++ *Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ *
++ *Redistribution and use in source and binary forms, with or without
++ *modification, are permitted provided that the following conditions are
++ *met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ *THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ *WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ *MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ *ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ *BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ *BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ *WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ *OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ *IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include <binder/IPCThreadState.h>
++#include <hidl/HidlTransportSupport.h>
++#include <hwbinder/IPCThreadState.h>
++#include "Controllers.h"
++#include "Fwmark.h"
++#include "NetdHwService.h"
++
++using android::hardware::configureRpcThreadpool;
++using android::hardware::IPCThreadState;
++using android::hardware::Void;
++
++namespace android {
++namespace net {
++
++/**
++ * This lock exists to make NetdHwService RPCs (which come in on multiple HwBinder threads)
++ * coexist with the commands in CommandListener.cpp. These are presumed not thread-safe because
++ * CommandListener has only one user (NetworkManagementService), which is connected through a
++ * FrameworkListener that passes in commands one at a time.
++ */
++extern android::RWLock gBigNetdLock;
++
++static INetd::StatusCode toHalStatus(int ret) {
++    switch(ret) {
++        case 0:
++            return INetd::StatusCode::OK;
++        case -EINVAL:
++            return INetd::StatusCode::INVALID_ARGUMENTS;
++        case -EEXIST:
++            return INetd::StatusCode::ALREADY_EXISTS;
++        case -ENONET:
++            return INetd::StatusCode::NO_NETWORK;
++        case -EPERM:
++            return INetd::StatusCode::PERMISSION_DENIED;
++        default:
++            ALOGE("HAL service error=%d", ret);
++            return INetd::StatusCode::UNKNOWN_ERROR;
++    }
++}
++
++// Minimal service start.
++status_t NetdHwService::start() {
++    IPCThreadState::self()->disableBackgroundScheduling(true);
++    // Usage of this HAL is anticipated to be thin; one thread should suffice.
++    configureRpcThreadpool(1, false /* callerWillNotJoin */);
++    // Register hardware service with ServiceManager.
++    return INetd::registerAsService();
++}
++
++Return<void> NetdHwService::createOemNetwork(createOemNetwork_cb _hidl_cb) {
++    unsigned netId;
++    Permission permission = PERMISSION_SYSTEM;
++
++    android::RWLock::AutoWLock _lock(gBigNetdLock);
++    int ret = gCtls->netCtrl.createPhysicalOemNetwork(permission, &netId);
++
++    Fwmark fwmark;
++    fwmark.netId = netId;
++    fwmark.explicitlySelected = true;
++    fwmark.protectedFromVpn = true;
++    fwmark.permission = PERMISSION_SYSTEM;
++    _hidl_cb(netIdToNetHandle(netId), fwmark.intValue, toHalStatus(ret));
++
++    return Void();
++}
++
++Return<INetd::StatusCode> NetdHwService::destroyOemNetwork(uint64_t netHandle) {
++    unsigned netId = netHandleToNetId(netHandle);
++    if ((netId < NetworkController::MIN_OEM_ID) ||
++            (netId > NetworkController::MAX_OEM_ID)) {
++        return INetd::StatusCode::INVALID_ARGUMENTS;
++    }
++
++    android::RWLock::AutoWLock _lock(gBigNetdLock);
++
++    return toHalStatus(gCtls->netCtrl.destroyNetwork(netId));
++}
++
++}  // namespace net
++}  // namespace android
+diff --git a/server/NetdHwService.h b/server/NetdHwService.h
+new file mode 100644
+index 0000000..11c401d
+--- /dev/null
++++ b/server/NetdHwService.h
+@@ -0,0 +1,52 @@
++/*
++ *Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ *
++ *Redistribution and use in source and binary forms, with or without
++ *modification, are permitted provided that the following conditions are
++ *met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ *THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ *WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ *MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ *ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ *BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ *BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ *WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ *OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ *IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#ifndef ANDROID_NET_HW_SERVICE_H
++#define ANDROID_NET_HW_SERVICE_H
++
++#include <android/system/net/netd/1.0/INetd.h>
++
++using android::hardware::Return;
++using android::system::net::netd::V1_0::INetd;
++
++namespace android {
++namespace net {
++
++class NetdHwService : public INetd {
++public:
++    status_t start();
++    Return<void> createOemNetwork(createOemNetwork_cb _hidl_cb) override;
++    Return<INetd::StatusCode> destroyOemNetwork(uint64_t netHandle) override;
++};
++
++}  // namespace net
++}  // namespace android
++
++#endif  // ANDROID_NET_HW_SERVICE_H
++
+diff --git a/server/NetworkController.cpp b/server/NetworkController.cpp
+index b90976b..ecb4cee 100644
+--- a/server/NetworkController.cpp
++++ b/server/NetworkController.cpp
+@@ -321,14 +321,14 @@ bool NetworkController::isVirtualNetwork(unsigned netId) const {
+     return network && network->getType() == Network::VIRTUAL;
+ }
+ 
+-int NetworkController::createPhysicalNetwork(unsigned netId, Permission permission) {
++int NetworkController::createPhysicalNetworkLocked(unsigned netId, Permission permission) {
+     if (!((MIN_NET_ID <= netId && netId <= MAX_NET_ID) ||
+           (MIN_OEM_ID <= netId && netId <= MAX_OEM_ID))) {
+         ALOGE("invalid netId %u", netId);
+         return -EINVAL;
+     }
+ 
+-    if (isValidNetwork(netId)) {
++    if (isValidNetworkLocked(netId)) {
+         ALOGE("duplicate netId %u", netId);
+         return -EEXIST;
+     }
+@@ -340,11 +340,41 @@ int NetworkController::createPhysicalNetwork(unsigned netId, Permission permissi
+         return ret;
+     }
+ 
+-    android::RWLock::AutoWLock lock(mRWLock);
+     mNetworks[netId] = physicalNetwork;
+     return 0;
+ }
+ 
++int NetworkController::createPhysicalNetwork(unsigned netId, Permission permission) {
++    android::RWLock::AutoWLock lock(mRWLock);
++    return createPhysicalNetworkLocked(netId, permission);
++}
++
++int NetworkController::createPhysicalOemNetwork(Permission permission, unsigned *pNetId) {
++    if (pNetId == NULL) {
++        return -EINVAL;
++    }
++
++    android::RWLock::AutoWLock lock(mRWLock);
++    for (*pNetId = MIN_OEM_ID; *pNetId <= MAX_OEM_ID; (*pNetId)++) {
++        if (!isValidNetworkLocked(*pNetId)) {
++            break;
++        }
++    }
++
++    if (*pNetId > MAX_OEM_ID) {
++        ALOGE("No free network ID");
++        *pNetId = 0;
++        return -ENONET;
++    }
++
++    int ret = createPhysicalNetworkLocked(*pNetId, permission);
++    if (ret) {
++        *pNetId = 0;
++    }
++
++    return ret;
++}
++
+ int NetworkController::createVirtualNetwork(unsigned netId, bool hasDns, bool secure) {
+     if (!(MIN_NET_ID <= netId && netId <= MAX_NET_ID)) {
+         ALOGE("invalid netId %u", netId);
+@@ -564,9 +594,13 @@ void NetworkController::dump(DumpWriter& dw) {
+     dw.decIndent();
+ }
+ 
++bool NetworkController::isValidNetworkLocked(unsigned netId) const {
++    return getNetworkLocked(netId);
++}
++
+ bool NetworkController::isValidNetwork(unsigned netId) const {
+     android::RWLock::AutoRLock lock(mRWLock);
+-    return getNetworkLocked(netId);
++    return isValidNetworkLocked(netId);
+ }
+ 
+ Network* NetworkController::getNetworkLocked(unsigned netId) const {
+diff --git a/server/NetworkController.h b/server/NetworkController.h
+index d5451ee..48d5799 100644
+--- a/server/NetworkController.h
++++ b/server/NetworkController.h
+@@ -67,6 +67,7 @@ public:
+     bool isVirtualNetwork(unsigned netId) const;
+ 
+     int createPhysicalNetwork(unsigned netId, Permission permission) WARN_UNUSED_RESULT;
++    int createPhysicalOemNetwork(Permission permission, unsigned *netId) WARN_UNUSED_RESULT;
+     int createVirtualNetwork(unsigned netId, bool hasDns, bool secure) WARN_UNUSED_RESULT;
+     int destroyNetwork(unsigned netId) WARN_UNUSED_RESULT;
+ 
+@@ -100,10 +101,12 @@ public:
+ 
+ private:
+     bool isValidNetwork(unsigned netId) const;
++    bool isValidNetworkLocked(unsigned netId) const;
+     Network* getNetworkLocked(unsigned netId) const;
+     VirtualNetwork* getVirtualNetworkForUserLocked(uid_t uid) const;
+     Permission getPermissionForUserLocked(uid_t uid) const;
+     int checkUserNetworkAccessLocked(uid_t uid, unsigned netId) const;
++    int createPhysicalNetworkLocked(unsigned netId, Permission permission) WARN_UNUSED_RESULT;
+ 
+     int modifyRoute(unsigned netId, const char* interface, const char* destination,
+                     const char* nexthop, bool add, bool legacy, uid_t uid) WARN_UNUSED_RESULT;
+diff --git a/server/main.cpp b/server/main.cpp
+index 9215f21..c9448cd 100644
+--- a/server/main.cpp
++++ b/server/main.cpp
+@@ -38,6 +38,7 @@
+ #include "Controllers.h"
+ #include "CommandListener.h"
+ #include "NetdConstants.h"
++#include "NetdHwService.h"
+ #include "NetdNativeService.h"
+ #include "NetlinkManager.h"
+ #include "Stopwatch.h"
+@@ -53,6 +54,7 @@ using android::defaultServiceManager;
+ using android::net::CommandListener;
+ using android::net::DnsProxyListener;
+ using android::net::FwmarkServer;
++using android::net::NetdHwService;
+ using android::net::NetdNativeService;
+ using android::net::NetlinkManager;
+ 
+@@ -132,6 +134,15 @@ int main() {
+ 
+     write_pid_file();
+ 
++    // Now that netd is ready to process commands, advertise service
++    // availability for HAL clients.
++    NetdHwService mHwSvc;
++    if ((ret = mHwSvc.start()) != android::OK) {
++        ALOGE("Unable to start NetdHwService: %d", ret);
++        exit(1);
++    }
++    ALOGI("Registering NetdHwService: %.1fms", subTime.getTimeAndReset());
++
+     ALOGI("Netd started in %dms", static_cast<int>(s.timeTaken()));
+ 
+     IPCThreadState::self()->joinThreadPool();
+-- 
+2.1.2
+

@@ -1,0 +1,87 @@
+From 9aed025076b828dbc77465212be013cafb125dc6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andr=C3=A9=20Pinela?= <sheffzor@gmail.com>
+Date: Sun, 22 Jan 2017 12:51:01 +0000
+Subject: [PATCH 1/4] tasks: enhancement to create Omni ota package
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- modify for OmniRom
+
+Change-Id: Id243c3099b4914ed3b53efc42c0c7dac9d56dea8
+Signed-off-by: André Pinela <sheffzor@gmail.com>
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ build/tasks/bacon.mk      | 27 +++++++++++++++++++++++++++
+ build/tasks/otapackage.mk | 25 +++++++++++++++++++++++++
+ 2 files changed, 52 insertions(+)
+ create mode 100644 build/tasks/bacon.mk
+ create mode 100644 build/tasks/otapackage.mk
+
+diff --git a/build/tasks/bacon.mk b/build/tasks/bacon.mk
+new file mode 100644
+index 0000000..16ca7fe
+--- /dev/null
++++ b/build/tasks/bacon.mk
+@@ -0,0 +1,27 @@
++# Copyright (C) 2017 Unlegacy-Android
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++ifneq ($(TARGET_PRODUCT),sdk)
++ifeq ($(filter generic%,$(TARGET_DEVICE)),)
++ifneq ($(TARGET_NO_KERNEL),true)
++ifneq ($(recovery_fstab),)
++
++.PHONY: bacon
++
++bacon: otapackage
++
++endif    # recovery_fstab is defined
++endif    # TARGET_NO_KERNEL != true
++endif    # TARGET_DEVICE != generic*
++endif    # TARGET_PRODUCT != sdk
+diff --git a/build/tasks/otapackage.mk b/build/tasks/otapackage.mk
+new file mode 100644
+index 0000000..12772bd
+--- /dev/null
++++ b/build/tasks/otapackage.mk
+@@ -0,0 +1,25 @@
++# Copyright (C) 2017 Unlegacy-Android
++# Copyright (C) 2017 OmniRom
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++# -----------------------------------------------------------------
++# OmniRoms OTA update package
++
++CUSTOM_TARGET_PACKAGE := $(PRODUCT_OUT)/omni-$(ROM_VERSION).zip
++
++.PHONY: otapackage
++otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
++	$(hide) ln -f $(INTERNAL_OTA_PACKAGE_TARGET) $(CUSTOM_TARGET_PACKAGE)
++	$(hide) $(MD5SUM) $(CUSTOM_TARGET_PACKAGE) | sed "s|$(PRODUCT_OUT)/||" > $(CUSTOM_TARGET_PACKAGE).md5sum
++	@echo -e "Package complete: $(CUSTOM_TARGET_PACKAGE)"
+-- 
+1.8.3.1
+

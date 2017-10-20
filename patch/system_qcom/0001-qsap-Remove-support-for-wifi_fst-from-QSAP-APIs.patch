@@ -1,0 +1,146 @@
+From ef49ee0693928d0bc11f4a2e6c878a68533315f7 Mon Sep 17 00:00:00 2001
+From: Purushottam Kushwaha <pkushwah@codeaurora.org>
+Date: Tue, 30 May 2017 14:34:37 +0530
+Subject: [PATCH 1/2] qsap: Remove support for wifi_fst from QSAP APIs
+
+wifi_fst.h is no longer part of /hardware/libhardware_legacy/ ,
+therefore, compilation of libqsap_sdk would fail. Remove dependencies
+for wifi_fst from QSAP.
+
+Additionally, skip calling 'chown' after changing configuration
+parameters as QSAP is not changing ownership.
+
+CRs-Fixed: 2069881
+Change-Id: Iaadfa182270f22555e486dac24a5acafc247b943
+---
+ softap/sdk/Android.mk |  2 ++
+ softap/sdk/qsap.c     | 18 ------------------
+ softap/sdk/qsap_api.c | 28 ----------------------------
+ softap/sdk/qsap_api.h |  2 +-
+ 4 files changed, 3 insertions(+), 47 deletions(-)
+
+diff --git a/softap/sdk/Android.mk b/softap/sdk/Android.mk
+index e5f3802..d7d4a73 100755
+--- a/softap/sdk/Android.mk
++++ b/softap/sdk/Android.mk
+@@ -12,6 +12,8 @@ LOCAL_MODULE_TAGS := optional
+ 
+ LOCAL_CFLAGS += -DSDK_VERSION=\"0.0.1.0\"
+ 
++LOCAL_LDLIBS := -llog
++
+ LOCAL_COPY_HEADERS_TO := sdk/softap/include
+ LOCAL_COPY_HEADERS := qsap_api.h
+ LOCAL_COPY_HEADERS += qsap.h
+diff --git a/softap/sdk/qsap.c b/softap/sdk/qsap.c
+index d021985..3097821 100644
+--- a/softap/sdk/qsap.c
++++ b/softap/sdk/qsap.c
+@@ -54,7 +54,6 @@
+ 
+ #include "qsap_api.h"
+ #include "qsap.h"
+-#include "wifi_fst.h"
+ 
+ #include <sys/system_properties.h>
+ 
+@@ -697,23 +696,6 @@ s32 wifi_qsap_stop_wigig_softap(void)
+     return eSUCCESS;
+ }
+ 
+-int qsap_prepare_softap()
+-{
+-    ALOGD("Starting fstman\n");
+-    return wifi_start_fstman(TRUE);
+-}
+-
+-int qsap_unprepare_softap()
+-{
+-    ALOGD("Stopping fstman\n");
+-    return wifi_stop_fstman(TRUE);
+-}
+-
+-int qsap_is_fst_enabled()
+-{
+-    return is_fst_enabled();
+-}
+-
+ s32 wifi_qsap_set_tx_power(s32 tx_power)
+ {
+ #define QCSAP_IOCTL_SET_MAX_TX_POWER   (SIOCIWFIRSTPRIV + 22)
+diff --git a/softap/sdk/qsap_api.c b/softap/sdk/qsap_api.c
+index 2aa3f62..d4bd9bf 100755
+--- a/softap/sdk/qsap_api.c
++++ b/softap/sdk/qsap_api.c
+@@ -399,14 +399,6 @@ static s32 qsap_write_cfg(s8 *pfile, struct Command * pcmd, s8 *pVal, s8 *presp,
+         unlink(pfile);
+         return -1;
+     }
+-
+-    if (chown(pfile, AID_SYSTEM, AID_WIFI) < 0) {
+-        ALOGE("Error changing group ownership of %s to %d: %s",
+-                pfile, AID_WIFI, strerror(errno));
+-        unlink(pfile);
+-        return -1;
+-    }
+-
+     if(result == eERR_UNKNOWN)
+         return eERR_FEATURE_NOT_ENABLED;
+ 
+@@ -552,14 +544,6 @@ static s32 qsap_change_cfg(s8 *pfile, struct Command * pcmd, u32 status)
+         unlink(pfile);
+         return -1;
+     }
+-
+-    if (chown(pfile, AID_SYSTEM, AID_WIFI) < 0) {
+-        ALOGE("Error changing group ownership of %s to %d: %s",
+-                pfile, AID_WIFI, strerror(errno));
+-        unlink(pfile);
+-        return -1;
+-    }
+-
+     return 0;
+ }
+ 
+@@ -3319,12 +3303,6 @@ void check_for_configuration_files(void)
+         ALOGE("Error changing permissions of %s to 0660: %s",
+                 pfile, strerror(errno));
+     }
+-
+-    if (chown(pfile, AID_SYSTEM, AID_WIFI) < 0) {
+-        ALOGE("Error changing group ownership of %s to %d: %s",
+-                pfile, AID_WIFI, strerror(errno));
+-    }
+-
+     /* If deny MAC list file does not exist, copy the default file */
+     if ( NULL == (fp = fopen(DENY_LIST_FILE, "r")) ) {
+         wifi_qsap_reset_to_default(DENY_LIST_FILE, DEFAULT_DENY_LIST_FILE_PATH);
+@@ -3344,12 +3322,6 @@ void check_for_configuration_files(void)
+         ALOGE("Error changing permissions of %s to 0660: %s",
+                 pfile, strerror(errno));
+     }
+-
+-    if (chown(pfile, AID_SYSTEM, AID_WIFI) < 0) {
+-        ALOGE("Error changing group ownership of %s to %d: %s",
+-                pfile, AID_WIFI, strerror(errno));
+-    }
+-
+     return;
+ }
+ 
+diff --git a/softap/sdk/qsap_api.h b/softap/sdk/qsap_api.h
+index 484cbb3..4c47c7c 100755
+--- a/softap/sdk/qsap_api.h
++++ b/softap/sdk/qsap_api.h
+@@ -34,7 +34,7 @@
+ #if __cplusplus
+ extern "C" {
+ #endif
+-
++#include <android/log.h>
+ typedef unsigned char      u8;
+ typedef char               s8;
+ typedef unsigned short int u16;
+-- 
+2.9.5
+

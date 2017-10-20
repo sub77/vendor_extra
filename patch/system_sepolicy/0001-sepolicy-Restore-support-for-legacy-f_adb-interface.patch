@@ -1,0 +1,72 @@
+From a0a6867ce30a13c3cd1f37689032f917c61cf9fd Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 9 Sep 2017 10:35:22 +0000
+Subject: [PATCH 1/6] sepolicy: Restore support for legacy f_adb interface
+
+* Restore full support of USB and adb on devices
+  using the legacy f_adb kernel drivers
+
+Change-Id: If9d9ff69ca58c8874312d62273d557e0376744eb
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ private/adbd.te       | 3 ++-
+ private/file_contexts | 1 +
+ public/device.te      | 1 +
+ public/recovery.te    | 3 ++-
+ 4 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/private/adbd.te b/private/adbd.te
+index 52597eb..d42f296 100644
+--- a/private/adbd.te
++++ b/private/adbd.te
+@@ -23,7 +23,8 @@ allow adbd self:capability setpcap;
+ # Create and use network sockets.
+ net_domain(adbd)
+ 
+-# Access /dev/usb-ffs/adb/ep0
++# Access /dev/android_adb or /dev/usb-ffs/adb/ep0
++allow adbd adb_device:chr_file rw_file_perms;
+ allow adbd functionfs:dir search;
+ allow adbd functionfs:file rw_file_perms;
+ 
+diff --git a/private/file_contexts b/private/file_contexts
+index 4485b95..0af67c1 100644
+--- a/private/file_contexts
++++ b/private/file_contexts
+@@ -65,6 +65,7 @@
+ /dev/adf-interface[0-9]*\.[0-9]*	u:object_r:graphics_device:s0
+ /dev/adf-overlay-engine[0-9]*\.[0-9]*	u:object_r:graphics_device:s0
+ /dev/alarm		u:object_r:alarm_device:s0
++/dev/android_adb.*	u:object_r:adb_device:s0
+ /dev/ashmem		u:object_r:ashmem_device:s0
+ /dev/audio.*		u:object_r:audio_device:s0
+ /dev/binder		u:object_r:binder_device:s0
+diff --git a/public/device.te b/public/device.te
+index 4a3bec9..9415d83 100644
+--- a/public/device.te
++++ b/public/device.te
+@@ -1,6 +1,7 @@
+ # Device types
+ type device, dev_type, fs_type;
+ type alarm_device, dev_type, mlstrustedobject;
++type adb_device, dev_type;
+ type ashmem_device, dev_type, mlstrustedobject;
+ type audio_device, dev_type;
+ type audio_timer_device, dev_type;
+diff --git a/public/recovery.te b/public/recovery.te
+index f55dc8a..7875ada 100644
+--- a/public/recovery.te
++++ b/public/recovery.te
+@@ -71,7 +71,8 @@ recovery_only(`
+ 
+   allow recovery kernel:system syslog_read;
+ 
+-  # Access /dev/usb-ffs/adb/ep0
++  # Access /dev/android_adb or /dev/usb-ffs/adb/ep0
++  allow recovery adb_device:chr_file rw_file_perms;
+   allow recovery functionfs:dir search;
+   allow recovery functionfs:file rw_file_perms;
+ 
+-- 
+2.1.2
+

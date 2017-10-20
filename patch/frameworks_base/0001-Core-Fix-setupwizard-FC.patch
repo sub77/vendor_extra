@@ -1,0 +1,26 @@
+From d32e93bc703f0fa7a539040e318c1f67e53583d5 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 7 Oct 2017 05:21:19 +0000
+Subject: [PATCH 1/2] Core: Fix setupwizard FC
+
+Change-Id: I23554d84b9a0cbec09ef5ac158ce469a6d51e7f1
+---
+ .../core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java   | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java b/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java
+index d1aecb1..b7b8d8b 100644
+--- a/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java
++++ b/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java
+@@ -316,7 +316,7 @@ final class DefaultPermissionGrantPolicy {
+                     mService.mSetupWizardPackage);
+             if (setupPackage != null
+                     && doesPackageSupportRuntimePermissions(setupPackage)) {
+-                grantRuntimePermissionsLPw(setupPackage, PHONE_PERMISSIONS, userId);
++                grantRuntimePermissionsLPw(setupPackage, PHONE_PERMISSIONS, true, userId);
+                 grantRuntimePermissionsLPw(setupPackage, CONTACTS_PERMISSIONS, userId);
+                 grantRuntimePermissionsLPw(setupPackage, LOCATION_PERMISSIONS, userId);
+                 grantRuntimePermissionsLPw(setupPackage, CAMERA_PERMISSIONS, userId);
+-- 
+1.8.3.1
+

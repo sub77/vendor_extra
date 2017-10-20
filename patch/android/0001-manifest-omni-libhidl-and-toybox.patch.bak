@@ -1,0 +1,54 @@
+From 7127a8ee577ce04f71797e121b830c0a9be2e03c Mon Sep 17 00:00:00 2001
+From: maxwen <max.weninger@gmail.com>
+Date: Wed, 20 Sep 2017 17:17:32 +0200
+Subject: [PATCH] manifest: omni libhidl and toybox
+
+Change-Id: If6e4afcbf6dd127ee3f2b4b0ad940a92b585484e
+---
+ omni-aosp.xml | 2 ++
+ remove.xml    | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/omni-aosp.xml b/omni-aosp.xml
+index ab82bd2..d0f157e 100644
+--- a/omni-aosp.xml
++++ b/omni-aosp.xml
+@@ -29,6 +29,7 @@
+   <project path="external/e2fsprogs" name="android_external_e2fsprogs" remote="omnirom" revision="android-8.0" />
+   <project path="external/tinycompress" name="android_external_tinycompress" remote="omnirom" revision="android-8.0" />
+   <project path="external/selinux" name="android_external_selinux" remote="omnirom" revision="android-8.0" />
++  <project path="external/toybox" name="android_external_toybox" remote="omnirom" revision="android-8.0" />
+ 
+   <project path="frameworks/av" name="android_frameworks_av" remote="omnirom" revision="android-8.0" />
+   <project path="frameworks/base" name="android_frameworks_base" remote="omnirom" revision="android-8.0" />
+@@ -56,6 +57,7 @@
+ 
+   <project path="system/bt" name="android_system_bt" remote="omnirom" revision="android-8.0" />
+   <project path="system/core" name="android_system_core" remote="omnirom" revision="android-8.0" />
++  <project path="system/libhidl" name="android_system_libhidl" remote="omnirom" revision="android-8.0" />
+   <project path="system/media" name="android_system_media" remote="omnirom" revision="android-8.0" />
+   <project path="system/netd" name="android_system_netd" remote="omnirom" revision="android-8.0" />
+   <project path="system/sepolicy" name="android_system_sepolicy" remote="omnirom" revision="android-8.0" />
+diff --git a/remove.xml b/remove.xml
+index c5a2e00..b2412d1 100644
+--- a/remove.xml
++++ b/remove.xml
+@@ -58,6 +58,7 @@
+   <remove-project name="platform/external/libnetfilter_conntrack" />
+   <remove-project name="platform/external/tinycompress" />
+   <remove-project name="platform/external/selinux" />
++  <remove-project name="platform/external/toybox" />
+ 
+   <remove-project name="platform/frameworks/av" />
+   <remove-project name="platform/frameworks/base" />
+@@ -108,6 +109,7 @@
+ 
+   <remove-project name="platform/system/bt" />
+   <remove-project name="platform/system/core" />
++  <remove-project name="platform/system/libhidl" />
+   <remove-project name="platform/system/media" />
+   <remove-project name="platform/system/netd" />
+   <remove-project name="platform/system/sepolicy" />
+-- 
+1.8.3.1
+

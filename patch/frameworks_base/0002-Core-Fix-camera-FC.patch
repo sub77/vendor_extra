@@ -1,0 +1,29 @@
+From fe4a246df48f55124bebe6a728cbd71fe126bafa Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 7 Oct 2017 05:23:50 +0000
+Subject: [PATCH 2/2] Core: Fix camera FC
+
+Change-Id: If7f090ef55e0c4ef7b30223b30623d2465c22e2f
+---
+ .../core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java b/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java
+index b7b8d8b..89425f2 100644
+--- a/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java
++++ b/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java
+@@ -328,9 +328,9 @@ final class DefaultPermissionGrantPolicy {
+                     cameraIntent, userId);
+             if (cameraPackage != null
+                     && doesPackageSupportRuntimePermissions(cameraPackage)) {
+-                grantRuntimePermissionsLPw(cameraPackage, CAMERA_PERMISSIONS, userId);
++                grantRuntimePermissionsLPw(cameraPackage, CAMERA_PERMISSIONS, true, userId);
+                 grantRuntimePermissionsLPw(cameraPackage, MICROPHONE_PERMISSIONS, userId);
+-                grantRuntimePermissionsLPw(cameraPackage, STORAGE_PERMISSIONS, userId);
++                grantRuntimePermissionsLPw(cameraPackage, STORAGE_PERMISSIONS, true, userId);
+             }
+ 
+             // Media provider
+-- 
+1.8.3.1
+

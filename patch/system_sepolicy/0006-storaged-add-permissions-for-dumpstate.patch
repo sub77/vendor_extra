@@ -1,0 +1,43 @@
+From 6055e6d6c7f46a017b5bd0039f46c0dc733be5f9 Mon Sep 17 00:00:00 2001
+From: William Roberts <william.c.roberts@intel.com>
+Date: Wed, 3 May 2017 10:26:40 -0700
+Subject: [PATCH 6/6] storaged: add permissions for dumpstate
+
+The service "storaged" implememnts a dump() interface for
+dumpsys, and thus it needs to write its state to the fd
+provided by dumpstate.
+
+To correct this, and fix dumpstate, allow the permission.
+
+Fixes:
+avc: denied { use } for pid=3298 comm="dumpsys" path="pipe:[33470]" dev="pipefs" ino=33470 scontext=u:r:storaged:s0 tcontext=u:r:dumpstate:s0 tclass=fd permissive=0
+
+Test:
+With a device that has storaged, issue the command:
+$ adb shell dumpstate
+
+Change-Id: I515e20f0328b6edc01ea2a7c53b1d3c4ca0e72ac
+Signed-off-by: William Roberts <william.c.roberts@intel.com>
+(cherry picked from commit fd8f305bd3c5382477d43c8f52bd3ef02ebcb20f)
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ private/storaged.te | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/private/storaged.te b/private/storaged.te
+index 96433b3..d5abd73 100644
+--- a/private/storaged.te
++++ b/private/storaged.te
+@@ -40,6 +40,9 @@ binder_call(storaged, system_server)
+ allow storaged batteryproperties_service:service_manager find;
+ binder_call(storaged, healthd)
+ 
++# Implements a dumpsys interface.
++allow storaged dumpstate:fd use;
++
+ # Kernel does extra check on CAP_DAC_OVERRIDE for libbinder when storaged is
+ # running as root. See b/35323867 #3.
+ dontaudit storaged self:capability dac_override;
+-- 
+2.1.2
+

@@ -1,0 +1,97 @@
+From 02b4e66c1fc8e0e0c7f06dc418f4f7d9c358b3a5 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 9 Sep 2017 21:52:59 +0000
+Subject: [PATCH] wifi_hal_common: add back WIFI_FIRMWARE_LOADER support
+
+This allows the WiFi HAL to wait for a maximum of 20 seconds
+for the executable defined in the WIFI_FIRMWARE_LOADER board config
+to set the "wlan.driver.status" to "ok".
+
+Change-Id: If76f7dba52a1cf8127fa34120d40db1c65ce19b8
+---
+ libwifi_hal/Android.mk          |  3 +++
+ libwifi_hal/wifi_hal_common.cpp | 33 +++++++++++++++++++++++++++++++--
+ 2 files changed, 34 insertions(+), 2 deletions(-)
+
+diff --git a/libwifi_hal/Android.mk b/libwifi_hal/Android.mk
+index 1179a09..280c367 100644
+--- a/libwifi_hal/Android.mk
++++ b/libwifi_hal/Android.mk
+@@ -33,6 +33,9 @@ endif
+ ifdef WIFI_DRIVER_MODULE_NAME
+ wifi_hal_cflags += -DWIFI_DRIVER_MODULE_NAME=\"$(WIFI_DRIVER_MODULE_NAME)\"
+ endif
++ifdef WIFI_FIRMWARE_LOADER
++wifi_hal_cflags += -DWIFI_FIRMWARE_LOADER=\"$(WIFI_FIRMWARE_LOADER)\"
++endif
+ ifdef WIFI_DRIVER_FW_PATH_STA
+ wifi_hal_cflags += -DWIFI_DRIVER_FW_PATH_STA=\"$(WIFI_DRIVER_FW_PATH_STA)\"
+ endif
+diff --git a/libwifi_hal/wifi_hal_common.cpp b/libwifi_hal/wifi_hal_common.cpp
+index 04e5925..07cb23c 100644
+--- a/libwifi_hal/wifi_hal_common.cpp
++++ b/libwifi_hal/wifi_hal_common.cpp
+@@ -27,6 +27,10 @@
+ extern "C" int init_module(void *, unsigned long, const char *);
+ extern "C" int delete_module(const char *, unsigned int);
+ 
++#ifndef WIFI_FIRMWARE_LOADER
++#define WIFI_FIRMWARE_LOADER    ""
++#endif
++
+ #ifndef WIFI_DRIVER_FW_PATH_STA
+ #define WIFI_DRIVER_FW_PATH_STA NULL
+ #endif
+@@ -41,6 +45,7 @@ extern "C" int delete_module(const char *, unsigned int);
+ #define WIFI_DRIVER_MODULE_ARG ""
+ #endif
+ 
++static const char FIRMWARE_LOADER[] = WIFI_FIRMWARE_LOADER;
+ static const char DRIVER_PROP_NAME[] = "wlan.driver.status";
+ #ifdef WIFI_DRIVER_MODULE_PATH
+ static const char DRIVER_MODULE_NAME[] = WIFI_DRIVER_MODULE_NAME;
+@@ -142,6 +147,9 @@ int is_wifi_driver_loaded() {
+ }
+ 
+ int wifi_load_driver() {
++  char driver_status[PROPERTY_VALUE_MAX];
++  int count = 100; /* wait 20 seconds for completion */
++
+ #ifdef WIFI_DRIVER_MODULE_PATH
+   if (is_wifi_driver_loaded()) {
+     return 0;
+@@ -157,8 +165,29 @@ int wifi_load_driver() {
+ 
+   if (wifi_change_driver_state(WIFI_DRIVER_STATE_ON) < 0) return -1;
+ #endif
+-  property_set(DRIVER_PROP_NAME, "ok");
+-  return 0;
++
++  if (strcmp(FIRMWARE_LOADER,"") == 0) {
++    property_set(DRIVER_PROP_NAME, "ok");
++    return 0;
++  }
++
++  property_set("ctl.start", FIRMWARE_LOADER);
++
++  sched_yield();
++  while (count-- > 0) {
++    if (property_get(DRIVER_PROP_NAME, driver_status, NULL)) {
++      if (strcmp(driver_status, "ok") == 0)
++        return 0;
++      else if (strcmp(driver_status, "failed") == 0) {
++        wifi_unload_driver();
++        return -1;
++      }
++    }
++    usleep(200000);
++  }
++
++  wifi_unload_driver();
++  return -1;
+ }
+ 
+ int wifi_unload_driver() {
+-- 
+2.9.5
+

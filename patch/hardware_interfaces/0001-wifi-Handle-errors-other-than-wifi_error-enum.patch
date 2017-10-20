@@ -1,0 +1,39 @@
+From 5214bdac32d020fdb827a38545cbeedbea302b48 Mon Sep 17 00:00:00 2001
+From: Purushottam Kushwaha <pkushwah@codeaurora.org>
+Date: Wed, 12 Jul 2017 11:41:06 +0530
+Subject: [PATCH 1/7] wifi: Handle errors other than wifi_error enum.
+
+wifi_error enum has limited set of errors defined. Netlink command
+may return any linux error code. In cases where netlink returns
+errors other than wifi_error enum, createWifiStatusFromLegacyError
+function is not returning any error because of missing default case
+in switch statement, which leads to a crash.
+
+This commit adds default case to handle undefined wifi_error(s) in
+default case.
+
+CRs-Fixed: 2074510
+Change-Id: Ieba8661ba6019de62269db6f04aef11056f693d2
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ wifi/1.0/default/wifi_status_util.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/wifi/1.0/default/wifi_status_util.cpp b/wifi/1.0/default/wifi_status_util.cpp
+index c2d0758..8a6d798 100644
+--- a/wifi/1.0/default/wifi_status_util.cpp
++++ b/wifi/1.0/default/wifi_status_util.cpp
+@@ -92,6 +92,10 @@ WifiStatus createWifiStatusFromLegacyError(legacy_hal::wifi_error error,
+ 
+     case legacy_hal::WIFI_ERROR_UNKNOWN:
+       return createWifiStatus(WifiStatusCode::ERROR_UNKNOWN, "unknown");
++    default:
++      const std::string errStr = "errno: " + std::to_string(error)
++                                 + " (" + strerror(error) + ")";
++      return createWifiStatus(WifiStatusCode::ERROR_UNKNOWN, errStr);
+   }
+ }
+ 
+-- 
+1.8.3.1
+

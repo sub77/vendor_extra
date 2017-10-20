@@ -1,0 +1,716 @@
+From ba25f78a059074cdcaefabfe44a5ac6f2b939171 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 5 Oct 2017 06:17:00 +0000
+Subject: [PATCH] Reduce quicken info size
+
+Change-Id: Icb051978198322e521b5fbaa868b6d47bac89b7b
+---
+ compiler/dex/dex_to_dex_compiler.cc        |  48 ++++++++++----
+ compiler/optimizing/block_builder.cc       |  14 ++++
+ compiler/optimizing/block_builder.h        |   8 ++-
+ compiler/optimizing/instruction_builder.cc |  62 ++++++++----------
+ compiler/optimizing/instruction_builder.h  |  24 +++----
+ runtime/dex_to_dex_decompiler.cc           | 100 +++++++++++++----------------
+ runtime/quicken_info.h                     |  44 +++++++++++++
+ runtime/safe_map.h                         |   3 +
+ runtime/vdex_file.h                        |   4 +-
+ 9 files changed, 185 insertions(+), 122 deletions(-)
+ create mode 100644 runtime/quicken_info.h
+
+diff --git a/compiler/dex/dex_to_dex_compiler.cc b/compiler/dex/dex_to_dex_compiler.cc
+index 1573062..11c197c 100644
+--- a/compiler/dex/dex_to_dex_compiler.cc
++++ b/compiler/dex/dex_to_dex_compiler.cc
+@@ -22,12 +22,14 @@
+ #include "art_method-inl.h"
+ #include "base/logging.h"
+ #include "base/mutex.h"
++#include "bytecode_utils.h"
+ #include "compiled_method.h"
+ #include "dex_file-inl.h"
+ #include "dex_instruction-inl.h"
+ #include "driver/compiler_driver.h"
+ #include "driver/dex_compilation_unit.h"
+ #include "mirror/dex_cache.h"
++#include "quicken_info.h"
+ #include "thread-inl.h"
+ 
+ namespace art {
+@@ -110,13 +112,9 @@ class DexCompiler {
+ 
+ void DexCompiler::Compile() {
+   DCHECK_EQ(dex_to_dex_compilation_level_, DexToDexCompilationLevel::kOptimize);
+-  const DexFile::CodeItem* code_item = unit_.GetCodeItem();
+-  const uint16_t* insns = code_item->insns_;
+-  const uint32_t insns_size = code_item->insns_size_in_code_units_;
+-  Instruction* inst = const_cast<Instruction*>(Instruction::At(insns));
+-
+-  for (uint32_t dex_pc = 0; dex_pc < insns_size;
+-       inst = const_cast<Instruction*>(inst->Next()), dex_pc = inst->GetDexPc(insns)) {
++  for (CodeItemIterator it(*unit_.GetCodeItem()); !it.Done(); it.Advance()) {
++    Instruction* inst = const_cast<Instruction*>(&it.CurrentInstruction());
++    const uint32_t dex_pc = it.CurrentDexPc();
+     switch (inst->Opcode()) {
+       case Instruction::RETURN_VOID:
+         CompileReturnVoid(inst, dex_pc);
+@@ -124,6 +122,11 @@ void DexCompiler::Compile() {
+ 
+       case Instruction::CHECK_CAST:
+         inst = CompileCheckCast(inst, dex_pc);
++        if (inst->Opcode() == Instruction::NOP) {
++          // We turned the CHECK_CAST into two NOPs, avoid visiting the second NOP twice since this
++          // would add 2 quickening info entries.
++          it.Advance();
++        }
+         break;
+ 
+       case Instruction::IGET:
+@@ -190,7 +193,14 @@ void DexCompiler::Compile() {
+         CompileInvokeVirtual(inst, dex_pc, Instruction::INVOKE_VIRTUAL_RANGE_QUICK, true);
+         break;
+ 
++      case Instruction::NOP:
++        // We need to differentiate between check cast inserted NOP and normal NOP, put an invalid
++        // index in the map for normal nops. This should be rare in real code.
++        quickened_info_.push_back(QuickenedInfo(dex_pc, DexFile::kDexNoIndex16));
++        break;
++
+       default:
++        DCHECK(!inst->IsQuickened());
+         // Nothing to do.
+         break;
+     }
+@@ -348,10 +358,26 @@ CompiledMethod* ArtCompileDEX(
+     }
+ 
+     // Create a `CompiledMethod`, with the quickened information in the vmap table.
+-    Leb128EncodingVector<> builder;
++    if (kIsDebugBuild) {
++      // Double check that the counts line up with the size of the quicken info.
++      size_t quicken_count = 0;
++      for (CodeItemIterator it(*code_item); !it.Done(); it.Advance()) {
++        if (QuickenInfoTable::NeedsIndexForInstruction(&it.CurrentInstruction())) {
++          ++quicken_count;
++        }
++      }
++      CHECK_EQ(quicken_count, dex_compiler.GetQuickenedInfo().size());
++    }
++    std::vector<uint8_t> quicken_data;
+     for (QuickenedInfo info : dex_compiler.GetQuickenedInfo()) {
+-      builder.PushBackUnsigned(info.dex_pc);
+-      builder.PushBackUnsigned(info.dex_member_index);
++      // Dex pc is not serialized, only used for checking the instructions. Since we access the
++      // array based on the index of the quickened instruction, the indexes must line up perfectly.
++      // The reader side uses the NeedsIndexForInstruction function too.
++      const Instruction* inst = Instruction::At(code_item->insns_ + info.dex_pc);
++      CHECK(QuickenInfoTable::NeedsIndexForInstruction(inst)) << inst->Opcode();
++      // Add the index.
++      quicken_data.push_back(static_cast<uint8_t>(info.dex_member_index >> 0));
++      quicken_data.push_back(static_cast<uint8_t>(info.dex_member_index >> 8));
+     }
+     InstructionSet instruction_set = driver->GetInstructionSet();
+     if (instruction_set == kThumb2) {
+@@ -366,7 +392,7 @@ CompiledMethod* ArtCompileDEX(
+         0,
+         0,
+         ArrayRef<const uint8_t>(),                   // method_info
+-        ArrayRef<const uint8_t>(builder.GetData()),  // vmap_table
++        ArrayRef<const uint8_t>(quicken_data),       // vmap_table
+         ArrayRef<const uint8_t>(),                   // cfi data
+         ArrayRef<const LinkerPatch>());
+   }
+diff --git a/compiler/optimizing/block_builder.cc b/compiler/optimizing/block_builder.cc
+index 5e70a82..fac01e7 100644
+--- a/compiler/optimizing/block_builder.cc
++++ b/compiler/optimizing/block_builder.cc
+@@ -17,6 +17,7 @@
+ #include "block_builder.h"
+ 
+ #include "bytecode_utils.h"
++#include "quicken_info.h"
+ 
+ namespace art {
+ 
+@@ -121,13 +122,18 @@ void HBasicBlockBuilder::ConnectBasicBlocks() {
+   HBasicBlock* block = graph_->GetEntryBlock();
+   graph_->AddBlock(block);
+ 
++  size_t quicken_index = 0;
+   bool is_throwing_block = false;
++  // Calculate the qucikening index here instead of CreateBranchTargets since it's easier to
++  // calculate in dex_pc order.
+   for (CodeItemIterator it(code_item_); !it.Done(); it.Advance()) {
+     uint32_t dex_pc = it.CurrentDexPc();
+ 
+     // Check if this dex_pc address starts a new basic block.
+     HBasicBlock* next_block = GetBlockAt(dex_pc);
+     if (next_block != nullptr) {
++      // We only need quicken index entries for basic block boundaries.
++      quicken_index_for_dex_pc_.Put(dex_pc, quicken_index);
+       if (block != nullptr) {
+         // Last instruction did not end its basic block but a new one starts here.
+         // It must have been a block falling through into the next one.
+@@ -137,6 +143,10 @@ void HBasicBlockBuilder::ConnectBasicBlocks() {
+       is_throwing_block = false;
+       graph_->AddBlock(block);
+     }
++    // Make sure to increment this before the continues.
++    if (QuickenInfoTable::NeedsIndexForInstruction(&it.CurrentInstruction())) {
++      ++quicken_index;
++    }
+ 
+     if (block == nullptr) {
+       // Ignore dead code.
+@@ -367,4 +377,8 @@ bool HBasicBlockBuilder::Build() {
+   return true;
+ }
+ 
++size_t HBasicBlockBuilder::GetQuickenIndex(uint32_t dex_pc) const {
++  return quicken_index_for_dex_pc_.Get(dex_pc);
++}
++
+ }  // namespace art
+diff --git a/compiler/optimizing/block_builder.h b/compiler/optimizing/block_builder.h
+index 1be0b4c..6adce81 100644
+--- a/compiler/optimizing/block_builder.h
++++ b/compiler/optimizing/block_builder.h
+@@ -37,7 +37,8 @@ class HBasicBlockBuilder : public ValueObject {
+                         nullptr,
+                         arena_->Adapter(kArenaAllocGraphBuilder)),
+         throwing_blocks_(kDefaultNumberOfThrowingBlocks, arena_->Adapter(kArenaAllocGraphBuilder)),
+-        number_of_branches_(0u) {}
++        number_of_branches_(0u),
++        quicken_index_for_dex_pc_(std::less<uint32_t>(), arena_->Adapter()) {}
+ 
+   // Creates basic blocks in `graph_` at branch target dex_pc positions of the
+   // `code_item_`. Blocks are connected but left unpopulated with instructions.
+@@ -48,6 +49,8 @@ class HBasicBlockBuilder : public ValueObject {
+   size_t GetNumberOfBranches() const { return number_of_branches_; }
+   HBasicBlock* GetBlockAt(uint32_t dex_pc) const { return branch_targets_[dex_pc]; }
+ 
++  size_t GetQuickenIndex(uint32_t dex_pc) const;
++
+  private:
+   // Creates a basic block starting at given `dex_pc`.
+   HBasicBlock* MaybeCreateBlockAt(uint32_t dex_pc);
+@@ -78,6 +81,9 @@ class HBasicBlockBuilder : public ValueObject {
+   ArenaVector<HBasicBlock*> throwing_blocks_;
+   size_t number_of_branches_;
+ 
++  // A table to quickly find the quicken index for the first instruction of a basic block.
++  ArenaSafeMap<uint32_t, uint32_t> quicken_index_for_dex_pc_;
++
+   static constexpr size_t kDefaultNumberOfThrowingBlocks = 2u;
+ 
+   DISALLOW_COPY_AND_ASSIGN(HBasicBlockBuilder);
+diff --git a/compiler/optimizing/instruction_builder.cc b/compiler/optimizing/instruction_builder.cc
+index 978c6a2..5355b83 100644
+--- a/compiler/optimizing/instruction_builder.cc
++++ b/compiler/optimizing/instruction_builder.cc
+@@ -22,6 +22,7 @@
+ #include "dex_instruction-inl.h"
+ #include "driver/compiler_options.h"
+ #include "imtable-inl.h"
++#include "quicken_info.h"
+ #include "sharpening.h"
+ #include "scoped_thread_state_change-inl.h"
+ 
+@@ -312,6 +313,11 @@ bool HInstructionBuilder::Build() {
+ 
+     DCHECK(!IsBlockPopulated(current_block_));
+ 
++    uint32_t quicken_index = 0;
++    if (CanDecodeQuickenedInfo()) {
++      quicken_index = block_builder_->GetQuickenIndex(block_dex_pc);
++    }
++
+     for (CodeItemIterator it(code_item_, block_dex_pc); !it.Done(); it.Advance()) {
+       if (current_block_ == nullptr) {
+         // The previous instruction ended this block.
+@@ -332,9 +338,13 @@ bool HInstructionBuilder::Build() {
+         AppendInstruction(new (arena_) HNativeDebugInfo(dex_pc));
+       }
+ 
+-      if (!ProcessDexInstruction(it.CurrentInstruction(), dex_pc)) {
++      if (!ProcessDexInstruction(it.CurrentInstruction(), dex_pc, quicken_index)) {
+         return false;
+       }
++
++      if (QuickenInfoTable::NeedsIndexForInstruction(&it.CurrentInstruction())) {
++        ++quicken_index;
++      }
+     }
+ 
+     if (current_block_ != nullptr) {
+@@ -1189,7 +1199,8 @@ static Primitive::Type GetFieldAccessType(const DexFile& dex_file, uint16_t fiel
+ 
+ bool HInstructionBuilder::BuildInstanceFieldAccess(const Instruction& instruction,
+                                                    uint32_t dex_pc,
+-                                                   bool is_put) {
++                                                   bool is_put,
++                                                   size_t quicken_index) {
+   uint32_t source_or_dest_reg = instruction.VRegA_22c();
+   uint32_t obj_reg = instruction.VRegB_22c();
+   uint16_t field_index;
+@@ -1197,7 +1208,7 @@ bool HInstructionBuilder::BuildInstanceFieldAccess(const Instruction& instructio
+     if (!CanDecodeQuickenedInfo()) {
+       return false;
+     }
+-    field_index = LookupQuickenedInfo(dex_pc);
++    field_index = LookupQuickenedInfo(quicken_index);
+   } else {
+     field_index = instruction.VRegC_22c();
+   }
+@@ -1731,40 +1742,17 @@ bool HInstructionBuilder::NeedsAccessCheck(dex::TypeIndex type_index, bool* fina
+ }
+ 
+ bool HInstructionBuilder::CanDecodeQuickenedInfo() const {
+-  return interpreter_metadata_ != nullptr;
++  return !quicken_info_.IsNull();
+ }
+ 
+-uint16_t HInstructionBuilder::LookupQuickenedInfo(uint32_t dex_pc) {
+-  DCHECK(interpreter_metadata_ != nullptr);
+-
+-  // First check if the info has already been decoded from `interpreter_metadata_`.
+-  auto it = skipped_interpreter_metadata_.find(dex_pc);
+-  if (it != skipped_interpreter_metadata_.end()) {
+-    // Remove the entry from the map and return the parsed info.
+-    uint16_t value_in_map = it->second;
+-    skipped_interpreter_metadata_.erase(it);
+-    return value_in_map;
+-  }
+-
+-  // Otherwise start parsing `interpreter_metadata_` until the slot for `dex_pc`
+-  // is found. Store skipped values in the `skipped_interpreter_metadata_` map.
+-  while (true) {
+-    uint32_t dex_pc_in_map = DecodeUnsignedLeb128(&interpreter_metadata_);
+-    uint16_t value_in_map = DecodeUnsignedLeb128(&interpreter_metadata_);
+-    DCHECK_LE(dex_pc_in_map, dex_pc);
+-
+-    if (dex_pc_in_map == dex_pc) {
+-      return value_in_map;
+-    } else {
+-      // Overwrite and not Put, as quickened CHECK-CAST has two entries with
+-      // the same dex_pc. This is OK, because the compiler does not care about those
+-      // entries.
+-      skipped_interpreter_metadata_.Overwrite(dex_pc_in_map, value_in_map);
+-    }
+-  }
++uint16_t HInstructionBuilder::LookupQuickenedInfo(uint32_t quicken_index) {
++  DCHECK(CanDecodeQuickenedInfo());
++  return quicken_info_.GetData(quicken_index);
+ }
+ 
+-bool HInstructionBuilder::ProcessDexInstruction(const Instruction& instruction, uint32_t dex_pc) {
++bool HInstructionBuilder::ProcessDexInstruction(const Instruction& instruction,
++                                                uint32_t dex_pc,
++                                                size_t quicken_index) {
+   switch (instruction.Opcode()) {
+     case Instruction::CONST_4: {
+       int32_t register_index = instruction.VRegA();
+@@ -1921,7 +1909,7 @@ bool HInstructionBuilder::ProcessDexInstruction(const Instruction& instruction,
+         if (!CanDecodeQuickenedInfo()) {
+           return false;
+         }
+-        method_idx = LookupQuickenedInfo(dex_pc);
++        method_idx = LookupQuickenedInfo(quicken_index);
+       } else {
+         method_idx = instruction.VRegB_35c();
+       }
+@@ -1946,7 +1934,7 @@ bool HInstructionBuilder::ProcessDexInstruction(const Instruction& instruction,
+         if (!CanDecodeQuickenedInfo()) {
+           return false;
+         }
+-        method_idx = LookupQuickenedInfo(dex_pc);
++        method_idx = LookupQuickenedInfo(quicken_index);
+       } else {
+         method_idx = instruction.VRegB_3rc();
+       }
+@@ -2603,7 +2591,7 @@ bool HInstructionBuilder::ProcessDexInstruction(const Instruction& instruction,
+     case Instruction::IGET_CHAR_QUICK:
+     case Instruction::IGET_SHORT:
+     case Instruction::IGET_SHORT_QUICK: {
+-      if (!BuildInstanceFieldAccess(instruction, dex_pc, false)) {
++      if (!BuildInstanceFieldAccess(instruction, dex_pc, false, quicken_index)) {
+         return false;
+       }
+       break;
+@@ -2623,7 +2611,7 @@ bool HInstructionBuilder::ProcessDexInstruction(const Instruction& instruction,
+     case Instruction::IPUT_CHAR_QUICK:
+     case Instruction::IPUT_SHORT:
+     case Instruction::IPUT_SHORT_QUICK: {
+-      if (!BuildInstanceFieldAccess(instruction, dex_pc, true)) {
++      if (!BuildInstanceFieldAccess(instruction, dex_pc, true, quicken_index)) {
+         return false;
+       }
+       break;
+diff --git a/compiler/optimizing/instruction_builder.h b/compiler/optimizing/instruction_builder.h
+index 7fdc188..29ed017 100644
+--- a/compiler/optimizing/instruction_builder.h
++++ b/compiler/optimizing/instruction_builder.h
+@@ -27,6 +27,7 @@
+ #include "mirror/dex_cache.h"
+ #include "nodes.h"
+ #include "optimizing_compiler_stats.h"
++#include "quicken_info.h"
+ #include "ssa_builder.h"
+ 
+ namespace art {
+@@ -66,9 +67,7 @@ class HInstructionBuilder : public ValueObject {
+         code_generator_(code_generator),
+         dex_compilation_unit_(dex_compilation_unit),
+         outer_compilation_unit_(outer_compilation_unit),
+-        interpreter_metadata_(interpreter_metadata),
+-        skipped_interpreter_metadata_(std::less<uint32_t>(),
+-                                      arena_->Adapter(kArenaAllocGraphBuilder)),
++        quicken_info_(interpreter_metadata),
+         compilation_stats_(compiler_stats),
+         dex_cache_(dex_cache),
+         loop_headers_(graph->GetArena()->Adapter(kArenaAllocGraphBuilder)) {
+@@ -84,11 +83,11 @@ class HInstructionBuilder : public ValueObject {
+   void PropagateLocalsToCatchBlocks();
+   void SetLoopHeaderPhiInputs();
+ 
+-  bool ProcessDexInstruction(const Instruction& instruction, uint32_t dex_pc);
++  bool ProcessDexInstruction(const Instruction& instruction, uint32_t dex_pc, size_t quicken_index);
+   void FindNativeDebugInfoLocations(ArenaBitVector* locations);
+ 
+   bool CanDecodeQuickenedInfo() const;
+-  uint16_t LookupQuickenedInfo(uint32_t dex_pc);
++  uint16_t LookupQuickenedInfo(uint32_t quicken_index);
+ 
+   HBasicBlock* FindBlockStartingAt(uint32_t dex_pc) const;
+ 
+@@ -158,7 +157,10 @@ class HInstructionBuilder : public ValueObject {
+   void BuildReturn(const Instruction& instruction, Primitive::Type type, uint32_t dex_pc);
+ 
+   // Builds an instance field access node and returns whether the instruction is supported.
+-  bool BuildInstanceFieldAccess(const Instruction& instruction, uint32_t dex_pc, bool is_put);
++  bool BuildInstanceFieldAccess(const Instruction& instruction,
++                                uint32_t dex_pc,
++                                bool is_put,
++                                size_t quicken_index);
+ 
+   void BuildUnresolvedStaticFieldAccess(const Instruction& instruction,
+                                         uint32_t dex_pc,
+@@ -339,14 +341,8 @@ class HInstructionBuilder : public ValueObject {
+   // methods.
+   const DexCompilationUnit* const outer_compilation_unit_;
+ 
+-  // Original values kept after instruction quickening. This is a data buffer
+-  // of Leb128-encoded (dex_pc, value) pairs sorted by dex_pc.
+-  const uint8_t* interpreter_metadata_;
+-
+-  // InstructionBuilder does not parse instructions in dex_pc order. Quickening
+-  // info for out-of-order dex_pcs is stored in a map until the positions
+-  // are eventually visited.
+-  ArenaSafeMap<uint32_t, uint16_t> skipped_interpreter_metadata_;
++  // Original values kept after instruction quickening.
++  QuickenInfoTable quicken_info_;
+ 
+   OptimizingCompilerStats* compilation_stats_;
+   Handle<mirror::DexCache> dex_cache_;
+diff --git a/runtime/dex_to_dex_decompiler.cc b/runtime/dex_to_dex_decompiler.cc
+index c15c9ec..b82f4f7 100644
+--- a/runtime/dex_to_dex_decompiler.cc
++++ b/runtime/dex_to_dex_decompiler.cc
+@@ -18,9 +18,10 @@
+ 
+ #include "base/logging.h"
+ #include "base/mutex.h"
++#include "bytecode_utils.h"
+ #include "dex_file-inl.h"
+ #include "dex_instruction-inl.h"
+-#include "bytecode_utils.h"
++#include "quicken_info.h"
+ 
+ namespace art {
+ namespace optimizer {
+@@ -31,27 +32,21 @@ class DexDecompiler {
+                 const ArrayRef<const uint8_t>& quickened_info,
+                 bool decompile_return_instruction)
+     : code_item_(code_item),
+-      quickened_info_ptr_(quickened_info.data()),
+-      quickened_info_start_(quickened_info.data()),
+-      quickened_info_end_(quickened_info.data() + quickened_info.size()),
++      quicken_info_(quickened_info.data()),
++      quicken_info_number_of_indices_(QuickenInfoTable::NumberOfIndices(quickened_info.size())),
+       decompile_return_instruction_(decompile_return_instruction) {}
+ 
+   bool Decompile();
+ 
+  private:
+-  void DecompileInstanceFieldAccess(Instruction* inst,
+-                                    uint32_t dex_pc,
+-                                    Instruction::Code new_opcode) {
+-    uint16_t index = GetIndexAt(dex_pc);
++  void DecompileInstanceFieldAccess(Instruction* inst, Instruction::Code new_opcode) {
++    uint16_t index = NextIndex();
+     inst->SetOpcode(new_opcode);
+     inst->SetVRegC_22c(index);
+   }
+ 
+-  void DecompileInvokeVirtual(Instruction* inst,
+-                              uint32_t dex_pc,
+-                              Instruction::Code new_opcode,
+-                              bool is_range) {
+-    uint16_t index = GetIndexAt(dex_pc);
++  void DecompileInvokeVirtual(Instruction* inst, Instruction::Code new_opcode, bool is_range) {
++    const uint16_t index = NextIndex();
+     inst->SetOpcode(new_opcode);
+     if (is_range) {
+       inst->SetVRegB_3rc(index);
+@@ -60,40 +55,32 @@ class DexDecompiler {
+     }
+   }
+ 
+-  void DecompileNop(Instruction* inst, uint32_t dex_pc) {
+-    if (quickened_info_ptr_ == quickened_info_end_) {
++  void DecompileNop(Instruction* inst) {
++    const uint16_t reference_index = NextIndex();
++    if (reference_index == DexFile::kDexNoIndex16) {
++      // This means it was a normal nop and not a check-cast.
+       return;
+     }
+-    const uint8_t* temporary_pointer = quickened_info_ptr_;
+-    uint32_t quickened_pc = DecodeUnsignedLeb128(&temporary_pointer);
+-    if (quickened_pc != dex_pc) {
+-      return;
+-    }
+-    uint16_t reference_index = GetIndexAt(dex_pc);
+-    uint16_t type_index = GetIndexAt(dex_pc);
++    const uint16_t type_index = NextIndex();
+     inst->SetOpcode(Instruction::CHECK_CAST);
+     inst->SetVRegA_21c(reference_index);
+     inst->SetVRegB_21c(type_index);
+   }
+ 
+-  uint16_t GetIndexAt(uint32_t dex_pc) {
+-    // Note that as a side effect, DecodeUnsignedLeb128 update the given pointer
+-    // to the new position in the buffer.
+-    DCHECK_LT(quickened_info_ptr_, quickened_info_end_);
+-    uint32_t quickened_pc = DecodeUnsignedLeb128(&quickened_info_ptr_);
+-    DCHECK_LT(quickened_info_ptr_, quickened_info_end_);
+-    uint16_t index = DecodeUnsignedLeb128(&quickened_info_ptr_);
+-    DCHECK_LE(quickened_info_ptr_, quickened_info_end_);
+-    DCHECK_EQ(quickened_pc, dex_pc);
+-    return index;
++  uint16_t NextIndex() {
++    DCHECK_LT(quicken_index_, quicken_info_number_of_indices_);
++    const uint16_t ret = quicken_info_.GetData(quicken_index_);
++    quicken_index_++;
++    return ret;
+   }
+ 
+   const DexFile::CodeItem& code_item_;
+-  const uint8_t* quickened_info_ptr_;
+-  const uint8_t* const quickened_info_start_;
+-  const uint8_t* const quickened_info_end_;
++  const QuickenInfoTable quicken_info_;
++  const size_t quicken_info_number_of_indices_;
+   const bool decompile_return_instruction_;
+ 
++  size_t quicken_index_ = 0u;
++
+   DISALLOW_COPY_AND_ASSIGN(DexDecompiler);
+ };
+ 
+@@ -103,7 +90,6 @@ bool DexDecompiler::Decompile() {
+   // unquickening is a rare need and not performance sensitive, it is not worth the
+   // added storage to also add the RETURN_VOID quickening in the quickened data.
+   for (CodeItemIterator it(code_item_); !it.Done(); it.Advance()) {
+-    uint32_t dex_pc = it.CurrentDexPc();
+     Instruction* inst = const_cast<Instruction*>(&it.CurrentInstruction());
+ 
+     switch (inst->Opcode()) {
+@@ -114,71 +100,71 @@ bool DexDecompiler::Decompile() {
+         break;
+ 
+       case Instruction::NOP:
+-        DecompileNop(inst, dex_pc);
++        DecompileNop(inst);
+         break;
+ 
+       case Instruction::IGET_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IGET);
++        DecompileInstanceFieldAccess(inst, Instruction::IGET);
+         break;
+ 
+       case Instruction::IGET_WIDE_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IGET_WIDE);
++        DecompileInstanceFieldAccess(inst, Instruction::IGET_WIDE);
+         break;
+ 
+       case Instruction::IGET_OBJECT_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IGET_OBJECT);
++        DecompileInstanceFieldAccess(inst, Instruction::IGET_OBJECT);
+         break;
+ 
+       case Instruction::IGET_BOOLEAN_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IGET_BOOLEAN);
++        DecompileInstanceFieldAccess(inst, Instruction::IGET_BOOLEAN);
+         break;
+ 
+       case Instruction::IGET_BYTE_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IGET_BYTE);
++        DecompileInstanceFieldAccess(inst, Instruction::IGET_BYTE);
+         break;
+ 
+       case Instruction::IGET_CHAR_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IGET_CHAR);
++        DecompileInstanceFieldAccess(inst, Instruction::IGET_CHAR);
+         break;
+ 
+       case Instruction::IGET_SHORT_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IGET_SHORT);
++        DecompileInstanceFieldAccess(inst, Instruction::IGET_SHORT);
+         break;
+ 
+       case Instruction::IPUT_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IPUT);
++        DecompileInstanceFieldAccess(inst, Instruction::IPUT);
+         break;
+ 
+       case Instruction::IPUT_BOOLEAN_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IPUT_BOOLEAN);
++        DecompileInstanceFieldAccess(inst, Instruction::IPUT_BOOLEAN);
+         break;
+ 
+       case Instruction::IPUT_BYTE_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IPUT_BYTE);
++        DecompileInstanceFieldAccess(inst, Instruction::IPUT_BYTE);
+         break;
+ 
+       case Instruction::IPUT_CHAR_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IPUT_CHAR);
++        DecompileInstanceFieldAccess(inst, Instruction::IPUT_CHAR);
+         break;
+ 
+       case Instruction::IPUT_SHORT_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IPUT_SHORT);
++        DecompileInstanceFieldAccess(inst, Instruction::IPUT_SHORT);
+         break;
+ 
+       case Instruction::IPUT_WIDE_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IPUT_WIDE);
++        DecompileInstanceFieldAccess(inst, Instruction::IPUT_WIDE);
+         break;
+ 
+       case Instruction::IPUT_OBJECT_QUICK:
+-        DecompileInstanceFieldAccess(inst, dex_pc, Instruction::IPUT_OBJECT);
++        DecompileInstanceFieldAccess(inst, Instruction::IPUT_OBJECT);
+         break;
+ 
+       case Instruction::INVOKE_VIRTUAL_QUICK:
+-        DecompileInvokeVirtual(inst, dex_pc, Instruction::INVOKE_VIRTUAL, false);
++        DecompileInvokeVirtual(inst, Instruction::INVOKE_VIRTUAL, false);
+         break;
+ 
+       case Instruction::INVOKE_VIRTUAL_RANGE_QUICK:
+-        DecompileInvokeVirtual(inst, dex_pc, Instruction::INVOKE_VIRTUAL_RANGE, true);
++        DecompileInvokeVirtual(inst, Instruction::INVOKE_VIRTUAL_RANGE, true);
+         break;
+ 
+       default:
+@@ -186,14 +172,14 @@ bool DexDecompiler::Decompile() {
+     }
+   }
+ 
+-  if (quickened_info_ptr_ != quickened_info_end_) {
+-    if (quickened_info_start_ == quickened_info_ptr_) {
++  if (quicken_index_ != quicken_info_number_of_indices_) {
++    if (quicken_index_ == 0) {
+       LOG(WARNING) << "Failed to use any value in quickening info,"
+                    << " potentially due to duplicate methods.";
+     } else {
+       LOG(FATAL) << "Failed to use all values in quickening info."
+-                 << " Actual: " << std::hex << reinterpret_cast<uintptr_t>(quickened_info_ptr_)
+-                 << " Expected: " << reinterpret_cast<uintptr_t>(quickened_info_end_);
++                 << " Actual: " << std::hex << quicken_index_
++                 << " Expected: " << quicken_info_number_of_indices_;
+       return false;
+     }
+   }
+diff --git a/runtime/quicken_info.h b/runtime/quicken_info.h
+new file mode 100644
+index 0000000..b09c5db
+--- /dev/null
++++ b/runtime/quicken_info.h
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (C) 2017 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++#ifndef ART_RUNTIME_QUICKEN_INFO_H_
++#define ART_RUNTIME_QUICKEN_INFO_H_
++#include "dex_instruction.h"
++namespace art {
++// QuickenInfoTable is a table of 16 bit dex indices. There is one slot fo every instruction that is
++// possibly dequickenable.
++class QuickenInfoTable {
++ public:
++  explicit QuickenInfoTable(const uint8_t* data) : data_(data) {}
++  bool IsNull() const {
++    return data_ == nullptr;
++  }
++  uint16_t GetData(size_t index) const {
++    return data_[index * 2] | (static_cast<uint16_t>(data_[index * 2 + 1]) << 8);
++  }
++  // Returns true if the dex instruction has an index in the table. (maybe dequickenable).
++  static bool NeedsIndexForInstruction(const Instruction* inst) {
++    return inst->IsQuickened() || inst->Opcode() == Instruction::NOP;
++  }
++  static size_t NumberOfIndices(size_t bytes) {
++    return bytes / sizeof(uint16_t);
++  }
++ private:
++  const uint8_t* const data_;
++  DISALLOW_COPY_AND_ASSIGN(QuickenInfoTable);
++};
++}  // namespace art
++#endif  // ART_RUNTIME_QUICKEN_INFO_H_
++
+diff --git a/runtime/safe_map.h b/runtime/safe_map.h
+index e638fdb..ba59125 100644
+--- a/runtime/safe_map.h
++++ b/runtime/safe_map.h
+@@ -78,6 +78,9 @@ class SafeMap {
+   iterator lower_bound(const K& k) { return map_.lower_bound(k); }
+   const_iterator lower_bound(const K& k) const { return map_.lower_bound(k); }
+ 
++  iterator upper_bound(const K& k) { return map_.upper_bound(k); }
++  const_iterator upper_bound(const K& k) const { return map_.upper_bound(k); }
++
+   size_type count(const K& k) const { return map_.count(k); }
+ 
+   // Note that unlike std::map's operator[], this doesn't return a reference to the value.
+diff --git a/runtime/vdex_file.h b/runtime/vdex_file.h
+index 93d282b..4845c02 100644
+--- a/runtime/vdex_file.h
++++ b/runtime/vdex_file.h
+@@ -65,8 +65,8 @@ class VdexFile {
+ 
+    private:
+     static constexpr uint8_t kVdexMagic[] = { 'v', 'd', 'e', 'x' };
+-    // Last update: Disable in-place vdex update
+-    static constexpr uint8_t kVdexVersion[] = { '0', '0', '6', '\0' };
++    // Last update: Smaller quickening info
++    static constexpr uint8_t kVdexVersion[] = { '0', '0', '7', '\0' };
+ 
+     uint8_t magic_[4];
+     uint8_t version_[4];
+-- 
+1.8.3.1
+

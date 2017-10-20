@@ -1,0 +1,40 @@
+From 13caee7400d37977e50b9d92002e2d1d3a248860 Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Sun, 18 Sep 2016 15:45:59 +0200
+Subject: [PATCH 4/6] Allow appdomain to read/write files in sdcard_posix
+
+Change-Id: I5995c4af896016162d7ee1d46e61a61249df91a6
+
+sdcard_posix: Remove isolated_app and ephemeral_app
+
+ * Commits Ie912706a954a38610f2afd742b1ab4b8cd4b1f36
+    and Ie21b64a9633eff258be254b9cd86f282db1509e8
+    removed and neverallowed sdcard access to
+    isolated_app and ephemeral_app, therefore
+    apply the same changes to sdcard_posix
+    to fill the purpose and fix the neverallow
+
+Change-Id: I1b9d90664fc4642e251576b4bac30c03ac10f1e1
+Signed-off-by: Adrian DC <radian.dc@gmail.com>
+
+Change-Id: I5995c4af896016162d7ee1d46e61a61249df91a6
+---
+ private/app.te | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/private/app.te b/private/app.te
+index 5b077ac..cd3e059 100644
+--- a/private/app.te
++++ b/private/app.te
+@@ -232,6 +232,8 @@ allow { appdomain -isolated_app -ephemeral_app } { media_rw_data_file vfat }:fil
+ # File write access allowed for FDs returned through Storage Access Framework
+ allow { appdomain -isolated_app -ephemeral_app } vfat:dir r_dir_perms;
+ allow { appdomain -isolated_app -ephemeral_app } vfat:file rw_file_perms;
++allow { appdomain -isolated_app -ephemeral_app } sdcard_posix:dir r_dir_perms;
++allow { appdomain -isolated_app -ephemeral_app } sdcard_posix:file rw_file_perms;
+ 
+ # Allow apps to use the USB Accessory interface.
+ # http://developer.android.com/guide/topics/connectivity/usb/accessory.html
+-- 
+2.1.2
+

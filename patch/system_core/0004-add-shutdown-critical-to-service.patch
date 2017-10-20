@@ -1,0 +1,120 @@
+From 8bfa63ac92d75a4bfa37e6b1ba7f77a24312a1b9 Mon Sep 17 00:00:00 2001
+From: Keun-young Park <keunyoung@google.com>
+Date: Wed, 5 Jul 2017 11:38:44 -0700
+Subject: [PATCH 4/5] add "shutdown critical" to service
+
+- "shutdown critical" prevents killing the service during
+  shutdown. And the service will be started if not running.
+- Without it, services will be killed by SIGTERM / SIGKILL during shutdown.
+- Even services with "shutdown critical" will be killed if shutdown
+  times out.
+- Removes ueventd and vold from hard coded list. Each service's rc will
+  be updated to add "shutdown critical". watchdogd is still kept in the list.
+
+bug: 37626581
+Test: reboot and check last kmsg
+
+Change-Id: Ie8cc699d1efbc59b9a2561bdd40fec64aed5a4bb
+(cherry picked from commit cccb34fce8798f2a359c6eb0e394ef9460673629)
+---
+ init/README.md   | 8 ++++++++
+ init/reboot.cpp  | 4 +++-
+ init/service.cpp | 9 +++++++++
+ init/service.h   | 1 +
+ rootdir/init.rc  | 1 +
+ 5 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/init/README.md b/init/README.md
+index 8cb1e52..be1fbfb 100644
+--- a/init/README.md
++++ b/init/README.md
+@@ -226,6 +226,14 @@ runs the service.
+ > Sets the child's /proc/self/oom\_score\_adj to the specified value,
+   which must range from -1000 to 1000.
+ 
++`shutdown <shutdown_behavior>`
++> Set shutdown behavior of the service process. When this is not specified,
++  the service is killed during shutdown process by using SIGTERM and SIGKILL.
++  The service with shutdown_behavior of "critical" is not killed during shutdown
++  until shutdown times out. When shutdown times out, even services tagged with
++  "shutdown critical" will be killed. When the service tagged with "shutdown critical"
++  is not running when shut down starts, it will be started.
++
+ 
+ Triggers
+ --------
+diff --git a/init/reboot.cpp b/init/reboot.cpp
+index aac1b5c..3091925 100644
+--- a/init/reboot.cpp
++++ b/init/reboot.cpp
+@@ -331,13 +331,15 @@ void DoReboot(unsigned int cmd, const std::string& reason, const std::string& re
+     // keep debugging tools until non critical ones are all gone.
+     const std::set<std::string> kill_after_apps{"tombstoned", "logd", "adbd"};
+     // watchdogd is a vendor specific component but should be alive to complete shutdown safely.
+-    const std::set<std::string> to_starts{"watchdogd", "vold", "ueventd"};
++    const std::set<std::string> to_starts{"watchdogd"};
+     ServiceManager::GetInstance().ForEachService([&kill_after_apps, &to_starts](Service* s) {
+         if (kill_after_apps.count(s->name())) {
+             s->SetShutdownCritical();
+         } else if (to_starts.count(s->name())) {
+             s->Start();
+             s->SetShutdownCritical();
++        } else if (s->IsShutdownCritical()) {
++            s->Start();  // start shutdown critical service if not started
+         }
+     });
+ 
+diff --git a/init/service.cpp b/init/service.cpp
+index 00599bb..c6cafec 100644
+--- a/init/service.cpp
++++ b/init/service.cpp
+@@ -479,6 +479,14 @@ bool Service::ParseSetenv(const std::vector<std::string>& args, std::string* err
+     return true;
+ }
+ 
++bool Service::ParseShutdown(const std::vector<std::string>& args, std::string* err) {
++    if (args[1] == "critical") {
++        flags_ |= SVC_SHUTDOWN_CRITICAL;
++        return true;
++    }
++    return false;
++}
++
+ template <typename T>
+ bool Service::AddDescriptor(const std::vector<std::string>& args, std::string* err) {
+     int perm = args.size() > 3 ? std::strtoul(args[3].c_str(), 0, 8) : -1;
+@@ -562,6 +570,7 @@ Service::OptionParserMap::Map& Service::OptionParserMap::map() const {
+         {"namespace",   {1,     2,    &Service::ParseNamespace}},
+         {"seclabel",    {1,     1,    &Service::ParseSeclabel}},
+         {"setenv",      {2,     2,    &Service::ParseSetenv}},
++        {"shutdown",    {1,     1,    &Service::ParseShutdown}},
+         {"socket",      {3,     6,    &Service::ParseSocket}},
+         {"file",        {2,     2,    &Service::ParseFile}},
+         {"user",        {1,     1,    &Service::ParseUser}},
+diff --git a/init/service.h b/init/service.h
+index f93ac38..1c55fc4 100644
+--- a/init/service.h
++++ b/init/service.h
+@@ -135,6 +135,7 @@ class Service {
+     bool ParseNamespace(const std::vector<std::string>& args, std::string* err);
+     bool ParseSeclabel(const std::vector<std::string>& args, std::string* err);
+     bool ParseSetenv(const std::vector<std::string>& args, std::string* err);
++    bool ParseShutdown(const std::vector<std::string>& args, std::string* err);
+     bool ParseSocket(const std::vector<std::string>& args, std::string* err);
+     bool ParseFile(const std::vector<std::string>& args, std::string* err);
+     bool ParseUser(const std::vector<std::string>& args, std::string* err);
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index 3b996a4..d52bfa7 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -680,6 +680,7 @@ service ueventd /sbin/ueventd
+     class core
+     critical
+     seclabel u:r:ueventd:s0
++    shutdown critical
+ 
+ service healthd /system/bin/healthd
+     class core
+-- 
+2.1.2
+

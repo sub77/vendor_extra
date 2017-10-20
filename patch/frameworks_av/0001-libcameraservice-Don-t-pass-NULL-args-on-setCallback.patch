@@ -1,0 +1,65 @@
+From 800ed31cb8163b46141358957fefb12a7a571101 Mon Sep 17 00:00:00 2001
+From: irii <iriijo@googlemail.com>
+Date: Sun, 11 Sep 2016 16:51:37 +0200
+Subject: [PATCH 1/4] libcameraservice: Don't pass NULL args on setCallbacks
+ call
+
+*This fixes the torch light for cameras with hal 1
+
+*This fix works on the htc m7ul
+
+*Fixed line length
+*Fixed unused parameter names
+
+[AdrianDC]
+ * Adapt for 8.0.0 by adding dataCallbackTimestampBatch with
+    matching data_callback_timestamp_batch function signature
+
+Change-Id: I89c6112546e36dbcca099f4d5cd70371b2c5340a
+(cherry picked from commit 3f6bb688b22b184b0bfc2739cda3c3cf0dd06a14)
+Signed-off-by: Adrian DC <radian.dc@gmail.com>
+---
+ .../camera/libcameraservice/CameraFlashlight.cpp     | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/services/camera/libcameraservice/CameraFlashlight.cpp b/services/camera/libcameraservice/CameraFlashlight.cpp
+index e06a81f..2bd71aa 100644
+--- a/services/camera/libcameraservice/CameraFlashlight.cpp
++++ b/services/camera/libcameraservice/CameraFlashlight.cpp
+@@ -514,6 +514,23 @@ status_t CameraHardwareInterfaceFlashControl::initializePreviewWindow(
+     return device->setPreviewWindow(mSurface);
+ }
+ 
++static void notifyCallback(int32_t, int32_t, int32_t, void*) {
++    /* Empty */
++}
++
++static void dataCallback(int32_t, const sp<IMemory>&, camera_frame_metadata_t*, void*) {
++    /* Empty */
++}
++
++static void dataCallbackTimestamp(nsecs_t, int32_t, const sp<IMemory>&, void*) {
++    /* Empty */
++}
++
++static void dataCallbackTimestampBatch(int32_t, const std::vector<HandleTimestampMessage>&,
++        void*) {
++    /* Empty */
++}
++
+ status_t CameraHardwareInterfaceFlashControl::connectCameraDevice(
+         const String8& cameraId) {
+     sp<CameraHardwareInterface> device =
+@@ -527,7 +544,8 @@ status_t CameraHardwareInterfaceFlashControl::connectCameraDevice(
+     }
+ 
+     // need to set __get_memory in set_callbacks().
+-    device->setCallbacks(NULL, NULL, NULL, NULL, NULL);
++    device->setCallbacks(notifyCallback, dataCallback, dataCallbackTimestamp,
++            dataCallbackTimestampBatch, this);
+ 
+     mParameters = device->getParameters();
+ 
+-- 
+1.8.3.1
+

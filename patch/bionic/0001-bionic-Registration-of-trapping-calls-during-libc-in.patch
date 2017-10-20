@@ -1,0 +1,1973 @@
+From 5dacb3257d9bf44d52d90012e323c68690c16723 Mon Sep 17 00:00:00 2001
+From: Devi Sandeep Endluri V V <dendluri@codeaurora.org>
+Date: Mon, 2 May 2016 14:46:38 +0530
+Subject: [PATCH 1/2] bionic: Registration of trapping calls during libc
+ initialization
+
+Allow select system calls to be handled in an external library.
+If this library does not exist then the fallback behavior is to
+continue with default behavior.
+
+Change-Id: Ia3aa848ac3e3e920f591be1e53d126fd2a27c64e
+CRs-Fixed: 2050267
+---
+ libc/Android.bp                                   |  25 ++++-
+ libc/SYSCALLS.TXT                                 |  10 +-
+ libc/arch-arm/syscalls/__sendmsg.S                |  16 ++++
+ libc/arch-arm/syscalls/__sendto.S                 |  22 +++++
+ libc/arch-arm/syscalls/__writev.S                 |  16 ++++
+ libc/arch-arm/syscalls/sendmsg.S                  |  16 ----
+ libc/arch-arm/syscalls/sendto.S                   |  22 -----
+ libc/arch-arm/syscalls/writev.S                   |  16 ----
+ libc/arch-arm64/syscalls/__sendmsg.S              |  15 +++
+ libc/arch-arm64/syscalls/__sendto.S               |  15 +++
+ libc/arch-arm64/syscalls/__writev.S               |  15 +++
+ libc/arch-arm64/syscalls/sendmsg.S                |  14 ---
+ libc/arch-arm64/syscalls/sendto.S                 |  14 ---
+ libc/arch-arm64/syscalls/writev.S                 |  14 ---
+ libc/arch-mips/syscalls/__sendmsg.S               |  19 ++++
+ libc/arch-mips/syscalls/__sendto.S                |  19 ++++
+ libc/arch-mips/syscalls/__writev.S                |  19 ++++
+ libc/arch-mips/syscalls/sendmsg.S                 |  19 ----
+ libc/arch-mips/syscalls/sendto.S                  |  19 ----
+ libc/arch-mips/syscalls/writev.S                  |  19 ----
+ libc/arch-mips64/syscalls/__sendmsg.S             |  26 +++++
+ libc/arch-mips64/syscalls/__sendto.S              |  26 +++++
+ libc/arch-mips64/syscalls/__writev.S              |  26 +++++
+ libc/arch-mips64/syscalls/sendmsg.S               |  25 -----
+ libc/arch-mips64/syscalls/sendto.S                |  25 -----
+ libc/arch-mips64/syscalls/writev.S                |  25 -----
+ libc/arch-x86/syscalls/__sendmsg.S                |  35 +++++++
+ libc/arch-x86/syscalls/__sendto.S                 |  35 +++++++
+ libc/arch-x86/syscalls/__writev.S                 |  39 ++++++++
+ libc/arch-x86/syscalls/sendmsg.S                  |  35 -------
+ libc/arch-x86/syscalls/sendto.S                   |  35 -------
+ libc/arch-x86/syscalls/writev.S                   |  39 --------
+ libc/arch-x86_64/syscalls/__sendmsg.S             |  16 ++++
+ libc/arch-x86_64/syscalls/__sendto.S              |  17 ++++
+ libc/arch-x86_64/syscalls/__writev.S              |  16 ++++
+ libc/arch-x86_64/syscalls/sendmsg.S               |  15 ---
+ libc/arch-x86_64/syscalls/sendto.S                |  16 ----
+ libc/arch-x86_64/syscalls/writev.S                |  15 ---
+ libc/bionic/close.cpp                             |  15 ++-
+ libc/bionic/libc_init_dynamic.cpp                 |  10 ++
+ libc/bionic/sendmsg.cpp                           |  54 +++++++++++
+ libc/bionic/sendto.cpp                            |  53 +++++++++++
+ libc/bionic/writev.cpp                            |  44 +++++++++
+ libc/codeaurora/PropClient.cpp                    | 110 ++++++++++++++++++++++
+ libc/codeaurora/PropClientDispatch.cpp            |  68 +++++++++++++
+ libc/codeaurora/PropClientDispatchWrite.cpp       |  53 +++++++++++
+ libc/dns/net/getaddrinfo.c                        |  13 +++
+ libc/dns/net/gethnamaddr.c                        |  24 +++++
+ libc/include/codeaurora/PropClientDispatch.h      |  51 ++++++++++
+ libc/include/codeaurora/PropClientDispatchWrite.h |  48 ++++++++++
+ libc/include/unistd.h                             |   9 ++
+ libc/libc.arm.map                                 |   2 +
+ libc/libc.arm64.map                               |   2 +
+ libc/libc.map.txt                                 |   2 +
+ 54 files changed, 974 insertions(+), 394 deletions(-)
+ create mode 100644 libc/arch-arm/syscalls/__sendmsg.S
+ create mode 100644 libc/arch-arm/syscalls/__sendto.S
+ create mode 100644 libc/arch-arm/syscalls/__writev.S
+ delete mode 100644 libc/arch-arm/syscalls/sendmsg.S
+ delete mode 100644 libc/arch-arm/syscalls/sendto.S
+ delete mode 100644 libc/arch-arm/syscalls/writev.S
+ create mode 100644 libc/arch-arm64/syscalls/__sendmsg.S
+ create mode 100644 libc/arch-arm64/syscalls/__sendto.S
+ create mode 100644 libc/arch-arm64/syscalls/__writev.S
+ delete mode 100644 libc/arch-arm64/syscalls/sendmsg.S
+ delete mode 100644 libc/arch-arm64/syscalls/sendto.S
+ delete mode 100644 libc/arch-arm64/syscalls/writev.S
+ create mode 100644 libc/arch-mips/syscalls/__sendmsg.S
+ create mode 100644 libc/arch-mips/syscalls/__sendto.S
+ create mode 100644 libc/arch-mips/syscalls/__writev.S
+ delete mode 100644 libc/arch-mips/syscalls/sendmsg.S
+ delete mode 100644 libc/arch-mips/syscalls/sendto.S
+ delete mode 100644 libc/arch-mips/syscalls/writev.S
+ create mode 100644 libc/arch-mips64/syscalls/__sendmsg.S
+ create mode 100644 libc/arch-mips64/syscalls/__sendto.S
+ create mode 100644 libc/arch-mips64/syscalls/__writev.S
+ delete mode 100644 libc/arch-mips64/syscalls/sendmsg.S
+ delete mode 100644 libc/arch-mips64/syscalls/sendto.S
+ delete mode 100644 libc/arch-mips64/syscalls/writev.S
+ create mode 100644 libc/arch-x86/syscalls/__sendmsg.S
+ create mode 100644 libc/arch-x86/syscalls/__sendto.S
+ create mode 100644 libc/arch-x86/syscalls/__writev.S
+ delete mode 100644 libc/arch-x86/syscalls/sendmsg.S
+ delete mode 100644 libc/arch-x86/syscalls/sendto.S
+ delete mode 100644 libc/arch-x86/syscalls/writev.S
+ create mode 100644 libc/arch-x86_64/syscalls/__sendmsg.S
+ create mode 100644 libc/arch-x86_64/syscalls/__sendto.S
+ create mode 100644 libc/arch-x86_64/syscalls/__writev.S
+ delete mode 100644 libc/arch-x86_64/syscalls/sendmsg.S
+ delete mode 100644 libc/arch-x86_64/syscalls/sendto.S
+ delete mode 100644 libc/arch-x86_64/syscalls/writev.S
+ create mode 100644 libc/bionic/sendmsg.cpp
+ create mode 100644 libc/bionic/sendto.cpp
+ create mode 100644 libc/bionic/writev.cpp
+ create mode 100644 libc/codeaurora/PropClient.cpp
+ create mode 100755 libc/codeaurora/PropClientDispatch.cpp
+ create mode 100755 libc/codeaurora/PropClientDispatchWrite.cpp
+ create mode 100755 libc/include/codeaurora/PropClientDispatch.h
+ create mode 100644 libc/include/codeaurora/PropClientDispatchWrite.h
+
+diff --git a/libc/Android.bp b/libc/Android.bp
+index 9ebebe2..af9fa1e 100644
+--- a/libc/Android.bp
++++ b/libc/Android.bp
+@@ -179,6 +179,7 @@ cc_library_static {
+         "-Wno-unused-parameter",
+         "-include netbsd-compat.h",
+         "-Wframe-larger-than=66000",
++        "-DUSE_WRAPPER",
+     ],
+ 
+     local_include_dirs: [
+@@ -1246,7 +1247,6 @@ cc_library_static {
+                 "arch-x86_64/string/sse4-memcmp-slm.S",
+                 "arch-x86_64/string/ssse3-strcmp-slm.S",
+                 "arch-x86_64/string/ssse3-strncmp-slm.S",
+-
+                 "arch-x86_64/bionic/__bionic_clone.S",
+                 "arch-x86_64/bionic/_exit_with_stack_teardown.S",
+                 "arch-x86_64/bionic/__restore_rt.S",
+@@ -1257,7 +1257,10 @@ cc_library_static {
+         },
+     },
+ 
+-    cppflags: ["-Wold-style-cast"],
++    cppflags: ["-Wold-style-cast",
++              "-DUSE_WRAPPER",
++              ],
++  
+     include_dirs: ["bionic/libstdc++/include"],
+     name: "libc_bionic",
+ }
+@@ -1391,6 +1394,8 @@ cc_library_static {
+         "bionic/sched_getcpu.cpp",
+         "bionic/semaphore.cpp",
+         "bionic/send.cpp",
++        "bionic/sendmsg.cpp",
++        "bionic/sendto.cpp",
+         "bionic/setegid.cpp",
+         "bionic/__set_errno.cpp",
+         "bionic/seteuid.cpp",
+@@ -1445,6 +1450,9 @@ cc_library_static {
+         "bionic/wcstod.cpp",
+         "bionic/wctype.cpp",
+         "bionic/wmempcpy.cpp",
++        "bionic/writev.cpp",
++        "codeaurora/PropClientDispatch.cpp",
++        "codeaurora/PropClientDispatchWrite.cpp",
+     ],
+ 
+     multilib: {
+@@ -1454,7 +1462,10 @@ cc_library_static {
+         },
+     },
+ 
+-    cppflags: ["-Wold-style-cast"],
++    cppflags: ["-Wold-style-cast",
++              "-DUSE_WRAPPER",
++              ],
++    cflags: ["-DUSE_WRAPPER"],
+     local_include_dirs: ["stdio"],
+     include_dirs: ["bionic/libstdc++/include"],
+     name: "libc_bionic_ndk",
+@@ -1703,7 +1714,10 @@ cc_library {
+             "bionic/malloc_common.cpp",
+             "bionic/libc_init_static.cpp",
+         ],
+-        cflags: ["-DLIBC_STATIC"],
++        cflags: ["-DLIBC_STATIC",
++                 "-DUSE_WRAPPER",
++                ],
++
+         whole_static_libs: ["libc_init_static", "libjemalloc"],
+     },
+     shared: {
+@@ -1715,6 +1729,7 @@ cc_library {
+             "bionic/libc_init_dynamic.cpp",
+             "bionic/NetdClient.cpp",
+             "arch-common/bionic/crtend_so.S",
++            "codeaurora/PropClient.cpp",
+         ],
+         whole_static_libs: ["libjemalloc"],
+     },
+@@ -1740,7 +1755,7 @@ cc_library {
+ 
+     shared_libs: ["libdl"],
+     whole_static_libs: ["libc_common"],
+-
++    cppflags: ["-DUSE_WRAPPER"],
+     nocrt: true,
+ 
+     arch: {
+diff --git a/libc/SYSCALLS.TXT b/libc/SYSCALLS.TXT
+index f98cc61..4024020 100644
+--- a/libc/SYSCALLS.TXT
++++ b/libc/SYSCALLS.TXT
+@@ -118,7 +118,7 @@ int         munlockall()   all
+ int         mincore(void*  start, size_t  length, unsigned char*  vec)   all
+ int         __ioctl:ioctl(int, int, void*)  all
+ ssize_t     readv(int, const struct iovec*, int)   all
+-ssize_t     writev(int, const struct iovec*, int)  all
++ssize_t     __writev:writev(int, const struct iovec*, int)  all
+ int         __fcntl64:fcntl64(int, int, void*)  arm,mips,x86
+ int         fcntl(int, int, void*)  arm64,mips64,x86_64
+ int         flock(int, int)   all
+@@ -245,13 +245,13 @@ int           listen(int, int)                   arm,arm64,mips,mips64,x86_64
+ int           __accept4:accept4(int, struct sockaddr*, socklen_t*, int)  arm,arm64,mips,mips64,x86_64
+ int           getsockname(int, struct sockaddr*, socklen_t*)  arm,arm64,mips,mips64,x86_64
+ int           getpeername(int, struct sockaddr*, socklen_t*)  arm,arm64,mips,mips64,x86_64
+-int           sendto(int, const void*, size_t, int, const struct sockaddr*, socklen_t)  arm,arm64,mips,mips64,x86_64
++int           __sendto:sendto(int, const void*, size_t, int, const struct sockaddr*, socklen_t)  arm,arm64,mips,mips64,x86_64
+ int           recvfrom(int, void*, size_t, unsigned int, struct sockaddr*, socklen_t*)  arm,arm64,mips,mips64,x86_64
+ int           shutdown(int, int)  arm,arm64,mips,mips64,x86_64
+ int           setsockopt(int, int, int, const void*, socklen_t)  arm,arm64,mips,mips64,x86_64
+ int           getsockopt(int, int, int, void*, socklen_t*)    arm,arm64,mips,mips64,x86_64
+ ssize_t       recvmsg(int, struct msghdr*, unsigned int)   arm,arm64,mips,mips64,x86_64
+-ssize_t       sendmsg(int, const struct msghdr*, unsigned int)  arm,arm64,mips,mips64,x86_64
++ssize_t       __sendmsg:sendmsg(int, const struct msghdr*, unsigned int)  arm,arm64,mips,mips64,x86_64
+ int           recvmmsg(int, struct mmsghdr*, unsigned int, int, const struct timespec*)   arm,arm64,mips,mips64,x86_64
+ int           sendmmsg(int, struct mmsghdr*, unsigned int, int)   arm,arm64,mips,mips64,x86_64
+ 
+@@ -263,12 +263,12 @@ int           listen:socketcall:4(int, int)                   x86
+ int           getsockname:socketcall:6(int, struct sockaddr*, socklen_t*)  x86
+ int           getpeername:socketcall:7(int, struct sockaddr*, socklen_t*)  x86
+ int           socketpair:socketcall:8(int, int, int, int*)    x86
+-int           sendto:socketcall:11(int, const void*, size_t, int, const struct sockaddr*, socklen_t)  x86
++int           __sendto:socketcall:11(int, const void*, size_t, int, const struct sockaddr*, socklen_t)  x86
+ int           recvfrom:socketcall:12(int, void*, size_t, unsigned int, struct sockaddr*, socklen_t*)  x86
+ int           shutdown:socketcall:13(int, int)  x86
+ int           setsockopt:socketcall:14(int, int, int, const void*, socklen_t)  x86
+ int           getsockopt:socketcall:15(int, int, int, void*, socklen_t*)    x86
+-int           sendmsg:socketcall:16(int, const struct msghdr*, unsigned int)  x86
++int           __sendmsg:socketcall:16(int, const struct msghdr*, unsigned int)  x86
+ int           recvmsg:socketcall:17(int, struct msghdr*, unsigned int)   x86
+ int           __accept4:socketcall:18(int, struct sockaddr*, socklen_t*, int)  x86
+ int           recvmmsg:socketcall:19(int, struct mmsghdr*, unsigned int, int, const struct timespec*)   x86
+diff --git a/libc/arch-arm/syscalls/__sendmsg.S b/libc/arch-arm/syscalls/__sendmsg.S
+new file mode 100644
+index 0000000..6c63a6c
+--- /dev/null
++++ b/libc/arch-arm/syscalls/__sendmsg.S
+@@ -0,0 +1,16 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendmsg)
++    mov     ip, r7
++    .cfi_register r7, ip
++    ldr     r7, =__NR_sendmsg
++    swi     #0
++    mov     r7, ip
++    .cfi_restore r7
++    cmn     r0, #(MAX_ERRNO + 1)
++    bxls    lr
++    neg     r0, r0
++    b       __set_errno_internal
++END(__sendmsg)
+diff --git a/libc/arch-arm/syscalls/__sendto.S b/libc/arch-arm/syscalls/__sendto.S
+new file mode 100644
+index 0000000..b8cc406
+--- /dev/null
++++ b/libc/arch-arm/syscalls/__sendto.S
+@@ -0,0 +1,22 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendto)
++    mov     ip, sp
++    stmfd   sp!, {r4, r5, r6, r7}
++    .cfi_def_cfa_offset 16
++    .cfi_rel_offset r4, 0
++    .cfi_rel_offset r5, 4
++    .cfi_rel_offset r6, 8
++    .cfi_rel_offset r7, 12
++    ldmfd   ip, {r4, r5, r6}
++    ldr     r7, =__NR_sendto
++    swi     #0
++    ldmfd   sp!, {r4, r5, r6, r7}
++    .cfi_def_cfa_offset 0
++    cmn     r0, #(MAX_ERRNO + 1)
++    bxls    lr
++    neg     r0, r0
++    b       __set_errno_internal
++END(__sendto)
+diff --git a/libc/arch-arm/syscalls/__writev.S b/libc/arch-arm/syscalls/__writev.S
+new file mode 100644
+index 0000000..aa3d9bc
+--- /dev/null
++++ b/libc/arch-arm/syscalls/__writev.S
+@@ -0,0 +1,16 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__writev)
++    mov     ip, r7
++    .cfi_register r7, ip
++    ldr     r7, =__NR_writev
++    swi     #0
++    mov     r7, ip
++    .cfi_restore r7
++    cmn     r0, #(MAX_ERRNO + 1)
++    bxls    lr
++    neg     r0, r0
++    b       __set_errno_internal
++END(__writev)
+diff --git a/libc/arch-arm/syscalls/sendmsg.S b/libc/arch-arm/syscalls/sendmsg.S
+deleted file mode 100644
+index 215219a..0000000
+--- a/libc/arch-arm/syscalls/sendmsg.S
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendmsg)
+-    mov     ip, r7
+-    .cfi_register r7, ip
+-    ldr     r7, =__NR_sendmsg
+-    swi     #0
+-    mov     r7, ip
+-    .cfi_restore r7
+-    cmn     r0, #(MAX_ERRNO + 1)
+-    bxls    lr
+-    neg     r0, r0
+-    b       __set_errno_internal
+-END(sendmsg)
+diff --git a/libc/arch-arm/syscalls/sendto.S b/libc/arch-arm/syscalls/sendto.S
+deleted file mode 100644
+index 29b7b0b..0000000
+--- a/libc/arch-arm/syscalls/sendto.S
++++ /dev/null
+@@ -1,22 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendto)
+-    mov     ip, sp
+-    stmfd   sp!, {r4, r5, r6, r7}
+-    .cfi_def_cfa_offset 16
+-    .cfi_rel_offset r4, 0
+-    .cfi_rel_offset r5, 4
+-    .cfi_rel_offset r6, 8
+-    .cfi_rel_offset r7, 12
+-    ldmfd   ip, {r4, r5, r6}
+-    ldr     r7, =__NR_sendto
+-    swi     #0
+-    ldmfd   sp!, {r4, r5, r6, r7}
+-    .cfi_def_cfa_offset 0
+-    cmn     r0, #(MAX_ERRNO + 1)
+-    bxls    lr
+-    neg     r0, r0
+-    b       __set_errno_internal
+-END(sendto)
+diff --git a/libc/arch-arm/syscalls/writev.S b/libc/arch-arm/syscalls/writev.S
+deleted file mode 100644
+index 3103237..0000000
+--- a/libc/arch-arm/syscalls/writev.S
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(writev)
+-    mov     ip, r7
+-    .cfi_register r7, ip
+-    ldr     r7, =__NR_writev
+-    swi     #0
+-    mov     r7, ip
+-    .cfi_restore r7
+-    cmn     r0, #(MAX_ERRNO + 1)
+-    bxls    lr
+-    neg     r0, r0
+-    b       __set_errno_internal
+-END(writev)
+diff --git a/libc/arch-arm64/syscalls/__sendmsg.S b/libc/arch-arm64/syscalls/__sendmsg.S
+new file mode 100644
+index 0000000..50934c5
+--- /dev/null
++++ b/libc/arch-arm64/syscalls/__sendmsg.S
+@@ -0,0 +1,15 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendmsg)
++    mov     x8, __NR_sendmsg
++    svc     #0
++
++    cmn     x0, #(MAX_ERRNO + 1)
++    cneg    x0, x0, hi
++    b.hi    __set_errno_internal
++
++    ret
++END(__sendmsg)
++.hidden __sendmsg
+diff --git a/libc/arch-arm64/syscalls/__sendto.S b/libc/arch-arm64/syscalls/__sendto.S
+new file mode 100644
+index 0000000..f745546
+--- /dev/null
++++ b/libc/arch-arm64/syscalls/__sendto.S
+@@ -0,0 +1,15 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendto)
++    mov     x8, __NR_sendto
++    svc     #0
++
++    cmn     x0, #(MAX_ERRNO + 1)
++    cneg    x0, x0, hi
++    b.hi    __set_errno_internal
++
++    ret
++END(__sendto)
++.hidden __sendto
+diff --git a/libc/arch-arm64/syscalls/__writev.S b/libc/arch-arm64/syscalls/__writev.S
+new file mode 100644
+index 0000000..fcce9f0
+--- /dev/null
++++ b/libc/arch-arm64/syscalls/__writev.S
+@@ -0,0 +1,15 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__writev)
++    mov     x8, __NR_writev
++    svc     #0
++
++    cmn     x0, #(MAX_ERRNO + 1)
++    cneg    x0, x0, hi
++    b.hi    __set_errno_internal
++
++    ret
++END(__writev)
++.hidden __writev
+diff --git a/libc/arch-arm64/syscalls/sendmsg.S b/libc/arch-arm64/syscalls/sendmsg.S
+deleted file mode 100644
+index a343543..0000000
+--- a/libc/arch-arm64/syscalls/sendmsg.S
++++ /dev/null
+@@ -1,14 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendmsg)
+-    mov     x8, __NR_sendmsg
+-    svc     #0
+-
+-    cmn     x0, #(MAX_ERRNO + 1)
+-    cneg    x0, x0, hi
+-    b.hi    __set_errno_internal
+-
+-    ret
+-END(sendmsg)
+diff --git a/libc/arch-arm64/syscalls/sendto.S b/libc/arch-arm64/syscalls/sendto.S
+deleted file mode 100644
+index 6a6813e..0000000
+--- a/libc/arch-arm64/syscalls/sendto.S
++++ /dev/null
+@@ -1,14 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendto)
+-    mov     x8, __NR_sendto
+-    svc     #0
+-
+-    cmn     x0, #(MAX_ERRNO + 1)
+-    cneg    x0, x0, hi
+-    b.hi    __set_errno_internal
+-
+-    ret
+-END(sendto)
+diff --git a/libc/arch-arm64/syscalls/writev.S b/libc/arch-arm64/syscalls/writev.S
+deleted file mode 100644
+index baaffda..0000000
+--- a/libc/arch-arm64/syscalls/writev.S
++++ /dev/null
+@@ -1,14 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(writev)
+-    mov     x8, __NR_writev
+-    svc     #0
+-
+-    cmn     x0, #(MAX_ERRNO + 1)
+-    cneg    x0, x0, hi
+-    b.hi    __set_errno_internal
+-
+-    ret
+-END(writev)
+diff --git a/libc/arch-mips/syscalls/__sendmsg.S b/libc/arch-mips/syscalls/__sendmsg.S
+new file mode 100644
+index 0000000..8bc7800
+--- /dev/null
++++ b/libc/arch-mips/syscalls/__sendmsg.S
+@@ -0,0 +1,19 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendmsg)
++    .set noreorder
++    .cpload t9
++    li v0, __NR_sendmsg
++    syscall
++    bnez a3, 1f
++    move a0, v0
++    j ra
++    nop
++1:
++    la t9,__set_errno_internal
++    j t9
++    nop
++    .set reorder
++END(__sendmsg)
+diff --git a/libc/arch-mips/syscalls/__sendto.S b/libc/arch-mips/syscalls/__sendto.S
+new file mode 100644
+index 0000000..b0d60ab
+--- /dev/null
++++ b/libc/arch-mips/syscalls/__sendto.S
+@@ -0,0 +1,19 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendto)
++    .set noreorder
++    .cpload t9
++    li v0, __NR_sendto
++    syscall
++    bnez a3, 1f
++    move a0, v0
++    j ra
++    nop
++1:
++    la t9,__set_errno_internal
++    j t9
++    nop
++    .set reorder
++END(__sendto)
+diff --git a/libc/arch-mips/syscalls/__writev.S b/libc/arch-mips/syscalls/__writev.S
+new file mode 100644
+index 0000000..582dd1e
+--- /dev/null
++++ b/libc/arch-mips/syscalls/__writev.S
+@@ -0,0 +1,19 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__writev)
++    .set noreorder
++    .cpload t9
++    li v0, __NR_writev
++    syscall
++    bnez a3, 1f
++    move a0, v0
++    j ra
++    nop
++1:
++    la t9,__set_errno_internal
++    j t9
++    nop
++    .set reorder
++END(__writev)
+diff --git a/libc/arch-mips/syscalls/sendmsg.S b/libc/arch-mips/syscalls/sendmsg.S
+deleted file mode 100644
+index 88c653e..0000000
+--- a/libc/arch-mips/syscalls/sendmsg.S
++++ /dev/null
+@@ -1,19 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendmsg)
+-    .set noreorder
+-    .cpload t9
+-    li v0, __NR_sendmsg
+-    syscall
+-    bnez a3, 1f
+-    move a0, v0
+-    j ra
+-    nop
+-1:
+-    la t9,__set_errno_internal
+-    j t9
+-    nop
+-    .set reorder
+-END(sendmsg)
+diff --git a/libc/arch-mips/syscalls/sendto.S b/libc/arch-mips/syscalls/sendto.S
+deleted file mode 100644
+index ef3fa9f..0000000
+--- a/libc/arch-mips/syscalls/sendto.S
++++ /dev/null
+@@ -1,19 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendto)
+-    .set noreorder
+-    .cpload t9
+-    li v0, __NR_sendto
+-    syscall
+-    bnez a3, 1f
+-    move a0, v0
+-    j ra
+-    nop
+-1:
+-    la t9,__set_errno_internal
+-    j t9
+-    nop
+-    .set reorder
+-END(sendto)
+diff --git a/libc/arch-mips/syscalls/writev.S b/libc/arch-mips/syscalls/writev.S
+deleted file mode 100644
+index d8d6616..0000000
+--- a/libc/arch-mips/syscalls/writev.S
++++ /dev/null
+@@ -1,19 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(writev)
+-    .set noreorder
+-    .cpload t9
+-    li v0, __NR_writev
+-    syscall
+-    bnez a3, 1f
+-    move a0, v0
+-    j ra
+-    nop
+-1:
+-    la t9,__set_errno_internal
+-    j t9
+-    nop
+-    .set reorder
+-END(writev)
+diff --git a/libc/arch-mips64/syscalls/__sendmsg.S b/libc/arch-mips64/syscalls/__sendmsg.S
+new file mode 100644
+index 0000000..df2078d
+--- /dev/null
++++ b/libc/arch-mips64/syscalls/__sendmsg.S
+@@ -0,0 +1,26 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendmsg)
++    .set push
++    .set noreorder
++    li v0, __NR_sendmsg
++    syscall
++    bnez a3, 1f
++    move a0, v0
++    j ra
++    nop
++1:
++    move t0, ra
++    bal     2f
++    nop
++2:
++    .cpsetup ra, t1, 2b
++    LA t9,__set_errno_internal
++    .cpreturn
++    j t9
++    move ra, t0
++    .set pop
++END(__sendmsg)
++.hidden __sendmsg
+diff --git a/libc/arch-mips64/syscalls/__sendto.S b/libc/arch-mips64/syscalls/__sendto.S
+new file mode 100644
+index 0000000..7253d21
+--- /dev/null
++++ b/libc/arch-mips64/syscalls/__sendto.S
+@@ -0,0 +1,26 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendto)
++    .set push
++    .set noreorder
++    li v0, __NR_sendto
++    syscall
++    bnez a3, 1f
++    move a0, v0
++    j ra
++    nop
++1:
++    move t0, ra
++    bal     2f
++    nop
++2:
++    .cpsetup ra, t1, 2b
++    LA t9,__set_errno_internal
++    .cpreturn
++    j t9
++    move ra, t0
++    .set pop
++END(__sendto)
++.hidden __sendto
+diff --git a/libc/arch-mips64/syscalls/__writev.S b/libc/arch-mips64/syscalls/__writev.S
+new file mode 100644
+index 0000000..fd3dddc
+--- /dev/null
++++ b/libc/arch-mips64/syscalls/__writev.S
+@@ -0,0 +1,26 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__writev)
++    .set push
++    .set noreorder
++    li v0, __NR_writev
++    syscall
++    bnez a3, 1f
++    move a0, v0
++    j ra
++    nop
++1:
++    move t0, ra
++    bal     2f
++    nop
++2:
++    .cpsetup ra, t1, 2b
++    LA t9,__set_errno_internal
++    .cpreturn
++    j t9
++    move ra, t0
++    .set pop
++END(__writev)
++.hidden __writev
+diff --git a/libc/arch-mips64/syscalls/sendmsg.S b/libc/arch-mips64/syscalls/sendmsg.S
+deleted file mode 100644
+index 519dce4..0000000
+--- a/libc/arch-mips64/syscalls/sendmsg.S
++++ /dev/null
+@@ -1,25 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendmsg)
+-    .set push
+-    .set noreorder
+-    li v0, __NR_sendmsg
+-    syscall
+-    bnez a3, 1f
+-    move a0, v0
+-    j ra
+-    nop
+-1:
+-    move t0, ra
+-    bal     2f
+-    nop
+-2:
+-    .cpsetup ra, t1, 2b
+-    LA t9,__set_errno_internal
+-    .cpreturn
+-    j t9
+-    move ra, t0
+-    .set pop
+-END(sendmsg)
+diff --git a/libc/arch-mips64/syscalls/sendto.S b/libc/arch-mips64/syscalls/sendto.S
+deleted file mode 100644
+index 84efc09..0000000
+--- a/libc/arch-mips64/syscalls/sendto.S
++++ /dev/null
+@@ -1,25 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendto)
+-    .set push
+-    .set noreorder
+-    li v0, __NR_sendto
+-    syscall
+-    bnez a3, 1f
+-    move a0, v0
+-    j ra
+-    nop
+-1:
+-    move t0, ra
+-    bal     2f
+-    nop
+-2:
+-    .cpsetup ra, t1, 2b
+-    LA t9,__set_errno_internal
+-    .cpreturn
+-    j t9
+-    move ra, t0
+-    .set pop
+-END(sendto)
+diff --git a/libc/arch-mips64/syscalls/writev.S b/libc/arch-mips64/syscalls/writev.S
+deleted file mode 100644
+index d103d71..0000000
+--- a/libc/arch-mips64/syscalls/writev.S
++++ /dev/null
+@@ -1,25 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(writev)
+-    .set push
+-    .set noreorder
+-    li v0, __NR_writev
+-    syscall
+-    bnez a3, 1f
+-    move a0, v0
+-    j ra
+-    nop
+-1:
+-    move t0, ra
+-    bal     2f
+-    nop
+-2:
+-    .cpsetup ra, t1, 2b
+-    LA t9,__set_errno_internal
+-    .cpreturn
+-    j t9
+-    move ra, t0
+-    .set pop
+-END(writev)
+diff --git a/libc/arch-x86/syscalls/__sendmsg.S b/libc/arch-x86/syscalls/__sendmsg.S
+new file mode 100644
+index 0000000..9c518c4
+--- /dev/null
++++ b/libc/arch-x86/syscalls/__sendmsg.S
+@@ -0,0 +1,35 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendmsg)
++    pushl   %ebx
++    .cfi_def_cfa_offset 8
++    .cfi_rel_offset ebx, 0
++    pushl   %ecx
++    .cfi_adjust_cfa_offset 4
++    .cfi_rel_offset ecx, 0
++
++    call    __kernel_syscall
++    pushl   %eax
++    .cfi_adjust_cfa_offset 4
++    .cfi_rel_offset eax, 0
++
++    mov     $16, %ebx
++    mov     %esp, %ecx
++    addl    $16, %ecx
++    movl    $__NR_socketcall, %eax
++    call    *(%esp)
++    addl    $4, %esp
++
++    cmpl    $-MAX_ERRNO, %eax
++    jb      1f
++    negl    %eax
++    pushl   %eax
++    call    __set_errno_internal
++    addl    $4, %esp
++1:
++    popl    %ecx
++    popl    %ebx
++    ret
++END(__sendmsg)
+diff --git a/libc/arch-x86/syscalls/__sendto.S b/libc/arch-x86/syscalls/__sendto.S
+new file mode 100644
+index 0000000..aae8fa4
+--- /dev/null
++++ b/libc/arch-x86/syscalls/__sendto.S
+@@ -0,0 +1,35 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendto)
++    pushl   %ebx
++    .cfi_def_cfa_offset 8
++    .cfi_rel_offset ebx, 0
++    pushl   %ecx
++    .cfi_adjust_cfa_offset 4
++    .cfi_rel_offset ecx, 0
++
++    call    __kernel_syscall
++    pushl   %eax
++    .cfi_adjust_cfa_offset 4
++    .cfi_rel_offset eax, 0
++
++    mov     $11, %ebx
++    mov     %esp, %ecx
++    addl    $16, %ecx
++    movl    $__NR_socketcall, %eax
++    call    *(%esp)
++    addl    $4, %esp
++
++    cmpl    $-MAX_ERRNO, %eax
++    jb      1f
++    negl    %eax
++    pushl   %eax
++    call    __set_errno_internal
++    addl    $4, %esp
++1:
++    popl    %ecx
++    popl    %ebx
++    ret
++END(__sendto)
+diff --git a/libc/arch-x86/syscalls/__writev.S b/libc/arch-x86/syscalls/__writev.S
+new file mode 100644
+index 0000000..d252fca
+--- /dev/null
++++ b/libc/arch-x86/syscalls/__writev.S
+@@ -0,0 +1,39 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__writev)
++    pushl   %ebx
++    .cfi_def_cfa_offset 8
++    .cfi_rel_offset ebx, 0
++    pushl   %ecx
++    .cfi_adjust_cfa_offset 4
++    .cfi_rel_offset ecx, 0
++    pushl   %edx
++    .cfi_adjust_cfa_offset 4
++    .cfi_rel_offset edx, 0
++
++    call    __kernel_syscall
++    pushl   %eax
++    .cfi_adjust_cfa_offset 4
++    .cfi_rel_offset eax, 0
++
++    mov     20(%esp), %ebx
++    mov     24(%esp), %ecx
++    mov     28(%esp), %edx
++    movl    $__NR_writev, %eax
++    call    *(%esp)
++    addl    $4, %esp
++
++    cmpl    $-MAX_ERRNO, %eax
++    jb      1f
++    negl    %eax
++    pushl   %eax
++    call    __set_errno_internal
++    addl    $4, %esp
++1:
++    popl    %edx
++    popl    %ecx
++    popl    %ebx
++    ret
++END(__writev)
+diff --git a/libc/arch-x86/syscalls/sendmsg.S b/libc/arch-x86/syscalls/sendmsg.S
+deleted file mode 100644
+index 775ebee..0000000
+--- a/libc/arch-x86/syscalls/sendmsg.S
++++ /dev/null
+@@ -1,35 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendmsg)
+-    pushl   %ebx
+-    .cfi_def_cfa_offset 8
+-    .cfi_rel_offset ebx, 0
+-    pushl   %ecx
+-    .cfi_adjust_cfa_offset 4
+-    .cfi_rel_offset ecx, 0
+-
+-    call    __kernel_syscall
+-    pushl   %eax
+-    .cfi_adjust_cfa_offset 4
+-    .cfi_rel_offset eax, 0
+-
+-    mov     $16, %ebx
+-    mov     %esp, %ecx
+-    addl    $16, %ecx
+-    movl    $__NR_socketcall, %eax
+-    call    *(%esp)
+-    addl    $4, %esp
+-
+-    cmpl    $-MAX_ERRNO, %eax
+-    jb      1f
+-    negl    %eax
+-    pushl   %eax
+-    call    __set_errno_internal
+-    addl    $4, %esp
+-1:
+-    popl    %ecx
+-    popl    %ebx
+-    ret
+-END(sendmsg)
+diff --git a/libc/arch-x86/syscalls/sendto.S b/libc/arch-x86/syscalls/sendto.S
+deleted file mode 100644
+index 2df5e4f..0000000
+--- a/libc/arch-x86/syscalls/sendto.S
++++ /dev/null
+@@ -1,35 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendto)
+-    pushl   %ebx
+-    .cfi_def_cfa_offset 8
+-    .cfi_rel_offset ebx, 0
+-    pushl   %ecx
+-    .cfi_adjust_cfa_offset 4
+-    .cfi_rel_offset ecx, 0
+-
+-    call    __kernel_syscall
+-    pushl   %eax
+-    .cfi_adjust_cfa_offset 4
+-    .cfi_rel_offset eax, 0
+-
+-    mov     $11, %ebx
+-    mov     %esp, %ecx
+-    addl    $16, %ecx
+-    movl    $__NR_socketcall, %eax
+-    call    *(%esp)
+-    addl    $4, %esp
+-
+-    cmpl    $-MAX_ERRNO, %eax
+-    jb      1f
+-    negl    %eax
+-    pushl   %eax
+-    call    __set_errno_internal
+-    addl    $4, %esp
+-1:
+-    popl    %ecx
+-    popl    %ebx
+-    ret
+-END(sendto)
+diff --git a/libc/arch-x86/syscalls/writev.S b/libc/arch-x86/syscalls/writev.S
+deleted file mode 100644
+index 6649905..0000000
+--- a/libc/arch-x86/syscalls/writev.S
++++ /dev/null
+@@ -1,39 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(writev)
+-    pushl   %ebx
+-    .cfi_def_cfa_offset 8
+-    .cfi_rel_offset ebx, 0
+-    pushl   %ecx
+-    .cfi_adjust_cfa_offset 4
+-    .cfi_rel_offset ecx, 0
+-    pushl   %edx
+-    .cfi_adjust_cfa_offset 4
+-    .cfi_rel_offset edx, 0
+-
+-    call    __kernel_syscall
+-    pushl   %eax
+-    .cfi_adjust_cfa_offset 4
+-    .cfi_rel_offset eax, 0
+-
+-    mov     20(%esp), %ebx
+-    mov     24(%esp), %ecx
+-    mov     28(%esp), %edx
+-    movl    $__NR_writev, %eax
+-    call    *(%esp)
+-    addl    $4, %esp
+-
+-    cmpl    $-MAX_ERRNO, %eax
+-    jb      1f
+-    negl    %eax
+-    pushl   %eax
+-    call    __set_errno_internal
+-    addl    $4, %esp
+-1:
+-    popl    %edx
+-    popl    %ecx
+-    popl    %ebx
+-    ret
+-END(writev)
+diff --git a/libc/arch-x86_64/syscalls/__sendmsg.S b/libc/arch-x86_64/syscalls/__sendmsg.S
+new file mode 100644
+index 0000000..a6ff087
+--- /dev/null
++++ b/libc/arch-x86_64/syscalls/__sendmsg.S
+@@ -0,0 +1,16 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendmsg)
++    movl    $__NR_sendmsg, %eax
++    syscall
++    cmpq    $-MAX_ERRNO, %rax
++    jb      1f
++    negl    %eax
++    movl    %eax, %edi
++    call    __set_errno_internal
++1:
++    ret
++END(__sendmsg)
++.hidden __sendmsg
+diff --git a/libc/arch-x86_64/syscalls/__sendto.S b/libc/arch-x86_64/syscalls/__sendto.S
+new file mode 100644
+index 0000000..9974485
+--- /dev/null
++++ b/libc/arch-x86_64/syscalls/__sendto.S
+@@ -0,0 +1,17 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__sendto)
++    movq    %rcx, %r10
++    movl    $__NR_sendto, %eax
++    syscall
++    cmpq    $-MAX_ERRNO, %rax
++    jb      1f
++    negl    %eax
++    movl    %eax, %edi
++    call    __set_errno_internal
++1:
++    ret
++END(__sendto)
++.hidden __sendto
+diff --git a/libc/arch-x86_64/syscalls/__writev.S b/libc/arch-x86_64/syscalls/__writev.S
+new file mode 100644
+index 0000000..ed2dd61
+--- /dev/null
++++ b/libc/arch-x86_64/syscalls/__writev.S
+@@ -0,0 +1,16 @@
++/* Generated by gensyscalls.py. Do not edit. */
++
++#include <private/bionic_asm.h>
++
++ENTRY(__writev)
++    movl    $__NR_writev, %eax
++    syscall
++    cmpq    $-MAX_ERRNO, %rax
++    jb      1f
++    negl    %eax
++    movl    %eax, %edi
++    call    __set_errno_internal
++1:
++    ret
++END(__writev)
++.hidden __writev
+diff --git a/libc/arch-x86_64/syscalls/sendmsg.S b/libc/arch-x86_64/syscalls/sendmsg.S
+deleted file mode 100644
+index 84566b5..0000000
+--- a/libc/arch-x86_64/syscalls/sendmsg.S
++++ /dev/null
+@@ -1,15 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendmsg)
+-    movl    $__NR_sendmsg, %eax
+-    syscall
+-    cmpq    $-MAX_ERRNO, %rax
+-    jb      1f
+-    negl    %eax
+-    movl    %eax, %edi
+-    call    __set_errno_internal
+-1:
+-    ret
+-END(sendmsg)
+diff --git a/libc/arch-x86_64/syscalls/sendto.S b/libc/arch-x86_64/syscalls/sendto.S
+deleted file mode 100644
+index be3bace..0000000
+--- a/libc/arch-x86_64/syscalls/sendto.S
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(sendto)
+-    movq    %rcx, %r10
+-    movl    $__NR_sendto, %eax
+-    syscall
+-    cmpq    $-MAX_ERRNO, %rax
+-    jb      1f
+-    negl    %eax
+-    movl    %eax, %edi
+-    call    __set_errno_internal
+-1:
+-    ret
+-END(sendto)
+diff --git a/libc/arch-x86_64/syscalls/writev.S b/libc/arch-x86_64/syscalls/writev.S
+deleted file mode 100644
+index 8f8956f..0000000
+--- a/libc/arch-x86_64/syscalls/writev.S
++++ /dev/null
+@@ -1,15 +0,0 @@
+-/* Generated by gensyscalls.py. Do not edit. */
+-
+-#include <private/bionic_asm.h>
+-
+-ENTRY(writev)
+-    movl    $__NR_writev, %eax
+-    syscall
+-    cmpq    $-MAX_ERRNO, %rax
+-    jb      1f
+-    negl    %eax
+-    movl    %eax, %edi
+-    call    __set_errno_internal
+-1:
+-    ret
+-END(writev)
+diff --git a/libc/bionic/close.cpp b/libc/bionic/close.cpp
+index 18225f0..2d01965 100644
+--- a/libc/bionic/close.cpp
++++ b/libc/bionic/close.cpp
+@@ -31,8 +31,21 @@
+ 
+ extern "C" int ___close(int);
+ 
++#ifdef USE_WRAPPER
++#include "codeaurora/PropClientDispatch.h"
++#endif
++
+ int close(int fd) {
+-  int rc = ___close(fd);
++  int rc;
++#ifndef USE_WRAPPER
++  rc = ___close(fd);
++#else
++  if ( __propClientDispatch.propClose ) {
++      rc = __propClientDispatch.propClose(fd);
++  } else {
++      rc = ___close(fd);
++  }
++#endif
+   if (rc == -1 && errno == EINTR) {
+     // POSIX says that if close returns with EINTR, the fd must not be closed.
+     // Linus disagrees: http://lkml.indiana.edu/hypermail/linux/kernel/0509.1/0877.html
+diff --git a/libc/bionic/libc_init_dynamic.cpp b/libc/bionic/libc_init_dynamic.cpp
+index 43bca30..0f727e9 100644
+--- a/libc/bionic/libc_init_dynamic.cpp
++++ b/libc/bionic/libc_init_dynamic.cpp
+@@ -58,6 +58,11 @@
+ 
+ extern "C" {
+   extern void netdClientInit(void);
++
++#ifdef USE_WRAPPER
++  extern void propClientInit(void);
++#endif
++
+   extern int __cxa_atexit(void (*)(void *), void *, void *);
+ };
+ 
+@@ -84,6 +89,11 @@ __attribute__((constructor)) static void __libc_preinit() {
+ 
+   // Hooks for various libraries to let them know that we're starting up.
+   __libc_globals.mutate(__libc_init_malloc);
++
++#ifdef USE_WRAPPER
++  propClientInit();
++#endif
++
+   netdClientInit();
+ }
+ 
+diff --git a/libc/bionic/sendmsg.cpp b/libc/bionic/sendmsg.cpp
+new file mode 100644
+index 0000000..0d35ea5
+--- /dev/null
++++ b/libc/bionic/sendmsg.cpp
+@@ -0,0 +1,54 @@
++/*
++ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++#include <unistd.h>
++#ifdef __i386__
++#define __socketcall __attribute__((__cdecl__))
++#else
++#define __socketcall
++#endif
++
++
++extern "C" __socketcall int __sendmsg(int fd, const struct msghdr* msg, int flags);
++
++#ifdef USE_WRAPPER
++#include "codeaurora/PropClientDispatchWrite.h"
++#endif
++
++
++extern "C" ssize_t sendmsg(int fd, const struct msghdr* msg, int flags) {
++#ifndef USE_WRAPPER
++    return __sendmsg(fd, msg, flags);
++#else
++    if( __propClientDispatchWrite.propSendmsg ) {
++        return __propClientDispatchWrite.propSendmsg(fd, msg, flags);
++    } else {
++        return __sendmsg(fd, msg, flags);
++    }
++#endif
++}
+diff --git a/libc/bionic/sendto.cpp b/libc/bionic/sendto.cpp
+new file mode 100644
+index 0000000..5677fdd
+--- /dev/null
++++ b/libc/bionic/sendto.cpp
+@@ -0,0 +1,53 @@
++/*
++ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#ifdef __i386__
++#define __socketcall __attribute__((__cdecl__))
++#else
++#define __socketcall
++#endif
++
++#include <unistd.h>
++extern "C" ssize_t __sendto(int, const void*, size_t, int, const struct sockaddr*, socklen_t);
++
++#ifdef USE_WRAPPER
++    #include "codeaurora/PropClientDispatchWrite.h"
++#endif
++
++extern "C" ssize_t sendto(int fd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen) {
++#ifndef USE_WRAPPER
++    return __sendto(fd, buf, len, flags, dest_addr,addrlen);
++#else
++    if( __propClientDispatchWrite.propSendto ) {
++        return __propClientDispatchWrite.propSendto(fd, buf, len, flags, dest_addr,addrlen);
++    } else {
++        return __sendto(fd, buf, len, flags, dest_addr,addrlen);
++    }
++#endif
++}
+diff --git a/libc/bionic/writev.cpp b/libc/bionic/writev.cpp
+new file mode 100644
+index 0000000..9e1c174
+--- /dev/null
++++ b/libc/bionic/writev.cpp
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++#include <unistd.h>
++extern "C" int __writev(int, const struct iovec*, int);
++#ifdef USE_WRAPPER
++    #include "codeaurora/PropClientDispatchWrite.h"
++#endif
++
++extern "C" int writev(int fd, const struct iovec* iov, int iovcnt) {
++
++#ifdef USE_WRAPPER
++    if( __propClientDispatchWrite.propWritev ) {
++        __propClientDispatchWrite.propWritev(fd);
++    }
++#endif
++    return __writev(fd, iov, iovcnt);
++
++}
+diff --git a/libc/codeaurora/PropClient.cpp b/libc/codeaurora/PropClient.cpp
+new file mode 100644
+index 0000000..30b6c3d
+--- /dev/null
++++ b/libc/codeaurora/PropClient.cpp
+@@ -0,0 +1,110 @@
++/*
++ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#ifndef _PROPCLIENT_H_
++#define _PROPCLIENT_H_
++
++#ifdef LIBC_STATIC
++#error PropClient.cpp should NOT be included in static libc builds.
++#endif
++
++#include "private/libc_logging.h"
++#include <dlfcn.h>
++#include <pthread.h>
++#include <stdlib.h>
++#include <string.h>
++#include "codeaurora/PropClientDispatch.h"
++#include "codeaurora/PropClientDispatchWrite.h"
++
++static pthread_once_t propClientInitOnce = PTHREAD_ONCE_INIT;
++
++template <typename FunctionType>
++static void propClientInitFunction(void* handle, const char* symbol, FunctionType* function) {
++    typedef void (*InitFunctionType)(FunctionType*);
++    InitFunctionType initFunction = reinterpret_cast<InitFunctionType>(dlsym(handle, symbol));
++    if (initFunction != NULL) {
++        initFunction(function);
++    }
++}
++
++static void propClientInitImpl() {
++
++    void *propClientHandle = 0;
++    typedef bool (*VendorExtFunctionType)();
++    bool vendorExtFlag = false;
++    propClientHandle = dlopen("libvendorconn.so", RTLD_NOW);
++
++    if (propClientHandle != NULL) {
++        VendorExtFunctionType vendorExtFunction = reinterpret_cast<VendorExtFunctionType>(dlsym(propClientHandle, "isVendorExtAvailable"));
++        if( vendorExtFunction ) {
++            vendorExtFlag = vendorExtFunction();
++        }
++        if( !vendorExtFlag || !vendorExtFunction ) {
++            dlclose(propClientHandle);
++            propClientHandle = NULL;
++            return;
++        }
++    } else {
++        // If the library is not available, it's not an error. We'll just use
++        // default implementations of functions that it would've overridden.
++
++        __libc_format_log(ANDROID_LOG_ERROR, "propClient", "PropClient failed to load");
++        return;
++    }
++
++    propClientInitFunction(propClientHandle, "propClientInitSocket", &__propClientDispatch.propSocket);
++
++    propClientInitFunction(propClientHandle, "propClientInitConnect", &__propClientDispatch.propConnect);
++
++    propClientInitFunction(propClientHandle, "propClientInitWrite", &__propClientDispatchWrite.propWrite);
++
++    propClientInitFunction(propClientHandle, "propClientInitWritev", &__propClientDispatchWrite.propWritev);
++
++    propClientInitFunction(propClientHandle, "propClientInitSendmsg", &__propClientDispatchWrite.propSendmsg);
++
++    propClientInitFunction(propClientHandle, "propClientInitSendto", &__propClientDispatchWrite.propSendto);
++
++    propClientInitFunction(propClientHandle, "propClientInitGetHostByNameForNet", &__propClientDispatch.propGetHostByNameForNet);
++
++    propClientInitFunction(propClientHandle, "propClientInitGetHostByAddrForNet", &__propClientDispatch.propGetHostByAddrForNet);
++
++    propClientInitFunction(propClientHandle, "propClientInitGetAddrInfoForNet", &__propClientDispatch.propGetAddrInfoForNet);
++
++    propClientInitFunction(propClientHandle, "propClientInitSendDnsReport", &__propClientDispatch.propSendDnsReport);
++
++    propClientInitFunction(propClientHandle, "propClientInitClose", &__propClientDispatch.propClose);
++}
++
++extern "C" __LIBC_HIDDEN__ void propClientInit() {
++    if (pthread_once(&propClientInitOnce, propClientInitImpl)) {
++        __libc_format_log(ANDROID_LOG_ERROR, "propClient", "Failed to initialize prop_client");
++    }
++}
++
++#endif /* !_PROPCLIENT_H_ */
+diff --git a/libc/codeaurora/PropClientDispatch.cpp b/libc/codeaurora/PropClientDispatch.cpp
+new file mode 100755
+index 0000000..2891167
+--- /dev/null
++++ b/libc/codeaurora/PropClientDispatch.cpp
+@@ -0,0 +1,68 @@
++/*
++ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "codeaurora/PropClientDispatch.h"
++
++#ifdef __i386__
++#define __socketcall __attribute__((__cdecl__))
++#else
++#define __socketcall
++#endif
++
++int fallBackPropGetHostByNameForNet(const pid_t, const uid_t, const gid_t, const char*) {
++    return -1;
++}
++
++int fallBackPropGetHostByAddrForNet(const pid_t, const uid_t, const gid_t, const void*) {
++    return -1;
++}
++
++void fallBackPropSendDnsReport(const int) {
++    return;
++}
++
++int fallBackPropGetAddrInfoForNet(const pid_t , const uid_t, const gid_t, const char*,  const struct addrinfo *) {
++    return -1;
++}
++
++extern "C" __socketcall int __socket(int, int, int);
++extern "C" __socketcall int __connect(int, const sockaddr*, socklen_t);
++extern "C" int ___close(int);
++
++// This structure is modified only at startup (when libc.so is loaded) and never
++// afterwards, so it's okay that it's read later at runtime without a lock.
++PropClientDispatch __propClientDispatch __attribute__((aligned(32))) = {
++    __socket,
++    __connect,
++    fallBackPropGetHostByNameForNet,
++    fallBackPropGetHostByAddrForNet,
++    fallBackPropGetAddrInfoForNet,
++    fallBackPropSendDnsReport,
++    ___close,
++};
+diff --git a/libc/codeaurora/PropClientDispatchWrite.cpp b/libc/codeaurora/PropClientDispatchWrite.cpp
+new file mode 100755
+index 0000000..13e17bd
+--- /dev/null
++++ b/libc/codeaurora/PropClientDispatchWrite.cpp
+@@ -0,0 +1,53 @@
++/*
++ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++#include "codeaurora/PropClientDispatchWrite.h"
++
++#ifdef __i386__
++#define __socketcall __attribute__((__cdecl__))
++#else
++#define __socketcall
++#endif
++
++void fallBackPropWrite(const int /*fd*/) {
++}
++
++void fallBackPropWritev(const int /*fd*/) {
++}
++
++extern "C" __socketcall int __sendmsg(int fd, const struct msghdr* msg, unsigned int flags);
++extern "C" __socketcall int __sendto(int, const void*, size_t, int, const struct sockaddr*, socklen_t);
++
++// This structure is modified only at startup (when libc.so is loaded) and never
++// afterwards, so it's okay that it's read later at runtime without a lock.
++PropClientDispatchWrite __propClientDispatchWrite __attribute__((aligned(32))) = {
++    fallBackPropWrite,
++    fallBackPropWritev,
++    __sendmsg,
++    __sendto,
++};
+diff --git a/libc/dns/net/getaddrinfo.c b/libc/dns/net/getaddrinfo.c
+index 4215963..4b055d7 100644
+--- a/libc/dns/net/getaddrinfo.c
++++ b/libc/dns/net/getaddrinfo.c
+@@ -108,6 +108,10 @@
+ #include <stdarg.h>
+ #include "nsswitch.h"
+ 
++#ifdef USE_WRAPPER
++#include "codeaurora/PropClientDispatch.h"
++#endif
++
+ typedef union sockaddr_union {
+     struct sockaddr     generic;
+     struct sockaddr_in  in;
+@@ -725,6 +729,15 @@ android_getaddrinfofornetcontext(const char *hostname, const char *servname,
+ 		ERR(EAI_NONAME);
+ 
+ #if defined(__ANDROID__)
++#ifdef USE_WRAPPER
++        const char* cache_mode = getenv("ANDROID_DNS_MODE");
++        bool use_proxy = (cache_mode == NULL || strcmp(cache_mode, "local") != 0);
++        if (use_proxy) {
++            if (__propClientDispatch.propGetAddrInfoForNet) {
++                __propClientDispatch.propGetAddrInfoForNet(getpid(), getuid(), getgid(), hostname, hints);
++            }
++        }
++#endif
+ 	int gai_error = android_getaddrinfo_proxy(
+ 		hostname, servname, hints, res, netcontext->app_netid);
+ 	if (gai_error != EAI_SYSTEM) {
+diff --git a/libc/dns/net/gethnamaddr.c b/libc/dns/net/gethnamaddr.c
+index 75cb2b3..fd0bb1d 100644
+--- a/libc/dns/net/gethnamaddr.c
++++ b/libc/dns/net/gethnamaddr.c
+@@ -75,6 +75,10 @@
+ #include <syslog.h>
+ #include <unistd.h>
+ 
++#ifdef USE_WRAPPER
++#include "codeaurora/PropClientDispatch.h"
++#endif
++
+ #define ALIGNBYTES (sizeof(uintptr_t) - 1)
+ #define ALIGN(p) (((uintptr_t)(p) + ALIGNBYTES) &~ ALIGNBYTES)
+ 
+@@ -816,6 +820,16 @@ static struct hostent *
+ gethostbyname_internal(const char *name, int af, res_state res, struct hostent *hp, char *hbuf,
+                        size_t hbuflen, int *errorp, unsigned netid, unsigned mark)
+ {
++#ifdef USE_WRAPPER
++        const char* cache_mode = getenv("ANDROID_DNS_MODE");
++        bool use_proxy = (cache_mode == NULL || strcmp(cache_mode, "local") != 0);
++        if (use_proxy) {
++            if(__propClientDispatch.propGetHostByNameForNet) {
++               __propClientDispatch.propGetHostByNameForNet(getpid(), getuid(), getgid(), name);
++            }
++        }
++#endif
++
+ 	FILE* proxy = android_open_proxy();
+ 	if (proxy == NULL) {
+ 		// Either we're not supposed to be using the proxy or the proxy is unavailable.
+@@ -924,6 +938,16 @@ android_gethostbyaddrfornet_proxy_internal(const void* addr, socklen_t len, int
+                              struct hostent *hp, char *hbuf, size_t hbuflen, int *he,
+                              unsigned netid, unsigned mark)
+ {
++#ifdef USE_WRAPPER
++        const char* cache_mode = getenv("ANDROID_DNS_MODE");
++        bool use_proxy = (cache_mode == NULL || strcmp(cache_mode, "local") != 0);
++        if (use_proxy) {
++            if(__propClientDispatch.propGetHostByAddrForNet) {
++               __propClientDispatch.propGetHostByAddrForNet(getpid(), getuid(), getgid(), addr);
++            }
++        }
++#endif
++
+ 	FILE* proxy = android_open_proxy();
+ 	if (proxy == NULL) {
+ 		// Either we're not supposed to be using the proxy or the proxy is unavailable.
+diff --git a/libc/include/codeaurora/PropClientDispatch.h b/libc/include/codeaurora/PropClientDispatch.h
+new file mode 100755
+index 0000000..3f01a14
+--- /dev/null
++++ b/libc/include/codeaurora/PropClientDispatch.h
+@@ -0,0 +1,51 @@
++/*
++ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++#ifndef PROP_CLIENT_DISPATCH_H
++#define PROP_CLIENT_DISPATCH_H
++
++#include <sys/cdefs.h>
++#include <sys/socket.h>
++#include <netdb.h>
++__BEGIN_DECLS
++
++struct PropClientDispatch {
++    int (*propSocket)(int, int, int);
++    int (*propConnect)(int sockfd, const struct sockaddr* addr, socklen_t addrlen);
++    int (*propGetHostByNameForNet)(const pid_t pid, const uid_t, const gid_t, const char*);
++    int (*propGetHostByAddrForNet)(const pid_t pid, const uid_t, const gid_t, const void*);
++    int (*propGetAddrInfoForNet)(const pid_t pid, const uid_t, const gid_t, const char*, const struct addrinfo*);
++    void (*propSendDnsReport)(const int);
++    int (*propClose)(int);
++};
++
++extern struct PropClientDispatch __propClientDispatch;
++
++__END_DECLS
++
++#endif  // PROP_CLIENT_DISPATCH_H
+diff --git a/libc/include/codeaurora/PropClientDispatchWrite.h b/libc/include/codeaurora/PropClientDispatchWrite.h
+new file mode 100644
+index 0000000..d0f1423
+--- /dev/null
++++ b/libc/include/codeaurora/PropClientDispatchWrite.h
+@@ -0,0 +1,48 @@
++/*
++ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *   * Redistributions of source code must retain the above copyright
++ *     notice, this list of conditions and the following disclaimer.
++ *   * Redistributions in binary form must reproduce the above
++ *     copyright notice, this list of conditions and the following
++ *     disclaimer in the documentation and/or other materials provided
++ *     with the distribution.
++ *   * Neither the name of The Linux Foundation nor the names of its
++ *     contributors may be used to endorse or promote products derived
++ *     from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++#ifndef PROP_CLIENT_DISPATCH_WRITE_H
++#define PROP_CLIENT_DISPATCH_WRITE_H
++
++#include <stdlib.h>
++#include <sys/cdefs.h>
++#include <netdb.h>
++__BEGIN_DECLS
++struct PropClientDispatchWrite {
++
++    void (*propWrite)(const int fd);
++    void (*propWritev)(const int fd);
++    int (*propSendmsg)(int fd, const struct msghdr *msg, unsigned int flags);
++    int (*propSendto)(int fd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);
++};
++
++extern struct PropClientDispatchWrite __propClientDispatchWrite;
++
++__END_DECLS
++
++#endif  // PROP_CLIENT_DISPATCH_WRITE_H
+diff --git a/libc/include/unistd.h b/libc/include/unistd.h
+index ff2e9f6..d84397b 100644
+--- a/libc/include/unistd.h
++++ b/libc/include/unistd.h
+@@ -42,6 +42,10 @@
+ #include <bits/seek_constants.h>
+ #include <bits/sysconf.h>
+ 
++#ifdef USE_WRAPPER
++#include "codeaurora/PropClientDispatchWrite.h"
++#endif
++
+ __BEGIN_DECLS
+ 
+ #define STDIN_FILENO	0
+@@ -671,6 +675,11 @@ ssize_t read(int fd, void* buf, size_t count) {
+ __BIONIC_FORTIFY_INLINE
+ ssize_t write(int fd, const void* buf, size_t count) {
+     size_t bos = __bos0(buf);
++    #ifdef USE_WRAPPER
++      if( __propClientDispatchWrite.propWrite ) {
++          __propClientDispatchWrite.propWrite(fd);
++      }
++    #endif
+ 
+     if (bos == __BIONIC_FORTIFY_UNKNOWN_SIZE) {
+         return __write_real(fd, buf, count);
+diff --git a/libc/libc.arm.map b/libc/libc.arm.map
+index f63a0da..c79c7a0 100644
+--- a/libc/libc.arm.map
++++ b/libc/libc.arm.map
+@@ -119,6 +119,8 @@ LIBC {
+     __pread_chk; # introduced=23
+     __progname; # var
+     __pselect6; # arm x86 mips introduced=21
++    __propClientDispatch; #arm arm64 nobrillo
++    __propClientDispatchWrite; #arm arm64 nobrillo
+     __pthread_cleanup_pop;
+     __pthread_cleanup_push;
+     __ptrace; # arm x86 mips
+diff --git a/libc/libc.arm64.map b/libc/libc.arm64.map
+index f309043..fd2f9fd 100644
+--- a/libc/libc.arm64.map
++++ b/libc/libc.arm64.map
+@@ -77,6 +77,8 @@ LIBC {
+     __pread64_chk; # introduced=23
+     __pread_chk; # introduced=23
+     __progname; # var
++    __propClientDispatch; #arm arm64 nobrillo
++    __propClientDispatchWrite; #arm arm64 nobrillo
+     __pthread_cleanup_pop;
+     __pthread_cleanup_push;
+     __putlong;
+diff --git a/libc/libc.map.txt b/libc/libc.map.txt
+index 6abcc44..19a8dc3 100644
+--- a/libc/libc.map.txt
++++ b/libc/libc.map.txt
+@@ -119,6 +119,8 @@ LIBC {
+     __pread_chk; # introduced=23
+     __progname; # var
+     __pselect6; # arm x86 mips introduced=21
++    __propClientDispatch; #arm arm64 nobrillo
++    __propClientDispatchWrite; #arm arm64 nobrillo
+     __pthread_cleanup_pop;
+     __pthread_cleanup_push;
+     __ptrace; # arm x86 mips
+-- 
+1.8.3.1
+

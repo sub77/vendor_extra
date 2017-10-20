@@ -1,0 +1,46 @@
+From 95bfc804d11fcb0c34dfd364137dd6144452c336 Mon Sep 17 00:00:00 2001
+From: Matthias Yzusqui <myzb.dev@gmail.com>
+Date: Mon, 31 Oct 2016 17:06:09 +0100
+Subject: [PATCH 5/6] sepolicy: allow sdcard access via sdcardfs
+
+[AdrianDC] Forward port to AOSP 8.0 Master
+
+Change-Id: Ib3bf9e17cab87e8092ad5c03d5ec9a5cc0b79468
+Signed-off-by: Adrian DC <radian.dc@gmail.com>
+---
+ private/app.te             | 4 ++--
+ private/app_neverallows.te | 3 ++-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/private/app.te b/private/app.te
+index cd3e059..a580380 100644
+--- a/private/app.te
++++ b/private/app.te
+@@ -225,8 +225,8 @@ allow { appdomain -isolated_app -ephemeral_app } sdcardfs:dir create_dir_perms;
+ allow { appdomain -isolated_app -ephemeral_app } sdcardfs:file create_file_perms;
+ # This should be removed if sdcardfs is modified to alter the secontext for its
+ # accesses to the underlying FS.
+-allow { appdomain -isolated_app -ephemeral_app } { media_rw_data_file vfat }:dir create_dir_perms;
+-allow { appdomain -isolated_app -ephemeral_app } { media_rw_data_file vfat }:file create_file_perms;
++allow { appdomain -isolated_app -ephemeral_app } { media_rw_data_file sdcard_posix vfat }:dir create_dir_perms;
++allow { appdomain -isolated_app -ephemeral_app } { media_rw_data_file sdcard_posix vfat }:file create_file_perms;
+ 
+ # Access OBBs (vfat images) mounted by vold (b/17633509)
+ # File write access allowed for FDs returned through Storage Access Framework
+diff --git a/private/app_neverallows.te b/private/app_neverallows.te
+index 3c159d5..a8a6f68 100644
+--- a/private/app_neverallows.te
++++ b/private/app_neverallows.te
+@@ -79,7 +79,8 @@ neverallow all_untrusted_apps {
+   fs_type
+   -fuse                     # sdcard
+   -sdcardfs                 # sdcard
+-  -vfat
++  -sdcard_posix             # sdcard
++  -vfat                     # sdcard
+   file_type
+   -app_data_file            # The apps sandbox itself
+   -media_rw_data_file       # Internal storage. Known that apps can
+-- 
+2.1.2
+
