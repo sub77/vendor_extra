@@ -20,5 +20,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Enable data roaming
 PRODUCT_PROPERTY_OVERRIDES := $(subst dataroaming=false,dataroaming=true,$(PRODUCT_PROPERTY_OVERRIDES))
 
+# Enable ADB authentication
+ADDITIONAL_DEFAULT_PROPERTIES += ro.adb.secure=0
+
 # Updates overlay settings
 PRODUCT_PACKAGE_OVERLAYS += vendor/extra/overlay
