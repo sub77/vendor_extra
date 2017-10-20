@@ -1,4 +1,4 @@
-From 8bfa63ac92d75a4bfa37e6b1ba7f77a24312a1b9 Mon Sep 17 00:00:00 2001
+From a33c18f7315030c074301dab1fc347b2e2b2bd3d Mon Sep 17 00:00:00 2001
 From: Keun-young Park <keunyoung@google.com>
 Date: Wed, 5 Jul 2017 11:38:44 -0700
 Subject: [PATCH 4/5] add "shutdown critical" to service

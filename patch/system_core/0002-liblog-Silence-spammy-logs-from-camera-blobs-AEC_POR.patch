@@ -1,4 +1,4 @@
-From 3c7e3dcc8d9e8929c89e6df0f3d1250217123fca Mon Sep 17 00:00:00 2001
+From 9bf56d831e06d3c7b8c1d67c319d4c74ef2c21e5 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Sat, 7 Oct 2017 05:58:15 +0000
 Subject: [PATCH 2/5] liblog: Silence spammy logs from camera blobs (AEC_PORT

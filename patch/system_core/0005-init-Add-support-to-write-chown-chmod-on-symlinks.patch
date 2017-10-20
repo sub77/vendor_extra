@@ -1,4 +1,4 @@
-From c1ca0ec00391ec8c293d064a0662086cb3de90b2 Mon Sep 17 00:00:00 2001
+From 698bd0b34f14518e6c9a2ab28e5489a8799fd42c Mon Sep 17 00:00:00 2001
 From: Ameya Thakur <ameyat@codeaurora.org>
 Date: Mon, 27 Jun 2016 12:17:04 +0800
 Subject: [PATCH 5/5] init: Add support to write/chown/chmod on symlinks

@@ -1,4 +1,4 @@
-From 103efbd1236ea381e4ecbebd298384b7020502f1 Mon Sep 17 00:00:00 2001
+From ffebe0eb895971d3a4484be51a6083f04beb3cb8 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Sat, 9 Sep 2017 13:14:00 +0000
 Subject: [PATCH 3/5] logcat: Map '-C' to 'logcat -v color'
