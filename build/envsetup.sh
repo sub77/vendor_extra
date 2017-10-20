@@ -32,3 +32,28 @@ if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
     par=$(tput sgr0)${pa}
 fi
 }
+
+function patchbase()
+{
+    for f in `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
+    do
+        echo -e ${cya}"applying base patches"${rst}
+        pvar=$(dirname $f)
+        . $f
+    done
+    unset f
+}
+
+function set_stuff_for_environment()
+{
+    settitle
+    set_java_home
+    setpaths
+    set_sequence_number
+    colors
+    patchbase
+
+    # With this environment variable new GCC can apply colors to warnings/errors
+    export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+    export ASAN_OPTIONS=detect_leaks=0
+}
