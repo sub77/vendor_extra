@@ -14,5 +14,11 @@ PRODUCT_PACKAGES +=
 ############# Settings #################
 ########################################
 
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.debuggable=1
+
+# Enable data roaming
+PRODUCT_PROPERTY_OVERRIDES := $(subst dataroaming=false,dataroaming=true,$(PRODUCT_PROPERTY_OVERRIDES))
+
 # Updates overlay settings
 PRODUCT_PACKAGE_OVERLAYS += vendor/extra/overlay
