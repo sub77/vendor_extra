@@ -57,3 +57,10 @@ function set_stuff_for_environment()
     export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
     export ASAN_OPTIONS=detect_leaks=0
 }
+
+function opendelta()
+{
+    if bash vendor/extra/opendelta/opendelta.sh $CUSTOM_BUILD; then
+        bash vendor/extra/opendelta/upload.sh
+    fi
+}
