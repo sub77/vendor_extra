@@ -1,0 +1,33 @@
+From a9ff551dd456476b9068fbab85f096e3bfb4c6dd Mon Sep 17 00:00:00 2001
+From: Ivan Iskandar <iiiiskandar14@gmail.com>
+Date: Sun, 12 Nov 2017 11:34:48 +0700
+Subject: [PATCH] build: Introduce SubstratumService
+
+Change-Id: I38f44cc25108d2fe5c48dd9b05392f2e0512c832
+---
+ target/product/core.mk | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/target/product/core.mk b/target/product/core.mk
+index 614e6a6..a6ab547 100644
+--- a/target/product/core.mk
++++ b/target/product/core.mk
+@@ -53,6 +53,7 @@ PRODUCT_PACKAGES += \
+     Settings \
+     SharedStorageBackup \
+     StorageManager \
++    SubstratumService \
+     Telecom \
+     TeleService \
+     VpnDialogs \
+@@ -64,6 +65,7 @@ PRODUCT_SYSTEM_SERVER_APPS += \
+     FusedLocation \
+     InputDevices \
+     KeyChain \
++    SubstratumService \
+     Telecom \
+ 
+ # The set of packages we want to force 'speed' compilation on.
+-- 
+2.1.2
+

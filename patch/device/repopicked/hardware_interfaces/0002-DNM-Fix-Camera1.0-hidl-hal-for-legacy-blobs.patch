@@ -1,0 +1,51 @@
+From d081c7b564b58701d397576671b632ae4398f377 Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Mon, 9 Oct 2017 21:47:32 +0200
+Subject: [PATCH 2/2] [DNM] Fix Camera1.0 hidl hal for legacy blobs
+
+* Camera HALs before Treble used to pass camera id
+  in user field, in Treble they are meant to pass
+  pointer to CameraDevice.
+* This patch workarounds this by storing local pointer
+  to CameraDevice and not relying on user field.
+
+Change-Id: Iadbdc309de3b8a7e2f0b61b2a2d6bc039d3c5228
+---
+ camera/device/1.0/default/CameraDevice.cpp | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/camera/device/1.0/default/CameraDevice.cpp b/camera/device/1.0/default/CameraDevice.cpp
+index 01a2e77..c936876 100644
+--- a/camera/device/1.0/default/CameraDevice.cpp
++++ b/camera/device/1.0/default/CameraDevice.cpp
+@@ -363,7 +363,8 @@ CameraDevice::CameraHeapMemory::~CameraHeapMemory() {
+ }
+ 
+ // shared memory methods
+-camera_memory_t* CameraDevice::sGetMemory(int fd, size_t buf_size, uint_t num_bufs, void *user) {
++camera_memory_t* CameraDevice::sGetMemory(int fd, size_t buf_size, uint_t num_bufs,
++        void *user __unused) {
+     ALOGV("%s", __FUNCTION__);
+ #ifndef TARGET_USES_NON_TREBLE_CAMERA
+     CameraDevice* object = static_cast<CameraDevice*>(user);
+@@ -412,7 +413,7 @@ void CameraDevice::sPutMemory(camera_memory_t *data) {
+ }
+ 
+ // Callback forwarding methods
+-void CameraDevice::sNotifyCb(int32_t msg_type, int32_t ext1, int32_t ext2, void *user) {
++void CameraDevice::sNotifyCb(int32_t msg_type, int32_t ext1, int32_t ext2, void *user __unused) {
+     ALOGV("%s", __FUNCTION__);
+ #ifndef TARGET_USES_NON_TREBLE_CAMERA
+     CameraDevice* object = static_cast<CameraDevice*>(user);
+@@ -540,7 +541,7 @@ void CameraDevice::handleCallbackTimestamp(
+ }
+ 
+ void CameraDevice::sDataCbTimestamp(nsecs_t timestamp, int32_t msg_type,
+-        const camera_memory_t *data, unsigned index, void *user) {
++        const camera_memory_t *data, unsigned index, void *user __unused) {
+     ALOGV("%s", __FUNCTION__);
+ #ifndef TARGET_USES_NON_TREBLE_CAMERA
+     CameraDevice* object = static_cast<CameraDevice*>(user);
+-- 
+2.1.2
+

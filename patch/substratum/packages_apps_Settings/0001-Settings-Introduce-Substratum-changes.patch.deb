@@ -1,0 +1,248 @@
+From a4cf1be55ba4dccf369ef15a399c441a60c3d350 Mon Sep 17 00:00:00 2001
+From: George G <kreach3r@users.noreply.github.com>
+Date: Sat, 25 Feb 2017 18:24:06 +0200
+Subject: [PATCH] Settings: Introduce Substratum changes.
+
+* Add toggle to force bypass of authorisation checks in the
+  SubstratumService. This is only accessible to owner accounts.
+* Add ApplicationsState filter for Substratum overlays in All
+  apps list.
+
+Change-Id: I4d8ca60ead6fe058e7bc2ef8b7613e77457b3f27
+Signed-off-by: Simao Gomes Viana <xdevs23@outlook.com>
+
+Conflicts:
+	src/com/android/settings/applications/ManageApplications.java
+---
+ res/menu/manage_apps.xml                           |  8 +++++
+ res/values/custom_strings.xml                      |  9 ++++++
+ res/xml/development_prefs.xml                      |  5 ++++
+ .../settings/applications/ManageApplications.java  | 35 +++++++++++++++++++++-
+ .../settings/development/DevelopmentSettings.java  | 21 +++++++++++++
+ 5 files changed, 77 insertions(+), 1 deletion(-)
+
+diff --git a/res/menu/manage_apps.xml b/res/menu/manage_apps.xml
+index 02ee2bb..67f09e5 100644
+--- a/res/menu/manage_apps.xml
++++ b/res/menu/manage_apps.xml
+@@ -30,6 +30,14 @@
+         android:title="@string/menu_hide_system"
+         android:showAsAction="never" />
+     <item
++        android:id="@+id/show_substratum"
++        android:title="@string/menu_show_substratum"
++        android:showAsAction="never" />
++    <item
++        android:id="@+id/hide_substratum"
++        android:title="@string/menu_hide_substratum"
++        android:showAsAction="never" />
++    <item
+         android:id="@+id/sort_order_alpha"
+         android:title="@string/sort_order_alpha"
+         android:showAsAction="never" />
+diff --git a/res/values/custom_strings.xml b/res/values/custom_strings.xml
+index 91c252c..1acc017 100644
+--- a/res/values/custom_strings.xml
++++ b/res/values/custom_strings.xml
+@@ -61,4 +61,13 @@
+     <!-- Encryption and credential -->
+     <string name="custom_encryption_and_credential_settings_summary_on">Device is encrypted</string>
+     <string name="custom_encryption_and_credential_settings_summary_off">Device is decrypted</string>
++
++   <!-- Force authorize substratum packages -->
++   <string name="force_authorize_substratum_packages_title">Force authorize every theme app</string>
++   <string name="force_authorize_substratum_packages_summary">Allow theme apps from unknown sources</string>
++
++   <!-- Manage applications: show substratum overlays -->
++   <string name="filter_substratum_apps">Substratum overlays</string>
++   <string name="menu_show_substratum">Show overlays</string>
++   <string name="menu_hide_substratum">Hide overlays</string>
+ </resources>
+diff --git a/res/xml/development_prefs.xml b/res/xml/development_prefs.xml
+index 640cb13..5612cb0 100644
+--- a/res/xml/development_prefs.xml
++++ b/res/xml/development_prefs.xml
+@@ -159,6 +159,11 @@
+             android:title="@string/telephony_monitor_switch"
+             android:summary="@string/telephony_monitor_switch_summary"/>
+ 
++        <SwitchPreference
++            android:key="force_authorize_substratum_packages"
++            android:title="@string/force_authorize_substratum_packages_title"
++            android:summary="@string/force_authorize_substratum_packages_summary" />
++
+     </PreferenceCategory>
+ 
+     <PreferenceCategory android:key="debug_networking_category"
+diff --git a/src/com/android/settings/applications/ManageApplications.java b/src/com/android/settings/applications/ManageApplications.java
+index b52dbc2..36b3811 100644
+--- a/src/com/android/settings/applications/ManageApplications.java
++++ b/src/com/android/settings/applications/ManageApplications.java
+@@ -116,6 +116,7 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+ 
+     private static final String EXTRA_SORT_ORDER = "sortOrder";
+     private static final String EXTRA_SHOW_SYSTEM = "showSystem";
++    private static final String EXTRA_SHOW_SUBSTRATUM = "showSubstratum";
+     private static final String EXTRA_HAS_ENTRIES = "hasEntries";
+     private static final String EXTRA_HAS_BRIDGE = "hasBridge";
+ 
+@@ -209,6 +210,7 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+         // Apps that are trusted sources of apks
+         FILTER_LABELS[FILTER_APPS_INSTALL_SOURCES] = R.string.filter_install_sources_apps;
+         FILTERS[FILTER_APPS_INSTALL_SOURCES] = AppStateInstallAppsBridge.FILTER_APP_SOURCES;
++
+     }
+ 
+     // Storage types. Used to determine what the extra item in the list of preferences is.
+@@ -221,6 +223,9 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+     // whether showing system apps.
+     private boolean mShowSystem;
+ 
++    // whether showing substratum overlays.
++    private boolean mShowSubstratum;
++
+     private ApplicationsState mApplicationsState;
+ 
+     public int mListType;
+@@ -328,6 +333,7 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+         if (savedInstanceState != null) {
+             mSortOrder = savedInstanceState.getInt(EXTRA_SORT_ORDER, mSortOrder);
+             mShowSystem = savedInstanceState.getBoolean(EXTRA_SHOW_SYSTEM, mShowSystem);
++            mShowSubstratum = savedInstanceState.getBoolean(EXTRA_SHOW_SUBSTRATUM, mShowSubstratum);
+         }
+ 
+         mInvalidSizeStr = getActivity().getText(R.string.invalid_size_value);
+@@ -522,6 +528,7 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+         mResetAppsHelper.onSaveInstanceState(outState);
+         outState.putInt(EXTRA_SORT_ORDER, mSortOrder);
+         outState.putBoolean(EXTRA_SHOW_SYSTEM, mShowSystem);
++        outState.putBoolean(EXTRA_SHOW_SUBSTRATUM, mShowSubstratum);
+         outState.putBoolean(EXTRA_HAS_ENTRIES, mApplications.mHasReceivedLoadEntries);
+         outState.putBoolean(EXTRA_HAS_BRIDGE, mApplications.mHasReceivedBridgeCallback);
+     }
+@@ -649,6 +656,13 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+                 && mListType != LIST_TYPE_HIGH_POWER);
+         mOptionsMenu.findItem(R.id.hide_system).setVisible(mShowSystem
+                 && mListType != LIST_TYPE_HIGH_POWER);
++
++        mOptionsMenu.findItem(R.id.reset_app_preferences).setVisible(mListType == LIST_TYPE_MAIN);
++
++        mOptionsMenu.findItem(R.id.show_substratum).setVisible(!mShowSubstratum
++                && mListType != LIST_TYPE_HIGH_POWER);
++        mOptionsMenu.findItem(R.id.hide_substratum).setVisible(mShowSubstratum
++                && mListType != LIST_TYPE_HIGH_POWER);
+     }
+ 
+     @Override
+@@ -668,6 +682,11 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+                 mShowSystem = !mShowSystem;
+                 mApplications.rebuild(false);
+                 break;
++            case R.id.show_substratum:
++            case R.id.hide_substratum:
++                mShowSubstratum = !mShowSubstratum;
++                mApplications.rebuild(false);
++                break;
+             case R.id.reset_app_preferences:
+                 mResetAppsHelper.buildResetDialog();
+                 return true;
+@@ -991,7 +1010,7 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+             if (mCompositeFilter != null) {
+                 filterObj = new CompoundFilter(filterObj, mCompositeFilter);
+             }
+-            if (!mManageApplications.mShowSystem) {
++            if (!mManageApplications.mShowSystem && !mManageApplications.mShowSubstratum) {
+                 if (LIST_TYPES_WITH_INSTANT.contains(mManageApplications.mListType)) {
+                     filterObj = new CompoundFilter(filterObj,
+                             ApplicationsState.FILTER_DOWNLOADED_AND_LAUNCHER_AND_INSTANT);
+@@ -999,7 +1018,21 @@ public class ManageApplications extends InstrumentedPreferenceFragment
+                     filterObj = new CompoundFilter(filterObj,
+                             ApplicationsState.FILTER_DOWNLOADED_AND_LAUNCHER);
+                 }
++                filterObj = new CompoundFilter(filterObj,
++                        ApplicationsState.FILTER_SUBSTRATUM);
++            } else if (!mManageApplications.mShowSystem) {
++                if (LIST_TYPES_WITH_INSTANT.contains(mManageApplications.mListType)) {
++                    filterObj = new CompoundFilter(filterObj,
++                            ApplicationsState.FILTER_DOWNLOADED_AND_LAUNCHER_AND_INSTANT);
++                } else {
++                    filterObj = new CompoundFilter(filterObj,
++                            ApplicationsState.FILTER_DOWNLOADED_AND_LAUNCHER);
++                }
++            } else if (!mManageApplications.mShowSubstratum) {
++                filterObj = new CompoundFilter(filterObj,
++                        ApplicationsState.FILTER_SUBSTRATUM);
+             }
++
+             switch (mLastSortMode) {
+                 case R.id.sort_order_size:
+                     switch (mWhichSize) {
+diff --git a/src/com/android/settings/development/DevelopmentSettings.java b/src/com/android/settings/development/DevelopmentSettings.java
+index ff34b7c..8a58152 100644
+--- a/src/com/android/settings/development/DevelopmentSettings.java
++++ b/src/com/android/settings/development/DevelopmentSettings.java
+@@ -239,6 +239,8 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+ 
+     private static final String OTA_DISABLE_AUTOMATIC_UPDATE_KEY = "ota_disable_automatic_update";
+ 
++    private static final String FORCE_AUTHORIZE_SUBSTRATUM_PACKAGES = "force_authorize_substratum_packages";
++
+     private static final int RESULT_DEBUG_APP = 1000;
+     private static final int RESULT_MOCK_LOCATION_APP = 1001;
+ 
+@@ -263,6 +265,9 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+ 
+     private boolean mHaveDebugSettings;
+     private boolean mDontPokeProperties;
++
++    private SwitchPreference mForceAuthorizeSubstratumPackages;
++
+     private SwitchPreference mEnableAdb;
+     private Preference mClearAdbKeys;
+     private SwitchPreference mEnableTerminal;
+@@ -443,12 +448,14 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+         mForceAllowOnExternal = findAndInitSwitchPref(FORCE_ALLOW_ON_EXTERNAL_KEY);
+         mPassword = findPreference(LOCAL_BACKUP_PASSWORD);
+         mAllPrefs.add(mPassword);
++        mForceAuthorizeSubstratumPackages = findAndInitSwitchPref(FORCE_AUTHORIZE_SUBSTRATUM_PACKAGES);
+ 
+         if (!mUm.isAdminUser()) {
+             disableForUser(mEnableAdb);
+             disableForUser(mClearAdbKeys);
+             disableForUser(mEnableTerminal);
+             disableForUser(mPassword);
++            disableForUser(mForceAuthorizeSubstratumPackages);
+         }
+ 
+         mDebugAppPref = findPreference(DEBUG_APP_KEY);
+@@ -823,6 +830,18 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+         updateBluetoothDisableAbsVolumeOptions();
+         updateBluetoothEnableInbandRingingOptions();
+         updateBluetoothA2dpConfigurationValues();
++        updateForceAuthorizeSubstratumPackagesOptions();
++    }
++
++    private void writeForceAuthorizeSubstratumPackagesOptions() {
++        Settings.Secure.putInt(getActivity().getContentResolver(),
++                Settings.Secure.FORCE_AUTHORIZE_SUBSTRATUM_PACKAGES,
++                mForceAuthorizeSubstratumPackages.isChecked() ? 1 : 0);
++    }
++
++    private void updateForceAuthorizeSubstratumPackagesOptions() {
++        mForceAuthorizeSubstratumPackages.setChecked(Settings.Secure.getInt(getActivity().getContentResolver(),
++                Settings.Secure.FORCE_AUTHORIZE_SUBSTRATUM_PACKAGES, 0) != 0);
+     }
+ 
+     private void resetDangerousOptions() {
+@@ -2516,6 +2535,8 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+             writeUSBAudioOptions();
+         } else if (preference == mForceResizable) {
+             writeForceResizableOptions();
++        } else if (preference == mForceAuthorizeSubstratumPackages) {
++            writeForceAuthorizeSubstratumPackagesOptions();
+         } else if (preference == mBluetoothDisableAbsVolume) {
+             writeBluetoothDisableAbsVolumeOptions();
+         } else if (preference == mBluetoothEnableInbandRinging) {
+-- 
+2.1.2
+

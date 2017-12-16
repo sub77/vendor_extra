@@ -1,0 +1,43 @@
+From 186760eeb0d7614d05c19b4019bf9056f8561b07 Mon Sep 17 00:00:00 2001
+From: Randall Rushing <randall.rushing@gmail.com>
+Date: Sun, 10 Jan 2016 12:09:58 -0800
+Subject: [PATCH 16/24] Themes: Allow volume slider and thumb to work with
+ custom images.
+
+Credit Bryan Owens for giving guidance on what was needed.
+
+Forward ported to oreo
+
+Change-Id: I862008d1b433666333a4c77904b44a05e70472a2
+
+Conflicts:
+	packages/SystemUI/src/com/android/systemui/volume/VolumeDialogImpl.java
+---
+ .../SystemUI/src/com/android/systemui/volume/VolumeDialogImpl.java    | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/volume/VolumeDialogImpl.java b/packages/SystemUI/src/com/android/systemui/volume/VolumeDialogImpl.java
+index 8f081b8..2380d85 100644
+--- a/packages/SystemUI/src/com/android/systemui/volume/VolumeDialogImpl.java
++++ b/packages/SystemUI/src/com/android/systemui/volume/VolumeDialogImpl.java
+@@ -32,6 +32,8 @@ import android.content.res.Configuration;
+ import android.content.res.Resources;
+ import android.graphics.Color;
+ import android.graphics.PixelFormat;
++import android.graphics.Point;
++import android.graphics.PorterDuff;
+ import android.graphics.Rect;
+ import android.graphics.drawable.AnimatedVectorDrawable;
+ import android.graphics.drawable.ColorDrawable;
+@@ -420,6 +422,8 @@ public class VolumeDialogImpl implements VolumeDialog, TunerService.Tunable {
+         row.header = (TextView) row.view.findViewById(R.id.volume_row_header);
+         row.header.setId(20 * row.stream);
+         row.slider = (SeekBar) row.view.findViewById(R.id.volume_row_slider);
++        row.slider.setProgressTintMode(PorterDuff.Mode.SRC_ATOP);
++        row.slider.setThumbTintMode(PorterDuff.Mode.SRC_ATOP);
+         row.slider.setOnSeekBarChangeListener(new VolumeSeekBarChangeListener(row));
+         row.anim = null;
+ 
+-- 
+2.1.2
+

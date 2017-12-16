@@ -1,0 +1,57 @@
+From 8901da713bd1b98532dc8592082284a2555f287c Mon Sep 17 00:00:00 2001
+From: ezio84 <brabus84@gmail.com>
+Date: Tue, 7 Mar 2017 23:33:40 +0100
+Subject: [PATCH 15/24] Themes: Expose Screenshot flash and background colors
+
+Keep in mind that Background color already gets 0.5f opacity in the
+GlobalScreenshot class (BACKGROUND_ALPHA with some math).
+For the flash you can use any color value instead (full opacity or not).
+
+Change-Id: I6ac51358f7f5278d742849ebc49f580554f069cd
+---
+ packages/SystemUI/res/layout/global_screenshot.xml | 4 ++--
+ packages/SystemUI/res/values/projekt_colors.xml    | 5 ++++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/packages/SystemUI/res/layout/global_screenshot.xml b/packages/SystemUI/res/layout/global_screenshot.xml
+index 59952e0..c74c69b 100644
+--- a/packages/SystemUI/res/layout/global_screenshot.xml
++++ b/packages/SystemUI/res/layout/global_screenshot.xml
+@@ -19,7 +19,7 @@
+     <ImageView android:id="@+id/global_screenshot_background"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+-        android:src="@android:color/black"
++        android:src="@color/screenshot_background_color"
+         android:visibility="gone" />
+     <ImageView android:id="@+id/global_screenshot"
+         android:layout_width="wrap_content"
+@@ -31,7 +31,7 @@
+     <ImageView android:id="@+id/global_screenshot_flash"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+-        android:src="@android:color/white"
++        android:src="@color/screenshot_flash_color"
+         android:visibility="gone" />
+     <com.android.systemui.screenshot.ScreenshotSelectorView
+         android:id="@+id/global_screenshot_selector"
+diff --git a/packages/SystemUI/res/values/projekt_colors.xml b/packages/SystemUI/res/values/projekt_colors.xml
+index b92b5a8..4b4452b 100644
+--- a/packages/SystemUI/res/values/projekt_colors.xml
++++ b/packages/SystemUI/res/values/projekt_colors.xml
+@@ -16,8 +16,11 @@
+ 
+     <!-- Navigation button ripple color -->
+     <color name="navbutton_ripple_color">#FFFFFFFF</color>
+-
+     <!-- Navigation button ripple color for LightNavigationBar -->
+     <color name="navbutton_ripple_color_dark">#ff000000</color>
+ 
++    <!-- Screenshot action colors -->
++    <color name="screenshot_flash_color">@android:color/white</color>
++    <color name="screenshot_background_color">@android:color/black</color>
++
+ </resources>
+-- 
+2.1.2
+

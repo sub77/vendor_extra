@@ -1,0 +1,76 @@
+From 39f23cb87be1db4cf48a8fe347835eafbc2149ff Mon Sep 17 00:00:00 2001
+From: Adarsh-MR <adarshmr1998@gmail.com>
+Date: Mon, 27 Nov 2017 11:23:45 +0000
+Subject: [PATCH 19/24] Themes: Notifications: extend dynamic notification bool
+ for ambient notifications
+
+* added a seperate color resource, so this way themer can use diff color (ex: white) for ambient and accent for normal notification.
+
+Change-Id: I65a518d9433558004289826abbf25dc374dd7ec7
+Signed-off-by: Adarsh-MR <adarshmr1998@gmail.com>
+---
+ core/java/com/android/internal/util/NotificationColorUtil.java | 9 ++++++++-
+ core/res/res/values/projekt_colors.xml                         | 5 ++++-
+ core/res/res/values/projekt_symbols.xml                        | 3 ++-
+ 3 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/core/java/com/android/internal/util/NotificationColorUtil.java b/core/java/com/android/internal/util/NotificationColorUtil.java
+index 0c046a9..a8753f8 100644
+--- a/core/java/com/android/internal/util/NotificationColorUtil.java
++++ b/core/java/com/android/internal/util/NotificationColorUtil.java
+@@ -39,6 +39,8 @@ import android.text.style.TextAppearanceSpan;
+ import android.util.Log;
+ import android.util.Pair;
+ 
++import com.android.internal.R;
++
+ import java.util.Arrays;
+ import java.util.WeakHashMap;
+ 
+@@ -452,7 +454,12 @@ public class NotificationColorUtil {
+         final int resolvedColor = resolveColor(context, notificationColor);
+ 
+         int color = resolvedColor;
+-        color = NotificationColorUtil.ensureTextContrastOnBlack(color);
++
++        if (!context.getResources().getBoolean(R.bool.config_allowNotificationIconTextTinting)) {
++            color = context.getColor(R.color.notification_ambient_default_color);
++        } else {
++            color = NotificationColorUtil.ensureTextContrastOnBlack(color);
++        }
+ 
+         if (color != resolvedColor) {
+             if (DEBUG){
+diff --git a/core/res/res/values/projekt_colors.xml b/core/res/res/values/projekt_colors.xml
+index 94ec4a3..4aee4d8 100644
+--- a/core/res/res/values/projekt_colors.xml
++++ b/core/res/res/values/projekt_colors.xml
+@@ -18,7 +18,10 @@
+ <resources>
+     <!-- Notification icon/text dynamic tint -->
+     <color name="notification_text_default_color">@android:color/notification_default_color</color>
+-    
++
++    <!-- Ambient Notification icon/text dynamic tint -->
++    <color name="notification_ambient_default_color">@android:color/notification_text_default_color</color>
++
+     <!-- Notification sender text color -->
+     <color name="sender_text_color">@android:color/black</color> 
+ </resources>
+diff --git a/core/res/res/values/projekt_symbols.xml b/core/res/res/values/projekt_symbols.xml
+index c3eb465..3621331 100644
+--- a/core/res/res/values/projekt_symbols.xml
++++ b/core/res/res/values/projekt_symbols.xml
+@@ -19,7 +19,8 @@
+   <!-- Notification icon/text dynamic tint -->
+   <java-symbol type="bool" name="config_allowNotificationIconTextTinting" />
+   <java-symbol type="color" name="notification_text_default_color" />
+-  
++  <java-symbol type="color" name="notification_ambient_default_color" />
++
+   <!-- Notification sender text color -->
+   <java-symbol type="color" name="sender_text_color" /> 
+ 
+-- 
+2.1.2
+

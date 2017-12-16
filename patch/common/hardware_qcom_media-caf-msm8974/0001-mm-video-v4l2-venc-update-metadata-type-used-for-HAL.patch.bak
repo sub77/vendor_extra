@@ -1,0 +1,49 @@
+From 7732922331423ba4f13714b83dde92e3936e9b0f Mon Sep 17 00:00:00 2001
+From: Praveen Chavan <pchavan@codeaurora.org>
+Date: Tue, 19 Apr 2016 04:26:34 -0700
+Subject: [PATCH] mm-video-v4l2: venc: update metadata-type used for HAL1 based
+ recording
+
+Update metadata buffer type from kMetadataBufferTypeCameraSource to
+kMetadataBufferTypeNativeHandleSource as the latter is used by
+camera-HALv1 that resides in a separate process.
+
+Surface recording uses a different metadata as compared to
+legacy camera metadata (HAL1).Cast the gralloc-meta to
+appropriate struct to extract the handle
+
+Since buffer-size is not known conclusively at the allocation
+time of meta-handles, allow the least size to be allocated.
+But check the buffer size before accessing in ETB
+
+Bug: 26268807
+Change-Id: I2cb40889517b4d740763bbde09e2fa4646b919e1
+Signed-off-by: sub77 <sub77@ymail.com>
+
+Conflicts:
+	libstagefrighthw/QComOMXMetadata.h
+
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ libstagefrighthw/QComOMXMetadata.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/libstagefrighthw/QComOMXMetadata.h b/libstagefrighthw/QComOMXMetadata.h
+index 545ce56..b37a38f 100644
+--- a/libstagefrighthw/QComOMXMetadata.h
++++ b/libstagefrighthw/QComOMXMetadata.h
+@@ -26,7 +26,10 @@ namespace android {
+ #ifdef USE_NATIVE_HANDLE_SOURCE
+     typedef struct encoder_nativehandle_buffer_type {
+         MetadataBufferType buffer_type;
+-        buffer_handle_t meta_handle;
++        union {
++            buffer_handle_t meta_handle;
++            uint64_t padding;
++        };
+     } encoder_nativehandle_buffer_type;
+ #endif
+ 
+-- 
+2.1.2
+

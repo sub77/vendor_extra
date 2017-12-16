@@ -1,0 +1,40 @@
+From cde528944dc0e182332e0bb745ef723fe2c5d062 Mon Sep 17 00:00:00 2001
+From: Bryan Owens <djbryan3540@gmail.com>
+Date: Thu, 30 Mar 2017 13:30:04 -0500
+Subject: [PATCH 14/24] Themes:  Expose Keyboard Shortcuts Dialog
+
+Change-Id: I84d3e57fe8c42d79ff6e0b6502cb6cd49aaaf91b
+Signed-off-by: Bryan Owens <djbryan3540@gmail.com>
+---
+ packages/SystemUI/res/values/projekt_styles.xml                        | 3 +++
+ .../SystemUI/src/com/android/systemui/statusbar/KeyboardShortcuts.java | 2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/packages/SystemUI/res/values/projekt_styles.xml b/packages/SystemUI/res/values/projekt_styles.xml
+index 8c61aaf..d3a5907 100644
+--- a/packages/SystemUI/res/values/projekt_styles.xml
++++ b/packages/SystemUI/res/values/projekt_styles.xml
+@@ -19,4 +19,7 @@
+         <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+     </style>
+ 
++    <!-- Phyisical Keyboard Dialog style -->
++    <style name="KeyboardShortcutsDialog" parent="@*android:style/Theme.DeviceDefault.Light" />
++
+ </resources>
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/KeyboardShortcuts.java b/packages/SystemUI/src/com/android/systemui/statusbar/KeyboardShortcuts.java
+index 0ea56b8..71c17a5 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/KeyboardShortcuts.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/KeyboardShortcuts.java
+@@ -127,7 +127,7 @@ public final class KeyboardShortcuts {
+     private KeyCharacterMap mBackupKeyCharacterMap;
+ 
+     private KeyboardShortcuts(Context context) {
+-        this.mContext = new ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Light);
++        this.mContext = new ContextThemeWrapper(context, R.style.KeyboardShortcutsDialog);
+         this.mPackageManager = AppGlobals.getPackageManager();
+         loadResources(context);
+     }
+-- 
+2.1.2
+

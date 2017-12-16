@@ -1,3 +1,31 @@
+function apply () {
+  filename=$1
+  shift
+  patch_args=$*
+
+  gotSubject=no
+  msg=""
+
+  cat $filename | while read line; do
+  if [ "$line" == "---" ]; then
+
+
+    patch $patch_args -p1 < $filename --no-backup-if-mismatch --version-control=never -F3 &>/dev/null
+    git commit -a -m "$msg" &>/dev/null
+    break
+    fi
+    if [ "$gotSubject" == "no" ]; then
+      hdr=(${line//:/ })
+      if [ "${hdr[0]}" == "Subject" ]; then
+        gotSubject=yes
+        msg="${hdr[@]:3}"
+      fi
+    else
+      msg="$msg $line"
+    fi
+  done
+}
+
 function colors()
 {
 if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
@@ -33,15 +61,56 @@ if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
 fi
 }
 
-function patchbase()
+function opendelta()
+{
+    cd vendor/extra/opendelta;
+    bash  opendelta.sh $CUSTOM_BUILD;
+    bash  upload.sh $CUSTOM_BUILD;
+    croot
+}
+
+function patchcommon()
 {
     for f in `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
     do
-        echo -e ${cya}"applying base patches"${rst}
-        pvar=$(dirname $f)
+        pvar=$(dirname $f)/common
+        echo -e ${bldppl}${pa}"applying common patches" - $pvar${rst}
         . $f
     done
     unset f
+}
+
+function patchdevice()
+{
+    for f in `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
+    do
+        pvar=$(dirname $f)/device/$CUSTOM_BUILD
+        echo -e ${bldppl}${pa}"applying $CUSTOM_BUILD patches" - $pvar${rst}
+        . $f
+    done
+    unset f
+}
+
+function patchsubstratum()
+{
+    for f in `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
+    do
+        pvar=$(dirname $f)/substratum
+        echo -e ${bldppl}${pa}"applying substratum patches" - $pvar${rst}
+        . $f
+    done
+    unset f
+}
+
+function repopick_substratum() {
+    set_stuff_for_environment
+    T=$(gettop)
+    $T/vendor/extra/build/tools/repopick_substratum.py $@
+}
+
+function repopicker() {
+        echo -e ${bldppl}${pa}"repopicking"${rst}
+    . `test -d vendor && find -L vendor/extra/build -maxdepth 1 -name 'repopicker.sh'`
 }
 
 function set_stuff_for_environment()
@@ -51,7 +120,10 @@ function set_stuff_for_environment()
     setpaths
     set_sequence_number
     colors
-    patchbase
+    patchcommon
+    patchdevice
+    patchsubstratum
+    repopicker
 
     # With this environment variable new GCC can apply colors to warnings/errors
     export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'

@@ -1,0 +1,671 @@
+From bd710b209cf5fd1211d0f71bb41ffead04d3dc04 Mon Sep 17 00:00:00 2001
+From: Surge1223 <Surge1223@gmail.com>
+Date: Sat, 16 Sep 2017 03:15:37 +0000
+Subject: [PATCH 02/24] OMS: Add dynamic theme fonts support for O
+
+Change-Id: I10993906384cef97e10063399f3447c78d1959df
+Signed-off-by: Harsh Shandilya <msfjarvis@gmail.com>
+---
+ core/java/android/app/ActivityThread.java          |  15 +-
+ core/java/android/content/pm/ActivityInfo.java     |   5 +
+ core/java/android/content/res/Configuration.java   |   6 +-
+ core/java/android/os/Process.java                  |   6 +-
+ core/java/android/os/ZygoteProcess.java            |   7 +-
+ core/java/android/text/FontConfig.java             |  30 ++--
+ .../com/android/internal/os/ZygoteConnection.java  |  10 ++
+ graphics/java/android/graphics/FontListParser.java |  52 +++++--
+ graphics/java/android/graphics/Typeface.java       | 162 +++++++++++++++++++--
+ .../android/server/am/ActivityManagerService.java  |  13 +-
+ 10 files changed, 255 insertions(+), 51 deletions(-)
+
+diff --git a/core/java/android/app/ActivityThread.java b/core/java/android/app/ActivityThread.java
+index 01e4cce..5465d01 100644
+--- a/core/java/android/app/ActivityThread.java
++++ b/core/java/android/app/ActivityThread.java
+@@ -51,6 +51,7 @@ import android.database.sqlite.SQLiteDebug;
+ import android.database.sqlite.SQLiteDebug.DbStats;
+ import android.graphics.Bitmap;
+ import android.graphics.Canvas;
++import android.graphics.Typeface;
+ import android.hardware.display.DisplayManagerGlobal;
+ import android.net.ConnectivityManager;
+ import android.net.IConnectivityManager;
+@@ -5136,11 +5137,15 @@ public final class ActivityThread {
+         if (configDiff != 0) {
+             // Ask text layout engine to free its caches if there is a locale change
+             boolean hasLocaleConfigChange = ((configDiff & ActivityInfo.CONFIG_LOCALE) != 0);
+-            if (hasLocaleConfigChange) {
+-                Canvas.freeTextLayoutCaches();
+-                if (DEBUG_CONFIGURATION) Slog.v(TAG, "Cleared TextLayout Caches");
+-            }
+-        }
++            boolean hasFontConfigChange = ((configDiff & ActivityInfo.CONFIG_THEME_FONT) != 0);
++            if (hasLocaleConfigChange || hasFontConfigChange) {
++                 Canvas.freeTextLayoutCaches();
++                if (hasFontConfigChange) {
++                    Typeface.recreateDefaults();
++                }
++                 if (DEBUG_CONFIGURATION) Slog.v(TAG, "Cleared TextLayout Caches");
++             }
++         }
+     }
+ 
+     /**
+diff --git a/core/java/android/content/pm/ActivityInfo.java b/core/java/android/content/pm/ActivityInfo.java
+index 9a01476..04640ba 100644
+--- a/core/java/android/content/pm/ActivityInfo.java
++++ b/core/java/android/content/pm/ActivityInfo.java
+@@ -744,6 +744,11 @@ public class ActivityInfo extends ComponentInfo
+      */
+     public static final int CONFIG_LAYOUT_DIRECTION = 0x2000;
+     /**
++     * Bit in {@link #configChanges} that indicates a font change occurred
++     * @hide
++     */
++    public static final int CONFIG_THEME_FONT = 0x200000;
++    /**
+      * Bit in {@link #configChanges} that indicates that the activity
+      * can itself handle the change to the display color gamut or dynamic
+      * range. Set from the {@link android.R.attr#configChanges} attribute.
+diff --git a/core/java/android/content/res/Configuration.java b/core/java/android/content/res/Configuration.java
+index 88c1627..48ab5d3 100644
+--- a/core/java/android/content/res/Configuration.java
++++ b/core/java/android/content/res/Configuration.java
+@@ -1114,6 +1114,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
+         int changed = 0;
+         if (delta.fontScale > 0 && fontScale != delta.fontScale) {
+             changed |= ActivityInfo.CONFIG_FONT_SCALE;
++            changed |= ActivityInfo.CONFIG_THEME_FONT;
+             fontScale = delta.fontScale;
+         }
+         if (delta.mcc != 0 && mcc != delta.mcc) {
+@@ -1279,6 +1280,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
+         }
+         if (delta.assetsSeq != ASSETS_SEQ_UNDEFINED) {
+             changed |= ActivityInfo.CONFIG_ASSETS_PATHS;
++            changed |= ActivityInfo.CONFIG_THEME_FONT;
+             assetsSeq = delta.assetsSeq;
+         }
+         if (delta.seq != 0) {
+@@ -1332,6 +1334,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
+         int changed = 0;
+         if ((compareUndefined || delta.fontScale > 0) && fontScale != delta.fontScale) {
+             changed |= ActivityInfo.CONFIG_FONT_SCALE;
++            changed |= ActivityInfo.CONFIG_THEME_FONT;
+         }
+         if ((compareUndefined || delta.mcc != 0) && mcc != delta.mcc) {
+             changed |= ActivityInfo.CONFIG_MCC;
+@@ -1421,6 +1424,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
+         if ((compareUndefined || delta.assetsSeq != ASSETS_SEQ_UNDEFINED)
+                 && assetsSeq != delta.assetsSeq) {
+             changed |= ActivityInfo.CONFIG_ASSETS_PATHS;
++            changed |= ActivityInfo.CONFIG_THEME_FONT;
+         }
+ 
+         // Make sure that one of the values is not null and that they are not equal.
+@@ -1450,7 +1454,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
+         // CONFIG_ASSETS_PATHS and CONFIG_FONT_SCALE are higher level configuration changes that
+         // all resources are subject to change with.
+         interestingChanges = interestingChanges | ActivityInfo.CONFIG_ASSETS_PATHS
+-                | ActivityInfo.CONFIG_FONT_SCALE;
++                | ActivityInfo.CONFIG_FONT_SCALE | ActivityInfo.CONFIG_THEME_FONT;
+         return (configChanges & interestingChanges) != 0;
+     }
+ 
+diff --git a/core/java/android/os/Process.java b/core/java/android/os/Process.java
+index 7a709ed..d361a73 100644
+--- a/core/java/android/os/Process.java
++++ b/core/java/android/os/Process.java
+@@ -449,10 +449,11 @@ public class Process {
+                                   String instructionSet,
+                                   String appDataDir,
+                                   String invokeWith,
++                                  boolean refreshTheme,
+                                   String[] zygoteArgs) {
+         return zygoteProcess.start(processClass, niceName, uid, gid, gids,
+                     debugFlags, mountExternal, targetSdkVersion, seInfo,
+-                    abi, instructionSet, appDataDir, invokeWith, zygoteArgs);
++                    abi, instructionSet, appDataDir, invokeWith, refreshTheme, zygoteArgs);
+     }
+ 
+     /** @hide */
+@@ -466,10 +467,11 @@ public class Process {
+                                   String instructionSet,
+                                   String appDataDir,
+                                   String invokeWith,
++                                  boolean refreshTheme,
+                                   String[] zygoteArgs) {
+         return WebViewZygote.getProcess().start(processClass, niceName, uid, gid, gids,
+                     debugFlags, mountExternal, targetSdkVersion, seInfo,
+-                    abi, instructionSet, appDataDir, invokeWith, zygoteArgs);
++                    abi, instructionSet, appDataDir, invokeWith, refreshTheme, zygoteArgs);
+     }
+ 
+     /**
+diff --git a/core/java/android/os/ZygoteProcess.java b/core/java/android/os/ZygoteProcess.java
+index 8208438..33bb7b7 100644
+--- a/core/java/android/os/ZygoteProcess.java
++++ b/core/java/android/os/ZygoteProcess.java
+@@ -202,11 +202,12 @@ public class ZygoteProcess {
+                                                   String instructionSet,
+                                                   String appDataDir,
+                                                   String invokeWith,
++                                                  boolean refreshTheme,
+                                                   String[] zygoteArgs) {
+         try {
+             return startViaZygote(processClass, niceName, uid, gid, gids,
+                     debugFlags, mountExternal, targetSdkVersion, seInfo,
+-                    abi, instructionSet, appDataDir, invokeWith, zygoteArgs);
++                    abi, instructionSet, appDataDir, invokeWith, refreshTheme, zygoteArgs);
+         } catch (ZygoteStartFailedEx ex) {
+             Log.e(LOG_TAG,
+                     "Starting VM process through Zygote failed");
+@@ -337,6 +338,7 @@ public class ZygoteProcess {
+                                                       String instructionSet,
+                                                       String appDataDir,
+                                                       String invokeWith,
++                                                      boolean refreshTheme,
+                                                       String[] extraArgs)
+                                                       throws ZygoteStartFailedEx {
+         ArrayList<String> argsForZygote = new ArrayList<String>();
+@@ -380,6 +382,9 @@ public class ZygoteProcess {
+         } else if (mountExternal == Zygote.MOUNT_EXTERNAL_WRITE) {
+             argsForZygote.add("--mount-external-write");
+         }
++        if (refreshTheme) {
++            argsForZygote.add("--refresh_theme");
++        }
+         argsForZygote.add("--target-sdk-version=" + targetSdkVersion);
+ 
+         // --setgroups is a comma-separated list
+diff --git a/core/java/android/text/FontConfig.java b/core/java/android/text/FontConfig.java
+index ed58390..e400ed1 100644
+--- a/core/java/android/text/FontConfig.java
++++ b/core/java/android/text/FontConfig.java
+@@ -32,8 +32,8 @@ import java.lang.annotation.Retention;
+  * @hide
+  */
+ public final class FontConfig {
+-    private final @NonNull Family[] mFamilies;
+-    private final @NonNull Alias[] mAliases;
++    public final @NonNull Family[] mFamilies;
++    public final @NonNull Alias[] mAliases;
+ 
+     public FontConfig(@NonNull Family[] families, @NonNull Alias[] aliases) {
+         mFamilies = families;
+@@ -58,12 +58,12 @@ public final class FontConfig {
+      * Class that holds information about a Font.
+      */
+     public static final class Font {
+-        private final @NonNull String mFontName;
+-        private final int mTtcIndex;
+-        private final @NonNull FontVariationAxis[] mAxes;
+-        private final int mWeight;
+-        private final boolean mIsItalic;
+-        private Uri mUri;
++        public final @NonNull String mFontName;
++        public final int mTtcIndex;
++        public final @NonNull FontVariationAxis[] mAxes;
++        public final int mWeight;
++        public final boolean mIsItalic;
++        public Uri mUri;
+ 
+         /**
+          * @hide
+@@ -131,9 +131,9 @@ public final class FontConfig {
+      * Class that holds information about a Font alias.
+      */
+     public static final class Alias {
+-        private final @NonNull String mName;
+-        private final @NonNull String mToName;
+-        private final int mWeight;
++        public final @NonNull String mName;
++        public final @NonNull String mToName;
++        public final int mWeight;
+ 
+         public Alias(@NonNull String name, @NonNull String toName, int weight) {
+             mName = name;
+@@ -167,9 +167,9 @@ public final class FontConfig {
+      * Class that holds information about a Font family.
+      */
+     public static final class Family {
+-        private final @NonNull String mName;
+-        private final @NonNull Font[] mFonts;
+-        private final @NonNull String mLanguage;
++        public final @NonNull String mName;
++        public final @NonNull Font[] mFonts;
++        public final @NonNull String mLanguage;
+ 
+         /** @hide */
+         @Retention(SOURCE)
+@@ -201,7 +201,7 @@ public final class FontConfig {
+ 
+         // Must be same with Minikin's variant values.
+         // See frameworks/minikin/include/minikin/FontFamily.h
+-        private final @Variant int mVariant;
++        public final @Variant int mVariant;
+ 
+         public Family(@NonNull String name, @NonNull Font[] fonts, @NonNull String language,
+                 @Variant int variant) {
+diff --git a/core/java/com/android/internal/os/ZygoteConnection.java b/core/java/com/android/internal/os/ZygoteConnection.java
+index 2013ac0..fde8c95 100644
+--- a/core/java/com/android/internal/os/ZygoteConnection.java
++++ b/core/java/com/android/internal/os/ZygoteConnection.java
+@@ -22,6 +22,7 @@ import static android.system.OsConstants.STDERR_FILENO;
+ import static android.system.OsConstants.STDIN_FILENO;
+ import static android.system.OsConstants.STDOUT_FILENO;
+ 
++import android.graphics.Typeface;
+ import android.net.Credentials;
+ import android.net.LocalSocket;
+ import android.os.FactoryTest;
+@@ -208,6 +209,10 @@ class ZygoteConnection {
+                 fdsToIgnore = new int[] { childPipeFd.getInt$(), serverPipeFd.getInt$() };
+             }
+ 
++            if (parsedArgs.refreshTheme) {
++                Typeface.recreateDefaults();
++             }
++
+             /**
+              * In order to avoid leaking descriptors to the Zygote child,
+              * the native code must close the two Zygote socket descriptors
+@@ -423,6 +428,9 @@ class ZygoteConnection {
+          */
+         String appDataDir;
+ 
++        /** from --refresh_theme */
++        boolean refreshTheme;
++
+         /**
+          * Whether to preload a package, with the package path in the remainingArgs.
+          */
+@@ -603,6 +611,8 @@ class ZygoteConnection {
+                     preloadPackageCacheKey = args[++curArg];
+                 } else if (arg.equals("--preload-default")) {
+                     preloadDefault = true;
++                } else if (arg.equals("--refresh_theme")) {
++                    refreshTheme = true;
+                 } else {
+                     break;
+                 }
+diff --git a/graphics/java/android/graphics/FontListParser.java b/graphics/java/android/graphics/FontListParser.java
+index 7c07a30..eb21743 100644
+--- a/graphics/java/android/graphics/FontListParser.java
++++ b/graphics/java/android/graphics/FontListParser.java
+@@ -26,6 +26,9 @@ import org.xmlpull.v1.XmlPullParserException;
+ import android.annotation.Nullable;
+ import com.android.internal.annotations.VisibleForTesting;
+ 
++import java.io.BufferedInputStream;
++import java.io.File;
++import java.io.FileInputStream;
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.util.ArrayList;
+@@ -40,28 +43,49 @@ import java.util.regex.Pattern;
+ public class FontListParser {
+ 
+     /* Parse fallback list (no names) */
+-    public static FontConfig parse(InputStream in) throws XmlPullParserException, IOException {
++    public static FontConfig parse(File configFilename, String fontDir) throws XmlPullParserException, IOException {
++        FileInputStream in = null;
++        in = new FileInputStream(configFilename);
++        return FontListParser.parse(in, fontDir);
++    }
++
++    /* Parse fallback list (no names) */
++    public static FontConfig parse(InputStream in, String fontDir)
++            throws XmlPullParserException, IOException {
++        BufferedInputStream bis = null;
+         try {
+-            XmlPullParser parser = Xml.newPullParser();
+-            parser.setInput(in, null);
+-            parser.nextTag();
+-            return readFamilies(parser);
++            // wrap input stream in a BufferedInputStream, if it's not already, for mark support
++            if (!(in instanceof BufferedInputStream)) {
++                bis = new BufferedInputStream(in);
++            } else {
++                bis = (BufferedInputStream) in;
++            }
++            // mark the beginning so we can reset to this position after checking format
++            bis.mark(in.available());
++            return parseNormalFormat(bis, fontDir);
+         } finally {
+-            in.close();
++            if (bis != null) bis.close();
+         }
+     }
+ 
+-    private static FontConfig readFamilies(XmlPullParser parser)
++    public static FontConfig parseNormalFormat(InputStream in, String dirName)
++            throws XmlPullParserException, IOException {
++        XmlPullParser parser = Xml.newPullParser();
++        parser.setInput(in, null);
++        parser.nextTag();
++        return readFamilies(parser, dirName);
++    }
++
++    private static FontConfig readFamilies(XmlPullParser parser, String dirPath)
+             throws XmlPullParserException, IOException {
+         List<FontConfig.Family> families = new ArrayList<>();
+         List<FontConfig.Alias> aliases = new ArrayList<>();
+-
+         parser.require(XmlPullParser.START_TAG, null, "familyset");
+         while (parser.next() != XmlPullParser.END_TAG) {
+             if (parser.getEventType() != XmlPullParser.START_TAG) continue;
+             String tag = parser.getName();
+             if (tag.equals("family")) {
+-                families.add(readFamily(parser));
++                families.add(readFamily(parser, dirPath));
+             } else if (tag.equals("alias")) {
+                 aliases.add(readAlias(parser));
+             } else {
+@@ -72,7 +96,7 @@ public class FontListParser {
+                 aliases.toArray(new FontConfig.Alias[aliases.size()]));
+     }
+ 
+-    private static FontConfig.Family readFamily(XmlPullParser parser)
++    private static FontConfig.Family readFamily(XmlPullParser parser, String dirPath)
+             throws XmlPullParserException, IOException {
+         String name = parser.getAttributeValue(null, "name");
+         String lang = parser.getAttributeValue(null, "lang");
+@@ -82,7 +106,7 @@ public class FontListParser {
+             if (parser.getEventType() != XmlPullParser.START_TAG) continue;
+             String tag = parser.getName();
+             if (tag.equals("font")) {
+-                fonts.add(readFont(parser));
++                fonts.add(readFont(parser, dirPath));
+             } else {
+                 skip(parser);
+             }
+@@ -103,7 +127,7 @@ public class FontListParser {
+     private static final Pattern FILENAME_WHITESPACE_PATTERN =
+             Pattern.compile("^[ \\n\\r\\t]+|[ \\n\\r\\t]+$");
+ 
+-    private static FontConfig.Font readFont(XmlPullParser parser)
++    private static FontConfig.Font readFont(XmlPullParser parser, String dirPath)
+             throws XmlPullParserException, IOException {
+         String indexStr = parser.getAttributeValue(null, "index");
+         int index = indexStr == null ? 0 : Integer.parseInt(indexStr);
+@@ -124,7 +148,9 @@ public class FontListParser {
+                 skip(parser);
+             }
+         }
+-        String sanitizedName = FILENAME_WHITESPACE_PATTERN.matcher(filename).replaceAll("");
++
++        String sanitizedName = dirPath + File.separatorChar +
++                FILENAME_WHITESPACE_PATTERN.matcher(filename).replaceAll("");
+         return new FontConfig.Font(sanitizedName, index,
+                 axes.toArray(new FontVariationAxis[axes.size()]), weight, isItalic);
+     }
+diff --git a/graphics/java/android/graphics/Typeface.java b/graphics/java/android/graphics/Typeface.java
+index c4b56c3..daacbad 100644
+--- a/graphics/java/android/graphics/Typeface.java
++++ b/graphics/java/android/graphics/Typeface.java
+@@ -111,6 +111,8 @@ public class Typeface {
+ 
+     static final String FONTS_CONFIG = "fonts.xml";
+ 
++    static final String SANS_SERIF_FAMILY_NAME = "sans-serif";
++
+     /**
+      * @hide
+      */
+@@ -136,6 +138,12 @@ public class Typeface {
+ 
+     private int[] mSupportedAxes;
+     private static final int[] EMPTY_AXES = {};
++    // Typefaces that we can garbage collect when changing fonts, and so we don't break public APIs
++    private static Typeface DEFAULT_INTERNAL;
++    private static Typeface DEFAULT_BOLD_INTERNAL;
++    private static Typeface SANS_SERIF_INTERNAL;
++    private static Typeface SERIF_INTERNAL;
++    private static Typeface MONOSPACE_INTERNAL;
+ 
+     private static void setDefault(Typeface t) {
+         sDefaultTypeface = t;
+@@ -889,7 +897,7 @@ public class Typeface {
+             Map<String, ByteBuffer> bufferForPath) {
+         FontFamily fontFamily = new FontFamily(family.getLanguage(), family.getVariant());
+         for (FontConfig.Font font : family.getFonts()) {
+-            String fullPathName = "/system/fonts/" + font.getFontName();
++            String fullPathName = font.getFontName();
+             ByteBuffer fontBuffer = bufferForPath.get(fullPathName);
+             if (fontBuffer == null) {
+                 try (FileInputStream file = new FileInputStream(fullPathName)) {
+@@ -916,6 +924,80 @@ public class Typeface {
+         return fontFamily;
+     }
+ 
++    /**
++     * Adds the family from src with the name familyName as a fallback font in dst
++     * @param src Source font config
++     * @param dst Destination font config
++     * @param familyName Name of family to add as a fallback
++     */
++    private static void addFallbackFontsForFamilyName(FontConfig src,
++                                                      FontConfig dst,
++                                                      String familyName) {
++        List<FontConfig.Family> families = Arrays.asList(dst.getFamilies());
++        for (FontConfig.Family srcFamily : src.getFamilies()) {
++            if (familyName.equals(srcFamily.getName())) {
++                // set the name to null so that it will be added as a fallback
++                String name = srcFamily.getName();
++                name = null;
++                families.add(srcFamily);
++                return;
++            }
++        }
++    }
++
++    /**
++     * Adds any font families in src that do not exist in dst
++     * @param src Source font config
++     * @param dst Destination font config
++     */
++    private static void addMissingFontFamilies(FontConfig src,
++                                               FontConfig dst) {
++        List<FontConfig.Family> families = new ArrayList<>();
++        final int N = dst.getFamilies().length;
++
++        // add missing families
++        for (FontConfig.Family srcFamily : src.getFamilies()) {
++            String name = srcFamily.getName();
++            boolean addFamily = true;
++            for (int i = 0; i < N && addFamily; i++) {
++                final FontConfig.Family dstFamily = families.get(i);
++                final String dstFamilyName = dstFamily.getName();
++                if (dstFamilyName != null && dstFamilyName.equals(srcFamily.getName())) {
++                    addFamily = false;
++                    break;
++                }
++            }
++            if (addFamily) {
++                families.add(srcFamily);
++            }
++        }
++    }
++
++    /**
++     * Adds any aliases in src that do not exist in dst
++     * @param src Source font config
++     * @param dst Destination font config
++     */
++    private static void addMissingFontAliases(FontConfig src,
++                                              FontConfig dst) {
++        List<FontConfig.Alias> dstAliases = Arrays.asList(dst.getAliases());
++        final int N = dstAliases.size();
++        // add missing aliases
++        for (FontConfig.Alias alias : src.getAliases()) {
++            boolean addAlias = true;
++            for (int i = 0; i < N && addAlias; i++) {
++                final String dstAliasName = dstAliases.get(i).getName();
++                if (dstAliasName != null && dstAliasName.equals(alias.getName())) {
++                    addAlias = false;
++                    break;
++                }
++            }
++            if (addAlias) {
++                dstAliases.add(alias);
++            }
++        }
++    }
++
+     /*
+      * (non-Javadoc)
+      *
+@@ -924,10 +1006,36 @@ public class Typeface {
+     private static void init() {
+         // Load font config and initialize Minikin state
+         File systemFontConfigLocation = getSystemFontConfigLocation();
+-        File configFilename = new File(systemFontConfigLocation, FONTS_CONFIG);
++        File themeFontConfigLocation = getThemeFontConfigLocation();
++
++        File systemConfigFile = new File(systemFontConfigLocation, FONTS_CONFIG);
++        File themeConfigFile = new File(themeFontConfigLocation, FONTS_CONFIG);
++        File configFile = null;
++        File fontDir;
++
++        if (themeConfigFile.exists()) {
++            // /data/system/theme/fonts/ exits so use it and copy default fonts
++            Log.d("projekt", "using theme file");
++            configFile = themeConfigFile;
++            fontDir = getThemeFontDirLocation();
++        } else {
++            Log.d("projekt", "using system file");
++            configFile = systemConfigFile;
++            fontDir = getSystemFontDirLocation();
++        }
++
+         try {
+-            FileInputStream fontsIn = new FileInputStream(configFilename);
+-            FontConfig fontConfig = FontListParser.parse(fontsIn);
++            FontConfig fontConfig = FontListParser.parse(configFile,
++                    fontDir.getAbsolutePath());
++            FontConfig systemFontConfig = null;
++            if (configFile == themeConfigFile) {
++                systemFontConfig = FontListParser.parse(systemConfigFile,
++                        getSystemFontDirLocation().getAbsolutePath());
++                // TODO: Redo these methods
++                //addFallbackFontsForFamilyName(systemFontConfig, fontConfig, SANS_SERIF_FAMILY_NAME);
++                //addMissingFontFamilies(systemFontConfig, fontConfig);
++                //addMissingFontAliases(systemFontConfig, fontConfig);
++            }
+ 
+             Map<String, ByteBuffer> bufferForPath = new HashMap<String, ByteBuffer>();
+ 
+@@ -982,22 +1090,40 @@ public class Typeface {
+             Log.w(TAG, "Didn't create default family (most likely, non-Minikin build)", e);
+             // TODO: normal in non-Minikin case, remove or make error when Minikin-only
+         } catch (FileNotFoundException e) {
+-            Log.e(TAG, "Error opening " + configFilename, e);
++            Log.e(TAG, "Error opening " + configFile, e);
+         } catch (IOException e) {
+-            Log.e(TAG, "Error reading " + configFilename, e);
++            Log.e(TAG, "Error reading " + configFile, e);
+         } catch (XmlPullParserException e) {
+-            Log.e(TAG, "XML parse exception for " + configFilename, e);
++            Log.e(TAG, "XML parse exception for " + configFile, e);
+         }
+     }
+ 
++    /**
++     * Clears caches in java and skia.
++     * Skia will then reparse font config
++     * @hide
++     */
++    public static void recreateDefaults() {
++        sDynamicTypefaceCache.evictAll();
++        sSystemFontMap.clear();
++        sTypefaceCache.clear();
++        init();
++    }
++
+     static {
+         init();
+         // Set up defaults and typefaces exposed in public API
+-        DEFAULT         = create((String) null, 0);
+-        DEFAULT_BOLD    = create((String) null, Typeface.BOLD);
+-        SANS_SERIF      = create("sans-serif", 0);
+-        SERIF           = create("serif", 0);
+-        MONOSPACE       = create("monospace", 0);
++        DEFAULT_INTERNAL         = create((String) null, 0);
++        DEFAULT_BOLD_INTERNAL    = create((String) null, Typeface.BOLD);
++        SANS_SERIF_INTERNAL      = create("sans-serif", 0);
++        SERIF_INTERNAL           = create("serif", 0);
++        MONOSPACE_INTERNAL       = create("monospace", 0);
++
++        DEFAULT         = new Typeface(DEFAULT_INTERNAL.native_instance);
++        DEFAULT_BOLD    = new Typeface(DEFAULT_BOLD_INTERNAL.native_instance);
++        SANS_SERIF      = new Typeface(SANS_SERIF_INTERNAL.native_instance);
++        SERIF           = new Typeface(SERIF_INTERNAL.native_instance);
++        MONOSPACE       = new Typeface(MONOSPACE_INTERNAL.native_instance);
+ 
+         sDefaults = new Typeface[] {
+             DEFAULT,
+@@ -1012,6 +1138,18 @@ public class Typeface {
+         return new File("/system/etc/");
+     }
+ 
++    private static File getSystemFontDirLocation() {
++        return new File("/system/fonts/");
++    }
++
++    private static File getThemeFontConfigLocation() {
++        return new File("/data/system/theme/fonts/");
++    }
++
++    private static File getThemeFontDirLocation() {
++        return new File("/data/system/theme/fonts/");
++    }
++
+     @Override
+     protected void finalize() throws Throwable {
+         try {
+diff --git a/services/core/java/com/android/server/am/ActivityManagerService.java b/services/core/java/com/android/server/am/ActivityManagerService.java
+index 1785762..adf0c09 100644
+--- a/services/core/java/com/android/server/am/ActivityManagerService.java
++++ b/services/core/java/com/android/server/am/ActivityManagerService.java
+@@ -557,6 +557,7 @@ public class ActivityManagerService extends IActivityManager.Stub
+ 
+     // How many bytes to write into the dropbox log before truncating
+     static final int DROPBOX_MAX_SIZE = 192 * 1024;
++    static final String PROP_REFRESH_THEME = "sys.refresh_theme";
+     // Assumes logcat entries average around 100 bytes; that's not perfect stack traces count
+     // as one line, but close enough for now.
+     static final int RESERVED_BYTES_PER_LOGCAT_LINE = 100;
+@@ -3864,6 +3865,14 @@ public class ActivityManagerService extends IActivityManager.Stub
+             if ("1".equals(SystemProperties.get("debug.assert"))) {
+                 debugFlags |= Zygote.DEBUG_ENABLE_ASSERT;
+             }
++
++            //Check if zygote should refresh its fonts
++            boolean refreshTheme = false;
++            if (SystemProperties.getBoolean(PROP_REFRESH_THEME, false)) {
++				SystemProperties.set(PROP_REFRESH_THEME, "false");
++				refreshTheme = true;
++			}
++
+             if (mNativeDebuggingApp != null && mNativeDebuggingApp.equals(app.processName)) {
+                 // Enable all debug flags required by the native debugger.
+                 debugFlags |= Zygote.DEBUG_ALWAYS_JIT;          // Don't interpret anything
+@@ -3920,12 +3929,12 @@ public class ActivityManagerService extends IActivityManager.Stub
+                 startResult = startWebView(entryPoint,
+                         app.processName, uid, uid, gids, debugFlags, mountExternal,
+                         app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,
+-                        app.info.dataDir, null, entryPointArgs);
++                        app.info.dataDir, null, refreshTheme, entryPointArgs);
+             } else {
+                 startResult = Process.start(entryPoint,
+                         app.processName, uid, uid, gids, debugFlags, mountExternal,
+                         app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,
+-                        app.info.dataDir, invokeWith, entryPointArgs);
++                        app.info.dataDir, invokeWith, refreshTheme, entryPointArgs);
+             }
+             checkTime(startTime, "startProcess: returned from zygote!");
+             Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+-- 
+2.1.2
+

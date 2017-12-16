@@ -1,0 +1,81 @@
+From df9bd761568513d3cb9d268951db462df17495b2 Mon Sep 17 00:00:00 2001
+From: Dave Kover <dkover@cyngn.com>
+Date: Thu, 14 Apr 2016 10:19:13 +0700
+Subject: [PATCH 11/24] Themes: Allow Navbar ripple color to be themed
+
+Forward ported and adapted to oreo LightNavigationBar
+
+PS1:
+Layers Commit by setiawanjimmy
+Rewrite of commit by: KreAch3R
+Original commit by: Dave Kover
+Distilled from: https://github.com/CyanogenMod/android_frameworks_base/commit/05ce0a6f5651743add398556d557a5f4c40c2503
+
+Change-Id: I7969e952d7e08f1d12e89291512312421585b70f
+Signed-off-by: Adarsh-MR <adarshmr1998@gmail.com>
+---
+ packages/SystemUI/res/values/projekt_colors.xml    | 23 ++++++++++++++++++++++
+ .../systemui/statusbar/policy/KeyButtonRipple.java |  7 ++++++-
+ 2 files changed, 29 insertions(+), 1 deletion(-)
+ create mode 100644 packages/SystemUI/res/values/projekt_colors.xml
+
+diff --git a/packages/SystemUI/res/values/projekt_colors.xml b/packages/SystemUI/res/values/projekt_colors.xml
+new file mode 100644
+index 0000000..b92b5a8
+--- /dev/null
++++ b/packages/SystemUI/res/values/projekt_colors.xml
+@@ -0,0 +1,23 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++    Copyright (c) 2016-2017 Projekt Substratum
++    Licensed under the Apache License, Version 2.0 (the "License");
++    you may not use this file except in compliance with the License.
++    You may obtain a copy of the License at
++        http://www.apache.org/licenses/LICENSE-2.0
++    Unless required by applicable law or agreed to in writing, software
++    distributed under the License is distributed on an "AS IS" BASIS,
++    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++    See the License for the specific language governing permissions and
++    limitations under the License.
++-->
++
++<resources>
++
++    <!-- Navigation button ripple color -->
++    <color name="navbutton_ripple_color">#FFFFFFFF</color>
++
++    <!-- Navigation button ripple color for LightNavigationBar -->
++    <color name="navbutton_ripple_color_dark">#ff000000</color>
++
++</resources>
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/policy/KeyButtonRipple.java b/packages/SystemUI/src/com/android/systemui/statusbar/policy/KeyButtonRipple.java
+index cc7943b..53c78b7 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/policy/KeyButtonRipple.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/policy/KeyButtonRipple.java
+@@ -68,9 +68,14 @@ public class KeyButtonRipple extends Drawable {
+     private final HashSet<Animator> mRunningAnimations = new HashSet<>();
+     private final ArrayList<Animator> mTmpArray = new ArrayList<>();
+ 
++    private int mRippleColor;
++    private int mRippleColorDark;
++
+     public KeyButtonRipple(Context ctx, View targetView) {
+         mMaxWidth =  ctx.getResources().getDimensionPixelSize(R.dimen.key_button_ripple_max_width);
+         mTargetView = targetView;
++        mRippleColor = ctx.getResources().getColor(R.color.navbutton_ripple_color);
++        mRippleColorDark = ctx.getResources().getColor(R.color.navbutton_ripple_color_dark);
+     }
+ 
+     public void setDarkIntensity(float darkIntensity) {
+@@ -81,7 +86,7 @@ public class KeyButtonRipple extends Drawable {
+         if (mRipplePaint == null) {
+             mRipplePaint = new Paint();
+             mRipplePaint.setAntiAlias(true);
+-            mRipplePaint.setColor(mLastDark ? 0xff000000 : 0xffffffff);
++            mRipplePaint.setColor(mLastDark ? mRippleColorDark : mRippleColor);
+         }
+         return mRipplePaint;
+     }
+-- 
+2.1.2
+

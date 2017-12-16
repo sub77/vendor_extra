@@ -1,0 +1,49 @@
+From f4cd3ab96161d4bce073414b7f893d1e28c83493 Mon Sep 17 00:00:00 2001
+From: Ivan Iskandar <iiiiskandar14@gmail.com>
+Date: Thu, 9 Mar 2017 13:28:22 +0100
+Subject: [PATCH 06/24] ThemeSafety: Introduce App Crash Intent
+
+The intent received by substratum and it will disable all enabled
+overlays.
+
+Change-Id: Ifabd57c2ea71ca93ecc2959ce09ccde3e91782dd
+---
+ core/res/AndroidManifest.xml                            | 2 ++
+ services/core/java/com/android/server/am/AppErrors.java | 8 ++++++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/core/res/AndroidManifest.xml b/core/res/AndroidManifest.xml
+index 0618ca3..b44cbb9 100644
+--- a/core/res/AndroidManifest.xml
++++ b/core/res/AndroidManifest.xml
+@@ -528,6 +528,8 @@
+ 
+     <protected-broadcast android:name="android.intent.action.DEVICE_LOCKED_CHANGED" />
+ 
++    <protected-broadcast android:name="projekt.substratum.APP_CRASHED" />
++
+     <!-- Added in O -->
+     <!-- TODO: temporary broadcast used by AutoFillManagerServiceImpl; will be removed -->
+     <protected-broadcast android:name="com.android.internal.autofill.action.REQUEST_AUTOFILL" />
+diff --git a/services/core/java/com/android/server/am/AppErrors.java b/services/core/java/com/android/server/am/AppErrors.java
+index 8991537..807457f 100644
+--- a/services/core/java/com/android/server/am/AppErrors.java
++++ b/services/core/java/com/android/server/am/AppErrors.java
+@@ -383,6 +383,14 @@ class AppErrors {
+             task = data.task;
+             msg.obj = data;
+             mService.mUiHandler.sendMessage(msg);
++
++            // Send broadcast intent to alert Substratum
++            Intent intent = new Intent("projekt.substratum.APP_CRASHED");
++            intent.putExtra("projekt.substratum.EXTRA_PACKAGE_NAME", r.info.packageName);
++            intent.putExtra("projekt.substratum.EXTRA_CRASH_REPEATING", data.repeating);
++            intent.putExtra("projekt.substratum.EXTRA_EXCEPTION_CLASS_NAME",
++                            crashInfo.exceptionClassName);
++            mContext.sendBroadcast(intent);
+         }
+ 
+         int res = result.get();
+-- 
+2.1.2
+

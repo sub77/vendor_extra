@@ -1,0 +1,28 @@
+From bf142b7649e22b78a6379626120fb1b43a42ad49 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 30 Oct 2017 03:54:42 +0000
+Subject: [PATCH] Add TARGET_PROVIDES_LIBLIGHT
+
+Change-Id: Id69119fae25c6e4591cdc3d79258bf45ab97e1b3
+---
+ msm8226/Android.mk | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/msm8226/Android.mk b/msm8226/Android.mk
+index 59a9751..abb1605 100644
+--- a/msm8226/Android.mk
++++ b/msm8226/Android.mk
+@@ -1,6 +1,9 @@
+-display-hals := libgralloc libcopybit liblight libvirtual
++display-hals := libgralloc libcopybit libvirtual
+ display-hals += libhwcomposer liboverlay libqdutils libexternal libqservice
+ display-hals += libmemtrack
++ifneq ($(TARGET_PROVIDES_LIBLIGHT),true)
++    display-hals += liblight
++endif
+ ifeq ($(call is-vendor-board-platform,QCOM),true)
+     include $(call all-named-subdir-makefiles,$(display-hals))
+ else
+-- 
+2.1.2
+

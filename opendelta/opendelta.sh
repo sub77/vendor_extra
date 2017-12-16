@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Script to generate delta files for OpenDelta - by Jorrit 'Chainfire' Jongma

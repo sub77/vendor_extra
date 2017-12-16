@@ -1,0 +1,313 @@
+From 2cc2f0b844a334ef14b18b95af9c0b6d71e3fc19 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 27 Nov 2017 19:31:54 +0000
+Subject: [PATCH 24/24] substratum: fix: projekt -> custom
+
+Change-Id: Ib71038c5f058f268a5bb65bc7da483d69b2a0c57
+---
+ core/res/res/values/colors.xml                  |  9 +++++++
+ core/res/res/values/custom_config.xml           |  3 +++
+ core/res/res/values/custom_symbols.xml          |  8 +++++++
+ core/res/res/values/projekt_colors.xml          | 27 ---------------------
+ core/res/res/values/projekt_config.xml          | 22 ------------------
+ core/res/res/values/projekt_symbols.xml         | 27 ---------------------
+ packages/SystemUI/res/values/colors.xml         | 12 ++++++++++
+ packages/SystemUI/res/values/custom_config.xml  |  1 +
+ packages/SystemUI/res/values/custom_styles.xml  |  8 +++++++
+ packages/SystemUI/res/values/projekt_colors.xml | 31 -------------------------
+ packages/SystemUI/res/values/projekt_config.xml | 18 --------------
+ packages/SystemUI/res/values/projekt_styles.xml | 25 --------------------
+ 12 files changed, 41 insertions(+), 150 deletions(-)
+ delete mode 100644 core/res/res/values/projekt_colors.xml
+ delete mode 100644 core/res/res/values/projekt_config.xml
+ delete mode 100644 core/res/res/values/projekt_symbols.xml
+ delete mode 100644 packages/SystemUI/res/values/projekt_colors.xml
+ delete mode 100644 packages/SystemUI/res/values/projekt_config.xml
+ delete mode 100644 packages/SystemUI/res/values/projekt_styles.xml
+
+diff --git a/core/res/res/values/colors.xml b/core/res/res/values/colors.xml
+index 536906c..c09f933 100644
+--- a/core/res/res/values/colors.xml
++++ b/core/res/res/values/colors.xml
+@@ -202,4 +202,13 @@
+     <!-- FloatingToolbar -->
+     <color name="floating_popup_divider_dark">#2F2F2F</color>
+     <color name="floating_popup_divider_light">#E9E9E9</color>
++
++    <!-- Notification icon/text dynamic tint -->
++    <color name="notification_text_default_color">@android:color/notification_default_color</color>
++
++    <!-- Ambient Notification icon/text dynamic tint -->
++    <color name="notification_ambient_default_color">@android:color/notification_text_default_color</color>
++
++    <!-- Notification sender text color -->
++    <color name="sender_text_color">@android:color/black</color>
+ </resources>
+diff --git a/core/res/res/values/custom_config.xml b/core/res/res/values/custom_config.xml
+index afca7c9..d767e37 100644
+--- a/core/res/res/values/custom_config.xml
++++ b/core/res/res/values/custom_config.xml
+@@ -70,4 +70,7 @@
+ 
+     <!-- If this is true, key chords can be used to take a screen record on the device. -->
+     <bool name="config_enableScreenrecordChord">true</bool>
++
++    <!-- True if the notifications should dynamically tint the app icon and app title -->
++    <bool name="config_allowNotificationIconTextTinting">true</bool>
+ </resources>
+diff --git a/core/res/res/values/custom_symbols.xml b/core/res/res/values/custom_symbols.xml
+index 7a4bb5c..598f7ec 100644
+--- a/core/res/res/values/custom_symbols.xml
++++ b/core/res/res/values/custom_symbols.xml
+@@ -50,4 +50,12 @@
+   <java-symbol type="bool" name="config_enableScreenrecordChord" />
+   <java-symbol type="string" name="lock_to_app_toast_back" />
+   <java-symbol type="string" name="app_unpin_message" />
++
++  <!-- Notification icon/text dynamic tint -->
++  <java-symbol type="bool" name="config_allowNotificationIconTextTinting" />
++  <java-symbol type="color" name="notification_text_default_color" />
++  <java-symbol type="color" name="notification_ambient_default_color" />
++
++  <!-- Notification sender text color -->
++  <java-symbol type="color" name="sender_text_color" />
+ </resources>
+diff --git a/core/res/res/values/projekt_colors.xml b/core/res/res/values/projekt_colors.xml
+deleted file mode 100644
+index 4aee4d8..0000000
+--- a/core/res/res/values/projekt_colors.xml
++++ /dev/null
+@@ -1,27 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-    Copyright (c) 2016-2017 Projekt Substratum
+-
+-    Licensed under the Apache License, Version 2.0 (the "License");
+-    you may not use this file except in compliance with the License.
+-    You may obtain a copy of the License at
+-
+-        http://www.apache.org/licenses/LICENSE-2.0
+-
+-    Unless required by applicable law or agreed to in writing, software
+-    distributed under the License is distributed on an "AS IS" BASIS,
+-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-    See the License for the specific language governing permissions and
+-    limitations under the License.
+--->
+-
+-<resources>
+-    <!-- Notification icon/text dynamic tint -->
+-    <color name="notification_text_default_color">@android:color/notification_default_color</color>
+-
+-    <!-- Ambient Notification icon/text dynamic tint -->
+-    <color name="notification_ambient_default_color">@android:color/notification_text_default_color</color>
+-
+-    <!-- Notification sender text color -->
+-    <color name="sender_text_color">@android:color/black</color> 
+-</resources>
+diff --git a/core/res/res/values/projekt_config.xml b/core/res/res/values/projekt_config.xml
+deleted file mode 100644
+index a6b5f89..0000000
+--- a/core/res/res/values/projekt_config.xml
++++ /dev/null
+@@ -1,22 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-    Copyright (c) 2016-2017 Projekt Substratum
+-
+-    Licensed under the Apache License, Version 2.0 (the "License");
+-    you may not use this file except in compliance with the License.
+-    You may obtain a copy of the License at
+-
+-        http://www.apache.org/licenses/LICENSE-2.0
+-
+-    Unless required by applicable law or agreed to in writing, software
+-    distributed under the License is distributed on an "AS IS" BASIS,
+-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-    See the License for the specific language governing permissions and
+-    limitations under the License.
+--->
+-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+-
+-    <!-- True if the notifications should dynamically tint the app icon and app title -->
+-    <bool name="config_allowNotificationIconTextTinting">true</bool>
+-
+-</resources>
+diff --git a/core/res/res/values/projekt_symbols.xml b/core/res/res/values/projekt_symbols.xml
+deleted file mode 100644
+index 3621331..0000000
+--- a/core/res/res/values/projekt_symbols.xml
++++ /dev/null
+@@ -1,27 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-     Copyright (C) 2017 Cardinal-AOSP
+-
+-     Licensed under the Apache License, Version 2.0 (the "License");
+-     you may not use this file except in compliance with the License.
+-     You may obtain a copy of the License at
+-
+-          http://www.apache.org/licenses/LICENSE-2.0
+-
+-     Unless required by applicable law or agreed to in writing, software
+-     distributed under the License is distributed on an "AS IS" BASIS,
+-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-     See the License for the specific language governing permissions and
+-     limitations under the License.
+--->
+-<resources>
+- 
+-  <!-- Notification icon/text dynamic tint -->
+-  <java-symbol type="bool" name="config_allowNotificationIconTextTinting" />
+-  <java-symbol type="color" name="notification_text_default_color" />
+-  <java-symbol type="color" name="notification_ambient_default_color" />
+-
+-  <!-- Notification sender text color -->
+-  <java-symbol type="color" name="sender_text_color" /> 
+-
+-</resources>
+diff --git a/packages/SystemUI/res/values/colors.xml b/packages/SystemUI/res/values/colors.xml
+index 83a0b7b..c2c2612 100644
+--- a/packages/SystemUI/res/values/colors.xml
++++ b/packages/SystemUI/res/values/colors.xml
+@@ -144,4 +144,16 @@
+ 
+     <color name="instant_apps_color">#ff4d5a64</color>
+ 
++    <!-- Navigation button ripple color -->
++    <color name="navbutton_ripple_color">#FFFFFFFF</color>
++    <!-- Navigation button ripple color for LightNavigationBar -->
++    <color name="navbutton_ripple_color_dark">#ff000000</color>
++
++    <!-- Screenshot action colors -->
++    <color name="screenshot_flash_color">@android:color/white</color>
++    <color name="screenshot_background_color">@android:color/black</color>
++
++    <!-- Keyguard affordance circle background -->
++    <color name="keyguard_affordance_circle_background">@android:color/white</color>
++
+ </resources>
+diff --git a/packages/SystemUI/res/values/custom_config.xml b/packages/SystemUI/res/values/custom_config.xml
+index c6f8c38..a3dad01 100644
+--- a/packages/SystemUI/res/values/custom_config.xml
++++ b/packages/SystemUI/res/values/custom_config.xml
+@@ -26,5 +26,6 @@
+         adb_network,weather,pip,screenshot,caffeine
+     </string>
+ 
++    <item name="qs_background_opacity" format="float" type="integer">0.93</item>
+ </resources>
+ 
+diff --git a/packages/SystemUI/res/values/custom_styles.xml b/packages/SystemUI/res/values/custom_styles.xml
+index 5de3691..d9700fc 100644
+--- a/packages/SystemUI/res/values/custom_styles.xml
++++ b/packages/SystemUI/res/values/custom_styles.xml
+@@ -26,4 +26,12 @@
+         <item name="android:textStyle">normal</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+     </style>
++
++    <!-- Switch bar text appearance -->
++    <style name="TextAppearance.SwitchBar" parent="@android:style/TextAppearance.Material.Title">
++        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
++    </style>
++
++    <!-- Phyisical Keyboard Dialog style -->
++    <style name="KeyboardShortcutsDialog" parent="@*android:style/Theme.DeviceDefault.Light" />
+ </resources>
+diff --git a/packages/SystemUI/res/values/projekt_colors.xml b/packages/SystemUI/res/values/projekt_colors.xml
+deleted file mode 100644
+index 07e3456..0000000
+--- a/packages/SystemUI/res/values/projekt_colors.xml
++++ /dev/null
+@@ -1,31 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-    Copyright (c) 2016-2017 Projekt Substratum
+-
+-    Licensed under the Apache License, Version 2.0 (the "License");
+-    you may not use this file except in compliance with the License.
+-    You may obtain a copy of the License at
+-
+-        http://www.apache.org/licenses/LICENSE-2.0
+-
+-    Unless required by applicable law or agreed to in writing, software
+-    distributed under the License is distributed on an "AS IS" BASIS,
+-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-    See the License for the specific language governing permissions and
+-    limitations under the License.
+--->
+-
+-<resources>
+-
+-    <!-- Navigation button ripple color -->
+-    <color name="navbutton_ripple_color">#FFFFFFFF</color>
+-    <!-- Navigation button ripple color for LightNavigationBar -->
+-    <color name="navbutton_ripple_color_dark">#ff000000</color>
+-
+-    <!-- Screenshot action colors -->
+-    <color name="screenshot_flash_color">@android:color/white</color>
+-    <color name="screenshot_background_color">@android:color/black</color>
+-
+-    <!-- Keyguard affordance circle background -->
+-    <color name="keyguard_affordance_circle_background">@android:color/white</color>
+-</resources>
+diff --git a/packages/SystemUI/res/values/projekt_config.xml b/packages/SystemUI/res/values/projekt_config.xml
+deleted file mode 100644
+index 1c0508f..0000000
+--- a/packages/SystemUI/res/values/projekt_config.xml
++++ /dev/null
+@@ -1,18 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!-- Copyright (C) 2017 Projekt Substratum
+-
+-     Licensed under the Apache License, Version 2.0 (the "License");
+-     you may not use this file except in compliance with the License.
+-     You may obtain a copy of the License at
+-
+-          http://www.apache.org/licenses/LICENSE-2.0
+-
+-     Unless required by applicable law or agreed to in writing, software
+-     distributed under the License is distributed on an "AS IS" BASIS,
+-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-     See the License for the specific language governing permissions and
+-     limitations under the License.
+--->
+-<resources>
+-    <item name="qs_background_opacity" format="float" type="integer">0.93</item>
+-</resources>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/values/projekt_styles.xml b/packages/SystemUI/res/values/projekt_styles.xml
+deleted file mode 100644
+index d3a5907..0000000
+--- a/packages/SystemUI/res/values/projekt_styles.xml
++++ /dev/null
+@@ -1,25 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-    Copyright (c) 2016-2017 Projekt Substratum
+-    Licensed under the Apache License, Version 2.0 (the "License");
+-    you may not use this file except in compliance with the License.
+-    You may obtain a copy of the License at
+-        http://www.apache.org/licenses/LICENSE-2.0
+-    Unless required by applicable law or agreed to in writing, software
+-    distributed under the License is distributed on an "AS IS" BASIS,
+-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-    See the License for the specific language governing permissions and
+-    limitations under the License.
+--->
+-
+-<resources>
+-
+-    <!-- Switch bar text appearance -->
+-    <style name="TextAppearance.SwitchBar" parent="@android:style/TextAppearance.Material.Title">
+-        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+-    </style>
+-
+-    <!-- Phyisical Keyboard Dialog style -->
+-    <style name="KeyboardShortcutsDialog" parent="@*android:style/Theme.DeviceDefault.Light" />
+-
+-</resources>
+-- 
+2.1.2
+

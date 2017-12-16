@@ -1,0 +1,305 @@
+From 2bc624794ef66146b68ee8f09bc85b1b587a08e1 Mon Sep 17 00:00:00 2001
+From: Ivan Iskandar <iiiiskandar14@gmail.com>
+Date: Sat, 4 Nov 2017 00:18:38 +0700
+Subject: [PATCH 09/24] OMS: Add back overlay modified callback implementation
+
+This will also eliminates the need to reenable overlay after
+updating.
+
+Change-Id: Iac620ba4302e23822639ca7acabbda28f2fb8030
+---
+ .../server/om/OverlayManagerServiceImpl.java       | 84 ++++++++++++++++++++--
+ .../android/server/om/OverlayManagerSettings.java  | 83 ++++++++++++++++++++-
+ 2 files changed, 160 insertions(+), 7 deletions(-)
+
+diff --git a/services/core/java/com/android/server/om/OverlayManagerServiceImpl.java b/services/core/java/com/android/server/om/OverlayManagerServiceImpl.java
+index db6e974..b59c86c 100644
+--- a/services/core/java/com/android/server/om/OverlayManagerServiceImpl.java
++++ b/services/core/java/com/android/server/om/OverlayManagerServiceImpl.java
+@@ -268,19 +268,95 @@ final class OverlayManagerServiceImpl {
+     }
+ 
+     void onOverlayPackageChanged(@NonNull final String packageName, final int userId) {
+-        Slog.wtf(TAG, "onOverlayPackageChanged called, but only pre-installed overlays supported");
++        if (DEBUG) {
++            Slog.d(TAG, "onOverlayPackageChanged packageName=" + packageName + " userId=" + userId);
++        }
++
++        final PackageInfo overlayPackage = mPackageManager.getPackageInfo(packageName, userId);
++        if (overlayPackage == null) {
++            Slog.w(TAG, "overlay package " + packageName + " was changed, but couldn't be found");
++            onOverlayPackageRemoved(packageName, userId);
++            return;
++        }
++
++        final PackageInfo targetPackage =
++                mPackageManager.getPackageInfo(overlayPackage.overlayTarget, userId);
++
++        mSettings.init(packageName, userId, overlayPackage.overlayTarget,
++                overlayPackage.applicationInfo.getBaseCodePath(), overlayPackage.isStaticOverlay,
++                overlayPackage.overlayPriority);
++        try {
++            if (updateState(targetPackage, overlayPackage, userId)) {
++                mListener.onOverlaysChanged(overlayPackage.overlayTarget, userId);
++            }
++        } catch (OverlayManagerSettings.BadKeyException e) {
++            Slog.e(TAG, "failed to update settings", e);
++            mSettings.remove(packageName, userId);
++        }
+     }
+ 
+     void onOverlayPackageUpgrading(@NonNull final String packageName, final int userId) {
+-        Slog.wtf(TAG, "onOverlayPackageUpgrading called, but only pre-installed overlays supported");
++        if (DEBUG) {
++            Slog.d(TAG, "onOverlayPackageUpgrading packageName=" + packageName + " userId=" + userId);
++        }
++
++        try {
++            final OverlayInfo oi = mSettings.getOverlayInfo(packageName, userId);
++            mSettings.setUpgrading(packageName, userId, true);
++            removeIdmapIfPossible(oi);
++        } catch (OverlayManagerSettings.BadKeyException e) {
++            Slog.e(TAG, "failed to update settings", e);
++            mSettings.remove(packageName, userId);
++        }
+     }
+ 
+     void onOverlayPackageUpgraded(@NonNull final String packageName, final int userId) {
+-        Slog.wtf(TAG, "onOverlayPackageUpgraded called, but only pre-installed overlays supported");
++        if (DEBUG) {
++            Slog.d(TAG, "onOverlayPackageUpgraded packageName=" + packageName + " userId=" + userId);
++        }
++
++        final PackageInfo overlayPackage = mPackageManager.getPackageInfo(packageName, userId);
++        if (overlayPackage == null) {
++            Slog.w(TAG, "overlay package " + packageName + " was upgraded, but couldn't be found");
++            onOverlayPackageRemoved(packageName, userId);
++            return;
++        }
++
++        try {
++            final String storedTargetPackageName = mSettings.getTargetPackageName(packageName, userId);
++            if (!overlayPackage.overlayTarget.equals(storedTargetPackageName)) {
++                // Sneaky little hobbitses, changing the overlay's target package
++                // from one version to the next! We can't use the old version's
++                // state.
++                mSettings.remove(packageName, userId);
++                onOverlayPackageAdded(packageName, userId);
++                return;
++            }
++
++            mSettings.setUpgrading(packageName, userId, false);
++            final PackageInfo targetPackage =
++                mPackageManager.getPackageInfo(overlayPackage.overlayTarget, userId);
++            if (updateState(targetPackage, overlayPackage, userId)) {
++                mListener.onOverlaysChanged(overlayPackage.overlayTarget, userId);
++            }
++        } catch (OverlayManagerSettings.BadKeyException e) {
++            Slog.e(TAG, "failed to update settings", e);
++            mSettings.remove(packageName, userId);
++        }
+     }
+ 
+     void onOverlayPackageRemoved(@NonNull final String packageName, final int userId) {
+-        Slog.wtf(TAG, "onOverlayPackageRemoved called, but only pre-installed overlays supported");
++        if (DEBUG) {
++            Slog.d(TAG, "onOverlayPackageRemoved packageName=" + packageName + " userId=" + userId);
++        }
++
++        try {
++            final OverlayInfo oi = mSettings.getOverlayInfo(packageName, userId);
++            mSettings.remove(packageName, userId);
++            removeIdmapIfPossible(oi);
++        } catch (OverlayManagerSettings.BadKeyException e) {
++            Slog.e(TAG, "failed to remove overlay package", e);
++        }
+     }
+ 
+     OverlayInfo getOverlayInfo(@NonNull final String packageName, final int userId) {
+diff --git a/services/core/java/com/android/server/om/OverlayManagerSettings.java b/services/core/java/com/android/server/om/OverlayManagerSettings.java
+index c059b37..6d3f50c 100644
+--- a/services/core/java/com/android/server/om/OverlayManagerSettings.java
++++ b/services/core/java/com/android/server/om/OverlayManagerSettings.java
+@@ -104,6 +104,15 @@ final class OverlayManagerSettings {
+         return true;
+     }
+ 
++    String getTargetPackageName(@NonNull final String packageName, final int userId)
++            throws BadKeyException {
++        final int idx = select(packageName, userId);
++        if (idx < 0) {
++            throw new BadKeyException(packageName, userId);
++        }
++        return mItems.get(idx).getTargetPackageName();
++    }
++
+     OverlayInfo getOverlayInfo(@NonNull final String packageName, final int userId)
+             throws BadKeyException {
+         final int idx = select(packageName, userId);
+@@ -165,6 +174,41 @@ final class OverlayManagerSettings {
+         return mItems.get(idx).setState(state);
+     }
+ 
++    boolean getUpgrading(@NonNull final String packageName, final int userId)
++            throws BadKeyException {
++        final int idx = select(packageName, userId);
++        if (idx < 0) {
++            throw new BadKeyException(packageName, userId);
++        }
++        return mItems.get(idx).isUpgrading();
++    }
++
++    /**
++     * Returns true if the settings were modified, false if they remain the same.
++     */
++    boolean setUpgrading(@NonNull final String packageName, final int userId, final boolean newValue)
++            throws BadKeyException {
++        final int idx = select(packageName, userId);
++        if (idx < 0) {
++            throw new BadKeyException(packageName, userId);
++        }
++
++        final SettingsItem item = mItems.get(idx);
++        if (newValue == item.isUpgrading()) {
++            return false;
++        }
++
++        if (newValue) {
++            boolean result = item.setUpgrading(true);
++            if (result) {
++                item.setState(OverlayInfo.STATE_UNKNOWN); // hmmm
++            }
++            return result;
++        } else {
++            return item.setUpgrading(false);
++        }
++    }
++
+     List<OverlayInfo> getOverlaysForTarget(@NonNull final String targetPackageName,
+             final int userId) {
+         return selectWhereTarget(targetPackageName, userId)
+@@ -223,6 +267,10 @@ final class OverlayManagerSettings {
+ 
+         final SettingsItem itemToMove = mItems.get(moveIdx);
+ 
++        if (itemToMove.isUpgrading() || mItems.get(parentIdx).isUpgrading()) {
++            return false;
++        }
++
+         // Make sure both packages are targeting the same package.
+         if (!itemToMove.getTargetPackageName().equals(
+                 mItems.get(parentIdx).getTargetPackageName())) {
+@@ -246,6 +294,9 @@ final class OverlayManagerSettings {
+         }
+ 
+         final SettingsItem item = mItems.get(idx);
++        if (item.isUpgrading()) {
++            return false;
++        }
+         mItems.remove(item);
+         mItems.add(0, item);
+         return true;
+@@ -263,6 +314,9 @@ final class OverlayManagerSettings {
+         }
+ 
+         final SettingsItem item = mItems.get(idx);
++        if (item.isUpgrading()) {
++            return false;
++        }
+         mItems.remove(idx);
+         mItems.add(item);
+         return true;
+@@ -291,6 +345,7 @@ final class OverlayManagerSettings {
+             pw.print("mState.............: "); pw.println(OverlayInfo.stateToString(item.getState()));
+             pw.print("mIsEnabled.........: "); pw.println(item.isEnabled());
+             pw.print("mIsStatic..........: "); pw.println(item.isStatic());
++            pw.print("isUpgrading........: "); pw.println(item.isUpgrading());
+ 
+             pw.decreaseIndent();
+             pw.println("}");
+@@ -318,6 +373,7 @@ final class OverlayManagerSettings {
+         private static final String ATTR_PRIORITY = "priority";
+         private static final String ATTR_USER_ID = "userId";
+         private static final String ATTR_VERSION = "version";
++        private static final String ATTR_IS_UPGRADING = "isUpgrading";
+ 
+         private static final int CURRENT_VERSION = 3;
+ 
+@@ -370,9 +426,10 @@ final class OverlayManagerSettings {
+             final boolean isEnabled = XmlUtils.readBooleanAttribute(parser, ATTR_IS_ENABLED);
+             final boolean isStatic = XmlUtils.readBooleanAttribute(parser, ATTR_IS_STATIC);
+             final int priority = XmlUtils.readIntAttribute(parser, ATTR_PRIORITY);
++            final boolean isUpgrading = XmlUtils.readBooleanAttribute(parser, ATTR_IS_UPGRADING);
+ 
+             return new SettingsItem(packageName, userId, targetPackageName, baseCodePath, state,
+-                    isEnabled, isStatic, priority);
++                    isEnabled, isStatic, priority, isUpgrading);
+         }
+ 
+         public static void persist(@NonNull final ArrayList<SettingsItem> table,
+@@ -404,6 +461,7 @@ final class OverlayManagerSettings {
+             XmlUtils.writeBooleanAttribute(xml, ATTR_IS_ENABLED, item.mIsEnabled);
+             XmlUtils.writeBooleanAttribute(xml, ATTR_IS_STATIC, item.mIsStatic);
+             XmlUtils.writeIntAttribute(xml, ATTR_PRIORITY, item.mPriority);
++            XmlUtils.writeBooleanAttribute(xml, ATTR_IS_UPGRADING, item.mIsUpgrading);
+             xml.endTag(null, TAG_ITEM);
+         }
+     }
+@@ -418,11 +476,12 @@ final class OverlayManagerSettings {
+         private OverlayInfo mCache;
+         private boolean mIsStatic;
+         private int mPriority;
++        private boolean mIsUpgrading;
+ 
+         SettingsItem(@NonNull final String packageName, final int userId,
+                 @NonNull final String targetPackageName, @NonNull final String baseCodePath,
+                 final int state, final boolean isEnabled, final boolean isStatic,
+-                final int priority) {
++                final int priority, final boolean isUpgrading) {
+             mPackageName = packageName;
+             mUserId = userId;
+             mTargetPackageName = targetPackageName;
+@@ -432,13 +491,14 @@ final class OverlayManagerSettings {
+             mCache = null;
+             mIsStatic = isStatic;
+             mPriority = priority;
++            mIsUpgrading = isUpgrading;
+         }
+ 
+         SettingsItem(@NonNull final String packageName, final int userId,
+                 @NonNull final String targetPackageName, @NonNull final String baseCodePath,
+                 final boolean isStatic, final int priority) {
+             this(packageName, userId, targetPackageName, baseCodePath, OverlayInfo.STATE_UNKNOWN,
+-                    false, isStatic, priority);
++                    false, isStatic, priority, false);
+         }
+ 
+         private String getTargetPackageName() {
+@@ -488,7 +548,24 @@ final class OverlayManagerSettings {
+             return false;
+         }
+ 
++        private boolean isUpgrading() {
++            return mIsUpgrading;
++        }
++
++        private boolean setUpgrading(final boolean upgrading) {
++            if (mIsUpgrading != upgrading) {
++                mIsUpgrading = upgrading;
++                invalidateCache();
++                return true;
++            }
++            return false;
++        }
++
+         private OverlayInfo getOverlayInfo() {
++            if (mIsUpgrading) {
++                return null;
++            }
++
+             if (mCache == null) {
+                 mCache = new OverlayInfo(mPackageName, mTargetPackageName, mBaseCodePath, mState,
+                         mUserId);
+-- 
+2.1.2
+

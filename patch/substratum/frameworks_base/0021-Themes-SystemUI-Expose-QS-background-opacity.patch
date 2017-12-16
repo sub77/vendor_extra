@@ -1,0 +1,43 @@
+From 40c6ea453d4a71747ea2fdd20d6e0ce4bdb4f211 Mon Sep 17 00:00:00 2001
+From: Simao Gomes Viana <xdevs23@outlook.com>
+Date: Wed, 1 Nov 2017 21:36:28 +0100
+Subject: [PATCH 21/24] Themes: SystemUI: Expose QS background opacity
+
+Change-Id: Iae67c226a197d25e82f65f2a259894756d3cad1f
+Signed-off-by: Simao Gomes Viana <xdevs23@outlook.com>
+
+Conflicts:
+	packages/SystemUI/res-keyguard/values/colors.xml
+---
+ packages/SystemUI/res/values/projekt_config.xml | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+ create mode 100644 packages/SystemUI/res/values/projekt_config.xml
+
+diff --git a/packages/SystemUI/res/values/projekt_config.xml b/packages/SystemUI/res/values/projekt_config.xml
+new file mode 100644
+index 0000000..1c0508f
+--- /dev/null
++++ b/packages/SystemUI/res/values/projekt_config.xml
+@@ -0,0 +1,18 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2017 Projekt Substratum
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<resources>
++    <item name="qs_background_opacity" format="float" type="integer">0.93</item>
++</resources>
+\ No newline at end of file
+-- 
+2.1.2
+

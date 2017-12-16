@@ -1,0 +1,105 @@
+From 89e1ccdd17b59f1bb55c23124f500bfa66a56741 Mon Sep 17 00:00:00 2001
+From: SpiritCroc <spiritcroc@gmail.com>
+Date: Thu, 8 Dec 2016 20:40:16 +0100
+Subject: [PATCH 3/4] Themes: Settings: Expose storage icon colors
+
+forward ported to oreo
+
+Change-Id: I97ce427f0683791670f1bbf82eaef66152fe4961
+---
+ res/values/custom_colors.xml                       |  8 +++++++
+ .../settings/deviceinfo/StorageSettings.java       | 28 +++++++++++++---------
+ 2 files changed, 25 insertions(+), 11 deletions(-)
+
+diff --git a/res/values/custom_colors.xml b/res/values/custom_colors.xml
+index a2b11e7..8b73612 100644
+--- a/res/values/custom_colors.xml
++++ b/res/values/custom_colors.xml
+@@ -16,4 +16,12 @@
+ 
+ <resources>
+ 	<color name="omni_logo_color">#a1c729</color>
++
++    <!-- Storage icons -->
++    <color name="storage_public">#ff9e9e9e</color>
++    <color name="storage_private_1">#ff26a69a</color>
++    <color name="storage_private_2">#ffab47bc</color>
++    <color name="storage_private_3">#fff2a600</color>
++    <color name="storage_private_4">#ffec407a</color>
++    <color name="storage_private_5">#ffc0ca33</color>
+ </resources>
+diff --git a/src/com/android/settings/deviceinfo/StorageSettings.java b/src/com/android/settings/deviceinfo/StorageSettings.java
+index ce9ea9b..c758dc8 100644
+--- a/src/com/android/settings/deviceinfo/StorageSettings.java
++++ b/src/com/android/settings/deviceinfo/StorageSettings.java
+@@ -23,6 +23,7 @@ import android.app.Fragment;
+ import android.content.Context;
+ import android.content.DialogInterface;
+ import android.content.Intent;
++import android.content.res.Resources ;
+ import android.graphics.Color;
+ import android.graphics.drawable.Drawable;
+ import android.os.AsyncTask;
+@@ -75,15 +76,19 @@ public class StorageSettings extends SettingsPreferenceFragment implements Index
+     private static final String TAG_VOLUME_UNMOUNTED = "volume_unmounted";
+     private static final String TAG_DISK_INIT = "disk_init";
+ 
+-    static final int COLOR_PUBLIC = Color.parseColor("#ff9e9e9e");
++    static int getColorPublic(Resources resources) {
++        return resources.getColor(R.color.storage_public);
++    }
+ 
+-    static final int[] COLOR_PRIVATE = new int[] {
+-            Color.parseColor("#ff26a69a"),
+-            Color.parseColor("#ffab47bc"),
+-            Color.parseColor("#fff2a600"),
+-            Color.parseColor("#ffec407a"),
+-            Color.parseColor("#ffc0ca33"),
+-    };
++    static int[] getColorPrivate(Resources resources) {
++        return new int[] {
++                resources.getColor(R.color.storage_private_1),
++                resources.getColor(R.color.storage_private_2),
++                resources.getColor(R.color.storage_private_3),
++                resources.getColor(R.color.storage_private_4),
++                resources.getColor(R.color.storage_private_5),
++        };
++    }
+ 
+     private StorageManager mStorageManager;
+ 
+@@ -166,11 +171,12 @@ public class StorageSettings extends SettingsPreferenceFragment implements Index
+         final List<VolumeInfo> volumes = mStorageManager.getVolumes();
+         Collections.sort(volumes, VolumeInfo.getDescriptionComparator());
+ 
++        int[] colorPrivate = getColorPrivate(getResources());
+         for (VolumeInfo vol : volumes) {
+             if (vol.getType() == VolumeInfo.TYPE_PRIVATE) {
+                 final long volumeTotalBytes = PrivateStorageInfo.getTotalSize(vol,
+                         sTotalInternalStorage);
+-                final int color = COLOR_PRIVATE[privateCount++ % COLOR_PRIVATE.length];
++                final int color = colorPrivate[privateCount++ % colorPrivate.length];
+                 mInternalCategory.addPreference(
+                         new StorageVolumePreference(context, vol, color, volumeTotalBytes));
+                 if (vol.isMountedReadable()) {
+@@ -180,7 +186,7 @@ public class StorageSettings extends SettingsPreferenceFragment implements Index
+                 }
+             } else if (vol.getType() == VolumeInfo.TYPE_PUBLIC) {
+                 mExternalCategory.addPreference(
+-                        new StorageVolumePreference(context, vol, COLOR_PUBLIC, 0));
++                        new StorageVolumePreference(context, vol, getColorPublic(getResources()), 0));
+             }
+         }
+ 
+@@ -192,7 +198,7 @@ public class StorageSettings extends SettingsPreferenceFragment implements Index
+                 // TODO: add actual storage type to record
+                 final Drawable icon = context.getDrawable(R.drawable.ic_sim_sd);
+                 icon.mutate();
+-                icon.setTint(COLOR_PUBLIC);
++                icon.setTint(getColorPublic(getResources()));
+ 
+                 final Preference pref = new Preference(context);
+                 pref.setKey(rec.getFsUuid());
+-- 
+2.1.2
+

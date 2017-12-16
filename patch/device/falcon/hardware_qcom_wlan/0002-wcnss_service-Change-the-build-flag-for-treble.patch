@@ -1,0 +1,31 @@
+From 4392e5c610f8c2cc894fa884d603214871484d57 Mon Sep 17 00:00:00 2001
+From: Anurag Chouhan <achouhan@codeaurora.org>
+Date: Mon, 14 Aug 2017 10:06:04 +0530
+Subject: [PATCH 2/3] wcnss_service: Change the build flag for treble
+
+Change the incorrect build flag to build wcnss_service
+into the /vendor/bin/.
+
+Change-Id: Ia2e68a3f45d18818c3fe8744f583a654bfd20bf6
+CRs-fixed: 2092306
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ qcwcn/wcnss-service/Android.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/qcwcn/wcnss-service/Android.mk b/qcwcn/wcnss-service/Android.mk
+index 32bc507..3a44f02 100644
+--- a/qcwcn/wcnss-service/Android.mk
++++ b/qcwcn/wcnss-service/Android.mk
+@@ -3,7 +3,7 @@ ifneq (,$(filter arm aarch64 arm64, $(TARGET_ARCH)))
+ LOCAL_PATH := $(call my-dir)
+ include $(CLEAR_VARS)
+ ifeq ($(PRODUCT_VENDOR_MOVE_ENABLED),true)
+-LOCAL_PROPRIETARY_MODULE := true
++LOCAL_VENDOR_MODULE := true
+ endif
+ LOCAL_MODULE := wcnss_service
+ LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/common/inc/
+-- 
+2.1.2
+

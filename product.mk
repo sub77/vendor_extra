@@ -21,7 +21,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES := $(subst dataroaming=false,dataroaming=true,$(PRODUCT_PROPERTY_OVERRIDES))
 
 # Enable ADB authentication
-ADDITIONAL_DEFAULT_PROPERTIES += ro.adb.secure=0
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+    ro.adb.secure=0
 
 # Updates overlay settings
 PRODUCT_PACKAGE_OVERLAYS += vendor/extra/overlay
@@ -31,4 +32,4 @@ PRODUCT_PACKAGE_OVERLAYS += vendor/extra/overlay
 ########################################
 
 # Custom Toolchains
--include vendor/extra/sdclang/sdclang.mk
+-include sdclang/sdclang.mk

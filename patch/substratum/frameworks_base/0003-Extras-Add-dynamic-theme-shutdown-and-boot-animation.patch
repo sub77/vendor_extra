@@ -1,0 +1,112 @@
+From 3f450e410af025820f6a619fdbab64a3ae41b602 Mon Sep 17 00:00:00 2001
+From: Ivan Iskandar <iiiiskandar14@gmail.com>
+Date: Sun, 17 Sep 2017 03:01:24 +0200
+Subject: [PATCH 03/24] Extras: Add dynamic theme shutdown and boot animation
+ support
+
+Change-Id: I3b01953d0a69c033a98c0af49ee986b21652b725
+
+Conflicts:
+	services/core/java/com/android/server/power/ShutdownThread.java
+---
+ cmds/bootanimation/BootAnimation.cpp               |  7 ++++--
+ .../com/android/server/power/ShutdownThread.java   | 29 +++++++++++++++++++++-
+ 2 files changed, 33 insertions(+), 3 deletions(-)
+
+diff --git a/cmds/bootanimation/BootAnimation.cpp b/cmds/bootanimation/BootAnimation.cpp
+index 7394490..77fa27b 100644
+--- a/cmds/bootanimation/BootAnimation.cpp
++++ b/cmds/bootanimation/BootAnimation.cpp
+@@ -69,8 +69,10 @@ namespace android {
+ static const char OEM_BOOTANIMATION_FILE[] = "/oem/media/bootanimation.zip";
+ static const char SYSTEM_BOOTANIMATION_FILE[] = "/system/media/bootanimation.zip";
+ static const char SYSTEM_ENCRYPTED_BOOTANIMATION_FILE[] = "/system/media/bootanimation-encrypted.zip";
++static const char THEME_BOOTANIMATION_FILE[] = "/data/system/theme/bootanimation.zip";
+ static const char OEM_SHUTDOWNANIMATION_FILE[] = "/oem/media/shutdownanimation.zip";
+ static const char SYSTEM_SHUTDOWNANIMATION_FILE[] = "/system/media/shutdownanimation.zip";
++static const char THEME_SHUTDOWNANIMATION_FILE[] = "/data/system/theme/shutdownanimation.zip";
+ 
+ static const char SYSTEM_DATA_DIR_PATH[] = "/data/system";
+ static const char SYSTEM_TIME_DIR_NAME[] = "time";
+@@ -333,9 +335,10 @@ status_t BootAnimation::readyToRun() {
+         mZipFileName = SYSTEM_ENCRYPTED_BOOTANIMATION_FILE;
+         return NO_ERROR;
+     }
+-    static const char* bootFiles[] = {OEM_BOOTANIMATION_FILE, SYSTEM_BOOTANIMATION_FILE};
++    static const char* bootFiles[] =
++        {THEME_BOOTANIMATION_FILE, OEM_BOOTANIMATION_FILE, SYSTEM_BOOTANIMATION_FILE};
+     static const char* shutdownFiles[] =
+-        {OEM_SHUTDOWNANIMATION_FILE, SYSTEM_SHUTDOWNANIMATION_FILE};
++        {THEME_SHUTDOWNANIMATION_FILE, OEM_SHUTDOWNANIMATION_FILE, SYSTEM_SHUTDOWNANIMATION_FILE};
+ 
+     for (const char* f : (!mShuttingDown ? bootFiles : shutdownFiles)) {
+         if (access(f, R_OK) == 0) {
+diff --git a/services/core/java/com/android/server/power/ShutdownThread.java b/services/core/java/com/android/server/power/ShutdownThread.java
+index e6deb8e..e8defa5 100644
+--- a/services/core/java/com/android/server/power/ShutdownThread.java
++++ b/services/core/java/com/android/server/power/ShutdownThread.java
+@@ -359,7 +359,7 @@ public final class ShutdownThread extends Thread {
+         pd.setCancelable(false);
+         pd.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
+ 
+-        pd.show();
++        if (!themeShutdownAnimationExists()) pd.show();
+ 
+         sInstance.mProgressDialog = pd;
+         sInstance.mContext = context;
+@@ -426,6 +426,10 @@ public final class ShutdownThread extends Thread {
+             SystemProperties.set(SHUTDOWN_ACTION_PROPERTY, reason);
+         }
+ 
++        if (themeShutdownAnimationExists()) {
++            startShutdownAnimation();
++        }
++
+         /*
+          * If we are rebooting into safe mode, write a system property
+          * indicating so.
+@@ -696,6 +700,7 @@ public final class ShutdownThread extends Thread {
+      */
+     public static void rebootOrShutdown(final Context context, boolean reboot, String reason) {
+         if (reboot) {
++            stopShutdownAnimation();
+             Log.i(TAG, "Rebooting, reason: " + reason);
+             PowerManagerService.lowLevelReboot(reason);
+             Log.e(TAG, "Reboot failed, will attempt shutdown instead");
+@@ -717,6 +722,8 @@ public final class ShutdownThread extends Thread {
+             }
+         }
+ 
++        stopShutdownAnimation();
++
+         // Shutdown power
+         Log.i(TAG, "Performing low-level shutdown...");
+         PowerManagerService.lowLevelShutdown(reason);
+@@ -781,4 +788,24 @@ public final class ShutdownThread extends Thread {
+             }
+         }
+     }
++
++    private static boolean themeShutdownAnimationExists() {
++        return new File("/data/system/theme/shutdownanimation.zip").exists();
++    }
++
++    private static void startShutdownAnimation() {
++        SystemProperties.set("service.bootanim.exit", "0");
++        SystemProperties.set("sys.powerctl", "animate");
++        SystemProperties.set("ctl.start", "bootanim");
++    }
++
++    private static void stopShutdownAnimation() {
++        SystemProperties.set("service.bootanim.exit", "1");
++        while (SystemProperties.get("init.svc.bootanim").equals("running")) {
++            try {
++                Thread.sleep(10);
++            } catch (InterruptedException unused) {
++            }
++        }
++    }
+ }
+-- 
+2.1.2
+

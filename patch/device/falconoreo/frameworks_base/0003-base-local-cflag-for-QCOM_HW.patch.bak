@@ -1,0 +1,30 @@
+From 5c384b8d9a15f35f72e81415465f1c359ab08554 Mon Sep 17 00:00:00 2001
+From: Marko Man <darkobas@gmail.com>
+Date: Wed, 25 Oct 2017 11:23:19 +0200
+Subject: [PATCH 3/3] base: local cflag for QCOM_HW
+
+as the global ones dont work...
+
+Change-Id: I9957ec8c94de4a5aa068385206e055698184e83d
+---
+ media/jni/Android.mk | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/media/jni/Android.mk b/media/jni/Android.mk
+index c2ed8cf..0d02513 100644
+--- a/media/jni/Android.mk
++++ b/media/jni/Android.mk
+@@ -68,6 +68,10 @@ LOCAL_C_INCLUDES += \
+     $(PV_INCLUDES) \
+     $(JNI_H_INCLUDE)
+ 
++ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
++    LOCAL_CFLAGS += -DQCOM_HARDWARE
++endif
++
+ LOCAL_CFLAGS += -Wall -Werror -Wno-error=deprecated-declarations -Wunused -Wunreachable-code
+ 
+ LOCAL_MODULE:= libmedia_jni
+-- 
+2.1.2
+
