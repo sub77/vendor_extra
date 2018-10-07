@@ -1,0 +1,43 @@
+From 7b5eeeac13d2f65c66ffae96820e23c082e4766d Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 7 Oct 2018 06:50:48 +0000
+Subject: [PATCH] add libtinycompress_vendor to soong
+
+Change-Id: I6bf75b3523770a710892216d1beac4fe90b17205
+---
+ Android.bp | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/Android.bp b/Android.bp
+index f0000f1..03de854 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -22,6 +22,25 @@ cc_library_shared {
+     ],
+ }
+ 
++cc_library_shared {
++    name: "libtinycompress_vendor",
++    vendor: true,
++
++    cflags: ["-Wno-macro-redefined"],
++    export_include_dirs: ["include"],
++    srcs: [
++        "compress.c",
++        "utils.c",
++    ],
++    shared_libs: [
++        "libcutils",
++        "libutils",
++    ],
++    header_libs: [
++        "device_kernel_headers",
++    ],
++}
++
+ cc_binary {
+     name: "cplay",
+     vendor: true,
+-- 
+2.11.0
+

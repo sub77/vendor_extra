@@ -1,0 +1,33 @@
+From c3baf95726d94f93d51be4f9d543f78f16303be7 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 7 Oct 2018 10:27:08 +0000
+Subject: [PATCH] dirtyfix
+
+Change-Id: I5ca42b96bb277c6f0329f3bf7b345fcf233b3922
+---
+ compress.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/compress.c b/compress.c
+index 1cdf297..8054c42 100644
+--- a/compress.c
++++ b/compress.c
+@@ -139,6 +139,7 @@ static int get_compress_version(struct compress *compress)
+ 	return version;
+ }
+ 
++#ifdef USE_VENDOR_EXTN
+ static bool _is_codec_supported(struct compress *compress, struct compr_config *config,
+ 				const struct snd_compr_caps *caps)
+ {
+@@ -181,6 +182,7 @@ static bool _is_codec_supported(struct compress *compress, struct compr_config *
+ 	/* TODO: match the codec properties */
+ 	return true;
+ }
++#endif
+ 
+ static bool _is_codec_type_supported(int fd, struct snd_codec *codec)
+ {
+-- 
+2.11.0
+
