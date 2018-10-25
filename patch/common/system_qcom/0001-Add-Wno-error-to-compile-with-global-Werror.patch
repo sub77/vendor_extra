@@ -1,0 +1,40 @@
+From ec6f472c6d697ee14fc694815795fd9150ed4185 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 12 Oct 2018 15:07:03 +0000
+Subject: [PATCH] Add -Wno-error to compile with global -Werror
+
+Change-Id: Ib1cfc8b0127ae7c612fa7dacdf06f37d2e84ecb8
+---
+ softap/jni/Android.mk | 2 ++
+ softap/sdk/Android.mk | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/softap/jni/Android.mk b/softap/jni/Android.mk
+index 87df958..946d022 100644
+--- a/softap/jni/Android.mk
++++ b/softap/jni/Android.mk
+@@ -11,6 +11,8 @@ LOCAL_MODULE := libQWiFiSoftApCfg
+ 
+ LOCAL_MODULE_TAGS := optional
+ 
++LOCAL_CFLAGS += -Wno-error
++
+ LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include \
+                     $(JNI_H_INCLUDE)
+ 
+diff --git a/softap/sdk/Android.mk b/softap/sdk/Android.mk
+index f26a3b0..12e2fd0 100755
+--- a/softap/sdk/Android.mk
++++ b/softap/sdk/Android.mk
+@@ -10,7 +10,7 @@ LOCAL_MODULE:= libqsap_sdk
+ 
+ LOCAL_MODULE_TAGS := optional
+ 
+-LOCAL_CFLAGS += -DSDK_VERSION=\"0.0.1.0\"
++LOCAL_CFLAGS += -DSDK_VERSION=\"0.0.1.0\" -Wno-error
+ 
+ LOCAL_LDLIBS := -llog
+ 
+-- 
+2.11.0
+

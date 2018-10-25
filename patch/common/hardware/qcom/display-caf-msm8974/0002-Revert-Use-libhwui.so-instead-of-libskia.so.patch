@@ -1,0 +1,26 @@
+From a18bf4c27e864e42b9f29dbb01179a71b10b7f0d Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 12 Oct 2018 14:45:03 +0000
+Subject: [PATCH 2/5] Revert "Use libhwui.so instead of libskia.so"
+
+This reverts commit 155d5bb4af5dcf18bd3db0b368f155378a825788.
+---
+ libhwcomposer/Android.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libhwcomposer/Android.mk b/libhwcomposer/Android.mk
+index d080df2..f44cb0a 100644
+--- a/libhwcomposer/Android.mk
++++ b/libhwcomposer/Android.mk
+@@ -12,7 +12,7 @@ LOCAL_C_INCLUDES              := $(common_includes) $(kernel_includes) \
+ LOCAL_SHARED_LIBRARIES        := $(common_libs) libEGL liboverlay \
+                                  libhdmi libqdutils libhardware_legacy \
+                                  libdl libmemalloc libqservice libsync \
+-                                 libbinder libmedia libhwui libvirtual \
++                                 libbinder libmedia libskia libvirtual \
+                                  libbfqio_vendor
+ LOCAL_CFLAGS                  := $(common_flags) -DLOG_TAG=\"qdhwcomposer\"
+ #Enable Dynamic FPS if PHASE_OFFSET is not set
+-- 
+2.11.0
+

@@ -1,0 +1,146 @@
+From af3676d71031ce6fbda6703d3f78c90cf3db858c Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 12 Oct 2018 14:39:59 +0000
+Subject: [PATCH] remove project pathmap
+
+---
+ Android.mk                         |  2 +-
+ libc2dcolorconvert/Android.mk      |  2 +-
+ mm-video-v4l2/vidc/vdec/Android.mk | 16 ++++++++--------
+ mm-video-v4l2/vidc/venc/Android.mk | 18 +++++++++---------
+ 4 files changed, 19 insertions(+), 19 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index 303e151..1b94d09 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -1,4 +1,4 @@
+-ifeq ($(call my-dir),$(call project-path-for,qcom-media))
++ifeq ($(TARGET_QCOM_MEDIA_VARIANT),caf-msm8974)
+ 
+ QCOM_MEDIA_ROOT := $(call my-dir)
+ ifneq ($(filter msm8610 msm8226 msm8974 msm8960 msm8660 msm7627a msm7630_surf apq8084 mpq8092,$(TARGET_BOARD_PLATFORM)),)
+diff --git a/libc2dcolorconvert/Android.mk b/libc2dcolorconvert/Android.mk
+index b661098..fd7cbec 100644
+--- a/libc2dcolorconvert/Android.mk
++++ b/libc2dcolorconvert/Android.mk
+@@ -8,7 +8,7 @@ LOCAL_SRC_FILES := \
+ LOCAL_C_INCLUDES := \
+     $(TOP)/frameworks/av/include/media/stagefright \
+     $(TOP)/frameworks/native/include/media/openmax \
+-    $(TOP)/$(call project-path-for,qcom-display)/libcopybit \
++    $(TOP)/hardware/qcom/display-caf-msm8974/libcopybit \
+     $(TARGET_OUT_HEADERS)/qcom/display/
+ 
+ LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+diff --git a/mm-video-v4l2/vidc/vdec/Android.mk b/mm-video-v4l2/vidc/vdec/Android.mk
+index b745c09..b2339f9 100755
+--- a/mm-video-v4l2/vidc/vdec/Android.mk
++++ b/mm-video-v4l2/vidc/vdec/Android.mk
+@@ -104,24 +104,24 @@ LOCAL_PATH:= $(ROOT_DIR)
+ 
+ libmm-vdec-inc          += $(LOCAL_PATH)/inc 
+ libmm-vdec-inc          += $(OMX_VIDEO_PATH)/vidc/common/inc
+-libmm-vdec-inc          += $(call project-path-for,qcom-media)/mm-core/inc
+-libmm-vdec-inc          += $(call project-path-for,qcom-display)/libgralloc
++libmm-vdec-inc          += hardware/qcom/media-caf-msm8974/mm-core/inc
++libmm-vdec-inc          += hardware/qcom/display-caf-msm8974/libgralloc
+ libmm-vdec-inc          += frameworks/native/include/media/openmax
+ libmm-vdec-inc          += frameworks/native/include/media/hardware
+ libmm-vdec-inc          += frameworks/native/libs/nativewindow/include/
+ libmm-vdec-inc          += frameworks/native/libs/arect/include/
+ libmm-vdec-inc          += frameworks/native/libs/nativebase/include
+ libmm-vdec-inc          += $(vdec-inc)
+-libmm-vdec-inc          += $(call project-path-for,qcom-display)/libqdutils
+-libmm-vdec-inc      += $(call project-path-for,qcom-media)/libc2dcolorconvert
+-libmm-vdec-inc      += $(call project-path-for,qcom-display)/libcopybit
++libmm-vdec-inc          += hardware/qcom/display-caf-msm8974/libqdutils
++libmm-vdec-inc      += hardware/qcom/media-caf-msm8974/libc2dcolorconvert
++libmm-vdec-inc      += hardware/qcom/display-caf-msm8974/libcopybit
+ libmm-vdec-inc      += frameworks/av/include/media/stagefright
+ libmm-vdec-inc      += $(TARGET_OUT_HEADERS)/mm-video/SwVdec
+ libmm-vdec-inc      += $(TARGET_OUT_HEADERS)/qcom/display/
+ 
+ ifneq ($(call is-platform-sdk-version-at-least, 19),true)
+ libOmxVdec-def += -DMETADATA_FOR_DYNAMIC_MODE
+-libmm-vdec-inc += $(call project-path-for,qcom-media)/libstagefrighthw
++libmm-vdec-inc += hardware/qcom/media-caf-msm8974/libstagefrighthw
+ endif
+ 
+ ifeq ($(call is-platform-sdk-version-at-least, 19),true)
+@@ -216,7 +216,7 @@ endif
+ # ---------------------------------------------------------------------------------
+ include $(CLEAR_VARS)
+ 
+-mm-vdec-test-inc    := $(call project-path-for,qcom-media)/mm-core/inc
++mm-vdec-test-inc    := hardware/qcom/media-caf-msm8974/mm-core/inc
+ mm-vdec-test-inc    += $(LOCAL_PATH)/inc
+ mm-vdec-test-inc    += $(vdec-inc)
+ 
+@@ -240,7 +240,7 @@ include $(BUILD_EXECUTABLE)
+ # ---------------------------------------------------------------------------------
+ include $(CLEAR_VARS)
+ 
+-mm-vdec-drv-test-inc    := $(call project-path-for,qcom-media)/mm-core/inc
++mm-vdec-drv-test-inc    := hardware/qcom/media-caf-msm8974/mm-core/inc
+ mm-vdec-drv-test-inc    += $(LOCAL_PATH)/inc
+ mm-vdec-drv-test-inc    += $(vdec-inc)
+ 
+diff --git a/mm-video-v4l2/vidc/venc/Android.mk b/mm-video-v4l2/vidc/venc/Android.mk
+index d81f1a2..85eba6e 100644
+--- a/mm-video-v4l2/vidc/venc/Android.mk
++++ b/mm-video-v4l2/vidc/venc/Android.mk
+@@ -83,16 +83,16 @@ include $(CLEAR_VARS)
+ 
+ libmm-venc-inc      += $(LOCAL_PATH)/inc
+ libmm-venc-inc      += $(OMX_VIDEO_PATH)/vidc/common/inc
+-libmm-venc-inc      += $(call project-path-for,qcom-media)/mm-core/inc
+-libmm-venc-inc      += $(call project-path-for,qcom-media)/libstagefrighthw
+-libmm-venc-inc      += $(call project-path-for,qcom-display)/libgralloc
++libmm-venc-inc      += hardware/qcom/media-caf-msm8974/mm-core/inc
++libmm-venc-inc      += hardware/qcom/media-caf-msm8974/libstagefrighthw
++libmm-venc-inc      += hardware/qcom/display-caf-msm8974/libgralloc
+ libmm-venc-inc      += frameworks/native/include/media/hardware
+ libmm-venc-inc      += frameworks/native/include/media/openmax
+ libmm-venc-inc      += frameworks/native/libs/nativewindow/include/
+ libmm-venc-inc      += frameworks/native/libs/arect/include/
+ libmm-venc-inc      += frameworks/native/libs/nativebase/include
+-libmm-venc-inc      += $(call project-path-for,qcom-media)/libc2dcolorconvert
+-libmm-venc-inc      += $(call project-path-for,qcom-display)/libcopybit
++libmm-venc-inc      += hardware/qcom/media-caf-msm8974/libc2dcolorconvert
++libmm-venc-inc      += hardware/qcom/display-caf-msm8974/libcopybit
+ libmm-venc-inc      += frameworks/av/include/media/stagefright
+ libmm-venc-inc      += $(TARGET_OUT_HEADERS)/qcom/display/
+ libmm-venc-inc      += $(venc-inc)
+@@ -134,8 +134,8 @@ include $(CLEAR_VARS)
+ mm-venc-test720p-inc            := $(TARGET_OUT_HEADERS)/mm-core
+ mm-venc-test720p-inc            += $(LOCAL_PATH)/inc
+ mm-venc-test720p-inc            += $(OMX_VIDEO_PATH)/vidc/common/inc
+-mm-venc-test720p-inc            += $(call project-path-for,qcom-media)/mm-core/inc
+-mm-venc-test720p-inc            += $(call project-path-for,qcom-display)/libgralloc
++mm-venc-test720p-inc            += hardware/qcom/media-caf-msm8974/mm-core/inc
++mm-venc-test720p-inc            += hardware/qcom/display-caf-msm8974/libgralloc
+ mm-venc-test720p-inc            += $(venc-inc)
+ 
+ LOCAL_HEADER_LIBRARIES := \
+@@ -164,7 +164,7 @@ include $(BUILD_EXECUTABLE)
+ include $(CLEAR_VARS)
+ 
+ venc-test-inc                   += $(LOCAL_PATH)/inc
+-venc-test-inc                   += $(call project-path-for,qcom-display)/libgralloc
++venc-test-inc                   += hardware/qcom/display-caf-msm8974/libgralloc
+ venc-test-inc                   += $(venc-inc)
+ 
+ LOCAL_HEADER_LIBRARIES := \
+@@ -174,7 +174,7 @@ LOCAL_MODULE                    := mm-video-encdrv-test
+ LOCAL_MODULE_TAGS               := optional
+ LOCAL_VENDOR_MODULE             := true
+ LOCAL_C_INCLUDES                := $(venc-test-inc)
+-LOCAL_C_INCLUDES                += $(call project-path-for,qcom-media)/mm-core/inc
++LOCAL_C_INCLUDES                += hardware/qcom/media-caf-msm8974/mm-core/inc
+ 
+ LOCAL_ADDITIONAL_DEPENDENCIES   := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+ LOCAL_PRELINK_MODULE            := false
+-- 
+2.11.0
+

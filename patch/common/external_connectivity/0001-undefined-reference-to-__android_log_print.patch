@@ -1,0 +1,39 @@
+From e3f471e1989658fec8784029b847b99024882d2c Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 13 Oct 2018 01:05:27 +0000
+Subject: [PATCH] undefined reference to `__android_log_print'
+
+Change-Id: I61855a72656f7848590d444d97b07bba86dea613
+---
+ cnefeatureconfig/Android.mk               | 2 +-
+ cnefeatureconfig/src/CneFeatureConfig.cpp | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/cnefeatureconfig/Android.mk b/cnefeatureconfig/Android.mk
+index 07e7e89..16c4764 100644
+--- a/cnefeatureconfig/Android.mk
++++ b/cnefeatureconfig/Android.mk
+@@ -8,7 +8,7 @@ LOCAL_SRC_FILES:= \
+ LOCAL_MODULE:= libcnefeatureconfig
+ LOCAL_MODULE_TAGS := optional
+ 
+-LOCAL_SHARED_LIBRARIES := libc libcutils
++LOCAL_SHARED_LIBRARIES := libc libcutils liblog
+ 
+ LOCAL_C_INCLUDES := \
+         external/connectivity/cnefeatureconfig/inc
+diff --git a/cnefeatureconfig/src/CneFeatureConfig.cpp b/cnefeatureconfig/src/CneFeatureConfig.cpp
+index ad0d460..204ca46 100644
+--- a/cnefeatureconfig/src/CneFeatureConfig.cpp
++++ b/cnefeatureconfig/src/CneFeatureConfig.cpp
+@@ -35,6 +35,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include<cstring>
+ #include "CneFeatureConfig.h"
+ #include <stdlib.h>
++#include <android/log.h>
+ 
+ /*------------------------------------------------------------------------------
+ * Preprocessor Definitions and Constants
+-- 
+2.11.0
+

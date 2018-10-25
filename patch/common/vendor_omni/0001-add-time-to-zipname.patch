@@ -1,0 +1,29 @@
+From 9e48b7f923dac7a1cf3a31f8d28146155bd574f0 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 19 Oct 2018 19:31:05 +0000
+Subject: [PATCH] add time to zipname
+
+Change-Id: I1f632f91a788ec3367196e5710847b9953c38f7b
+---
+ config/version.mk | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/config/version.mk b/config/version.mk
+index 97e5de9..015ddd8 100644
+--- a/config/version.mk
++++ b/config/version.mk
+@@ -12,9 +12,9 @@ ifdef BUILDTYPE_RELEASE
+     ROM_VERSION := $(PLATFORM_VERSION)-$(TARGET_PRODUCT_SHORT)
+ else
+ ifeq ($(ROM_BUILDTIME_UTC),y)
+-    ROM_VERSION := $(PLATFORM_VERSION)-$(shell date -u +%Y%m%d)-$(TARGET_PRODUCT_SHORT)-$(ROM_BUILDTYPE)
++    ROM_VERSION := $(PLATFORM_VERSION)-$(shell date -u +%Y%m%d-%H%M)-$(TARGET_PRODUCT_SHORT)-$(ROM_BUILDTYPE)
+ else
+-    ROM_VERSION := $(PLATFORM_VERSION)-$(shell date +%Y%m%d)-$(TARGET_PRODUCT_SHORT)-$(ROM_BUILDTYPE)
++    ROM_VERSION := $(PLATFORM_VERSION)-$(shell date +%Y%m%d-%H%M)-$(TARGET_PRODUCT_SHORT)-$(ROM_BUILDTYPE)
+ endif
+ endif
+ 
+-- 
+2.11.0
+

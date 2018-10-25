@@ -1,0 +1,50 @@
+From 788988b171d47a1a17efbd0d620d0aec74176cbd Mon Sep 17 00:00:00 2001
+From: darkobas <darkobas@gmail.com>
+Date: Fri, 21 Oct 2016 20:07:08 +0200
+Subject: [PATCH 1/5] remove project pathmap
+
+---
+ Android.mk |  2 +-
+ common.mk  | 18 +++++++++---------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index 67a49a1..ab25712 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -1,4 +1,4 @@
+-ifeq ($(call my-dir),$(call project-path-for,qcom-display))
++ifeq ($(TARGET_QCOM_DISPLAY_VARIANT),caf-msm8974)
+ 
+ display-hals := libgralloc libgenlock libcopybit libvirtual
+ display-hals += libhwcomposer liboverlay libqdutils libhdmi libqservice
+diff --git a/common.mk b/common.mk
+index daa405f..8feccad 100644
+--- a/common.mk
++++ b/common.mk
+@@ -1,13 +1,13 @@
+ #Common headers
+-common_includes := $(call project-path-for,qcom-display)/libgralloc
+-common_includes += $(call project-path-for,qcom-display)/liboverlay
+-common_includes += $(call project-path-for,qcom-display)/libcopybit
+-common_includes += $(call project-path-for,qcom-display)/libqdutils
+-common_includes += $(call project-path-for,qcom-display)/libhwcomposer
+-common_includes += $(call project-path-for,qcom-display)/libexternal
+-common_includes += $(call project-path-for,qcom-display)/libqservice
+-common_includes += $(call project-path-for,qcom-display)/libvirtual
+-common_includes += $(call project-path-for,qcom-display)/libhdmi
++common_includes := hardware/qcom/display-caf-msm8974/libgralloc
++common_includes += hardware/qcom/display-caf-msm8974/liboverlay
++common_includes += hardware/qcom/display-caf-msm8974/libcopybit
++common_includes += hardware/qcom/display-caf-msm8974/libqdutils
++common_includes += hardware/qcom/display-caf-msm8974/libhwcomposer
++common_includes += hardware/qcom/display-caf-msm8974/libexternal
++common_includes += hardware/qcom/display-caf-msm8974/libqservice
++common_includes += hardware/qcom/display-caf-msm8974/libvirtual
++common_includes += hardware/qcom/display-caf-msm8974/libhdmi
+ 
+ ifeq ($(TARGET_USES_POST_PROCESSING),true)
+     common_flags     += -DUSES_POST_PROCESSING
+-- 
+2.11.0
+

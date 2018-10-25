@@ -1,0 +1,25 @@
+From 449c722e6646878271d32c3cbf09e42cea9bec58 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 20 Oct 2018 13:11:23 +0000
+Subject: [PATCH 5/5] libskui
+
+---
+ libhwcomposer/Android.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libhwcomposer/Android.mk b/libhwcomposer/Android.mk
+index 365f0f4..e4cbe3d 100644
+--- a/libhwcomposer/Android.mk
++++ b/libhwcomposer/Android.mk
+@@ -12,7 +12,7 @@ LOCAL_C_INCLUDES              := $(common_includes) $(kernel_includes) \
+ LOCAL_SHARED_LIBRARIES        := $(common_libs) libEGL liboverlay \
+                                  libhdmi libqdutils libhardware_legacy \
+                                  libdl libmemalloc libqservice libsync \
+-                                 libbinder libmedia libskia libvirtual
++                                 libbinder libmedia libhwui libvirtual
+ LOCAL_CFLAGS                  := $(common_flags) -DLOG_TAG=\"qdhwcomposer\"
+ #Enable Dynamic FPS if PHASE_OFFSET is not set
+ ifeq ($(VSYNC_EVENT_PHASE_OFFSET_NS),)
+-- 
+2.11.0
+
