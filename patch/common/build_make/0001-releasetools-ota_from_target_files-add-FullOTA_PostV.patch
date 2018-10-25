@@ -1,0 +1,43 @@
+From ae310f103dafe4b2c7508eeeec11b9a22bddd534 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 25 Oct 2018 19:57:17 +0000
+Subject: [PATCH] releasetools: ota_from_target_files: add FullOTA_PostValidate
+
+Change-Id: Ibc3dd913af30547dd4ff7802c144ca90c90564b6
+---
+ tools/releasetools/common.py                | 5 +++++
+ tools/releasetools/ota_from_target_files.py | 2 ++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/tools/releasetools/common.py b/tools/releasetools/common.py
+index e8f6de5e7..cec5a86a3 100644
+--- a/tools/releasetools/common.py
++++ b/tools/releasetools/common.py
+@@ -1348,6 +1348,11 @@ class DeviceSpecificParams(object):
+     used to install the image for the device's baseband processor."""
+     return self._DoCall("FullOTA_InstallEnd")
+ 
++  def FullOTA_PostValidate(self):
++    """Called after installing and validating /system; typically this is
++    used to resize the system partition after a block based installation."""
++    return self._DoCall("FullOTA_PostValidate")
++
+   def IncrementalOTA_Assertions(self):
+     """Called after emitting the block of assertions at the top of an
+     incremental OTA package.  Implementations can add whatever
+diff --git a/tools/releasetools/ota_from_target_files.py b/tools/releasetools/ota_from_target_files.py
+index aa3eed166..53928735c 100755
+--- a/tools/releasetools/ota_from_target_files.py
++++ b/tools/releasetools/ota_from_target_files.py
+@@ -874,6 +874,8 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
+   common.CheckSize(boot_img.data, "boot.img", target_info)
+   common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
+ 
++  device_specific.FullOTA_PostValidate()
++
+   if OPTIONS.backuptool:
+     script.Print("Restore");
+     script.ShowProgress(0.02, 10)
+-- 
+2.17.2
+

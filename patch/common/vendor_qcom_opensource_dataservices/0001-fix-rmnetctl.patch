@@ -1,0 +1,26 @@
+From 52512ae04ed0d0f5da0aa33eed080e6ae99d6627 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Thu, 25 Oct 2018 07:08:55 +0000
+Subject: [PATCH] fix rmnetctl
+
+Change-Id: I3d6d2379cda7b56e83e9886a7d165c85824bfb5f
+---
+ rmnetctl/src/librmnetctl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/rmnetctl/src/librmnetctl.c b/rmnetctl/src/librmnetctl.c
+index d621f43..02ac794 100644
+--- a/rmnetctl/src/librmnetctl.c
++++ b/rmnetctl/src/librmnetctl.c
+@@ -884,7 +884,7 @@ int rmnet_new_vnd_name(rmnetctl_hndl_t *hndl,
+ 
+ 	memset(request.vnd.vnd_name, 0, RMNET_MAX_STR_LEN);
+ 		if (prefix) {
+-			request.message_type =RMNET_NETLINK_NEW_VND_WITH_NAME;
++			request.message_type =RMNET_NETLINK_NEW_VND_WITH_PREFIX;
+ 			str_len = strlcpy((char *)request.vnd.vnd_name,
+ 					  prefix, RMNET_MAX_STR_LEN);
+ 			if (_rmnetctl_check_len(str_len, error_code)
+-- 
+2.17.2
+
