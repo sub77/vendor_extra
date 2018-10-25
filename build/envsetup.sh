@@ -45,7 +45,33 @@ function apply () {
   done
 }
 
-function colors()
+function func_ccache()
+{
+  if [[ ! -f $(which ccache &>/dev/null) ]]; then
+    alias ccache='./prebuilts/misc/linux-x86/ccache/ccache'
+  fi
+
+
+  if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then
+    echo -e ${ylw}" * Disabled ccache"${txtrst};
+    export USE_CCACHE=0;
+  elif [ "${ccache_dir}" == "" ]; then
+    echo -e ${red}"Error: ccache_dir not set [vendor/extra/config]"${txtrst};
+  else
+    export USE_CCACHE=1
+    mkdir -p "$CCACHE_DIR" 2>/dev/null
+    export CCACHE_DIR=${ccache_dir}
+    ccmd=$(ccache -M $ccache_size 2>&1)
+    cdir=$(ccache -s|grep directory|cut -d '/' -f 3-10)
+    csiz=$(ccache -s|grep 'cache size')
+    ccur=$(echo $csiz|cut -d ' ' -f 3-4)
+    cmax=$(echo $csiz|cut -d ' ' -f 8-9)
+    echo -e $(ccache -s) >/dev/null
+    echo -e ${txtbld}"Setup ccache : ${rst}${cya}$ccur /${cya} $cmax ($cdir)"${rst};
+  fi
+}
+
+function func_colors()
 {
 if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
     CL_RED="\033[31m"
@@ -80,43 +106,35 @@ if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
 fi
 }
 
-function func_ccache()
-{
-  if [[ ! -f $(which ccache &>/dev/null) ]]; then
-    alias ccache='./prebuilts/misc/linux-x86/ccache/ccache'
-  fi
-
-
-  if [[ "${ccache_use}" == "" || "${ccache_use}" == "0" || "${ccache_use}" == "false" ]]; then
-    echo -e ${ylw}" * Disabled ccache"${txtrst};
-    export USE_CCACHE=0;
-  elif [ "${ccache_dir}" == "" ]; then
-    echo -e ${red}"Error: ccache_dir not set [vendor/extra/config]"${txtrst};
-  else
-    export USE_CCACHE=1
-    mkdir -p "$CCACHE_DIR"
-    export CCACHE_DIR=${ccache_dir}
-    ccmd=$(ccache -M $ccache_size 2>&1)
-    cdir=$(ccache -s|grep directory|cut -d '/' -f 3-10)
-    csiz=$(ccache -s|grep 'cache size')
-    ccur=$(echo $csiz|cut -d ' ' -f 3-4)
-    cmax=$(echo $csiz|cut -d ' ' -f 8-9)
-    echo -e $(ccache -s) >/dev/null
-    echo -e ${txtbld}"Setup ccache : ${rst}${cya}$ccur /${cya} $cmax ($cdir)"${rst};
-  fi
-}
-
 function func_config()
 {
-  echo -e ${txtbld}"including vendor/extra/build/config"${rst}${pa}
   source "vendor/extra/build/config"
+  func_colors
+  #echo -e ${txtbld}"including vendor/extra/build/config"${rst}${pa}
   func_ccache
 }
 
-# Make using all available CPUs
 function mka2() {
     m "$@" | tee ./compile.log
     analyse_log
+}
+
+function opendelta()
+{
+read -p "Continue with OpenDelta(y/n)?" CONT
+if [ "$CONT" = "y" ]; then
+  cd /mnt/roms/omnirom/vendor/extra/opendelta
+  bash opendelta.sh $CUSTOM_BUILD
+  if [ $? -eq 0 ]; then
+    echo -e "no error, starting upload"
+    bash upload.sh $CUSTOM_BUILD
+  else
+    echo -e "error. no upload"
+  fi
+else
+  echo "abort";
+fi
+croot
 }
 
 function patchcommon()
@@ -151,7 +169,6 @@ function set_stuff_for_environment()
     settitle
     setpaths
     set_sequence_number
-    colors
     patchdevice
     patchcommon
     repopicker
