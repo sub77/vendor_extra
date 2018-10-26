@@ -1,4 +1,4 @@
-From fa53a7cc40af0a79d075700f326f609450f2fe5a Mon Sep 17 00:00:00 2001
+From 6662a38fe72b679aab7e8ef5423f5e077fd59f25 Mon Sep 17 00:00:00 2001
 From: Adrian DC <radian.dc@gmail.com>
 Date: Sun, 13 Aug 2017 02:26:02 +0200
 Subject: [PATCH 1/2] libc fortify: Ignore open() O_TMPFILE mode bits warning
@@ -118,5 +118,5 @@ index 67c124d71..fd8af20c0 100644
 +//#endif
 +//}
 -- 
-2.11.0
+2.17.2
 

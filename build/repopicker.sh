@@ -25,7 +25,7 @@ echo -e
 #echo -e
 #$repopick_omnirom 32629
 #echo -e
-$repopick_omnirom 32643
-echo -e
+#$repopick_omnirom 32643
+#echo -e "bionic: hack for pthread mutex bug for old camera blob"
 #$repopick_omnirom 32697
 #echo -e "resize: Make a target for standalone resize2fs_static binary"
