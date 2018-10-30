@@ -1,7 +1,7 @@
-From 4bc86fe6dcb264383eb5a6b26d306e559e0edcf7 Mon Sep 17 00:00:00 2001
+From daeab525cf262242bd7bd17f1d66bbab3fb37e4d Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Fri, 26 Oct 2018 03:16:19 +0000
-Subject: [PATCH 2/2] linker: allow the linker to shim executables
+Subject: [PATCH 1/2] linker: allow the linker to shim executables
 
 Change-Id: I0980e7588e5894c22a4c76692507ab2eaf7ed334
 Signed-off-by: MasterAwesome <armu30@gmail.com>
