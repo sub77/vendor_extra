@@ -107,11 +107,11 @@ if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_ZIP -u $my_login2:$my_passw2 $SERVER2/
 #echo -n "UPLOADING $FILE_FULL_LOG to $SERVER2 "
 #if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_LOG -u $my_login2:$my_passw2 $SERVER2/$FTP_DIR_FULL &> /dev/null; then echo -n "SUCCESS"; else echo -n "FAILED"; fi
 echo -e "\n"
-echo -n "UPLOADING $FILE_FULL_MD5SUM to $SERVER1 "
-if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_MD5SUM -u $my_login1:$my_passw1 $SERVER1/ &> /dev/null; then echo -n "SUCCESS"; rm $PATH_FULL/$FILE_FULL_MD5SUM; else echo -n "FAILED"; fi
+#echo -n "UPLOADING $FILE_FULL_MD5SUM to $SERVER1 "
+#if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_MD5SUM -u $my_login1:$my_passw1 $SERVER1/ &> /dev/null; then echo -n "SUCCESS"; rm $PATH_FULL/$FILE_FULL_MD5SUM; else echo -n "FAILED"; fi
 echo -e "\n"
-echo -n "UPLOADING $FILE_FULL_ZIP to $SERVER1 "
-if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_ZIP -u $my_login1:$my_passw1 $SERVER1/ &> /dev/null; then echo -n "SUCCESS"; rm $PATH_FULL/$FILE_FULL_ZIP; else echo -n "FAILED"; fi
+#echo -n "UPLOADING $FILE_FULL_ZIP to $SERVER1 "
+#if curl $VERBOSE -T $PATH_FULL/$FILE_FULL_ZIP -u $my_login1:$my_passw1 $SERVER1/ &> /dev/null; then echo -n "SUCCESS"; rm $PATH_FULL/$FILE_FULL_ZIP; else echo -n "FAILED"; fi
 echo -e "\n"
 fi
 
