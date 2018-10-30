@@ -9,6 +9,7 @@ $repopick_omnirom 32664
 echo -e
 $repopick_omnirom 32665
 echo -e
+
 # topic:wifi-sta-ap-concurrency
 $repopick_omnirom 32593
 echo -e
@@ -20,12 +21,11 @@ $repopick_omnirom 32596
 echo -e
 $repopick_omnirom 32602
 echo -e
-# topic:crap-for-leeco (resize2fs, bionic old cam)
-#$repopick_omnirom 32628
-#echo -e
-#$repopick_omnirom 32629
-#echo -e
+
+# misc
 #$repopick_omnirom 32643
 #echo -e "bionic: hack for pthread mutex bug for old camera blob"
 #$repopick_omnirom 32697
 #echo -e "resize: Make a target for standalone resize2fs_static binary"
+$repopick_omnirom -f 32545
+echo -e "omni: add hours and minutes to ro.omni.version"
