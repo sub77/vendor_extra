@@ -23,9 +23,7 @@ $repopick_omnirom 32602
 echo -e
 
 # misc
-#$repopick_omnirom 32643
-#echo -e "bionic: hack for pthread mutex bug for old camera blob"
-#$repopick_omnirom 32697
-#echo -e "resize: Make a target for standalone resize2fs_static binary"
+$repopick_omnirom 32643
+echo -e "bionic: hack for pthread mutex bug for old camera blob"
 $repopick_omnirom -f 32545
 echo -e "omni: add hours and minutes to ro.omni.version"
