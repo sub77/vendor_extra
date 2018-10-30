@@ -108,10 +108,7 @@ fi
 
 function func_config()
 {
-  source "vendor/extra/build/config"
-  func_colors
-  #echo -e ${txtbld}"including vendor/extra/build/config"${rst}${pa}
-  func_ccache
+  source "vendor/extra/config/rom_config"
 }
 
 function mka2() {
@@ -121,8 +118,8 @@ function mka2() {
 
 function opendelta()
 {
-read -p "Continue with OpenDelta(y/n)?" CONT
-if [ "$CONT" = "y" ]; then
+#read -p "Continue with OpenDelta(y/n)?" CONT
+#if [ "$CONT" = "y" ]; then
   cd /mnt/roms/omnirom/vendor/extra/opendelta
   bash opendelta.sh $CUSTOM_BUILD
   if [ $? -eq 0 ]; then
@@ -131,13 +128,13 @@ if [ "$CONT" = "y" ]; then
   else
     echo -e "error. no upload"
   fi
-else
-  echo "abort";
-fi
+#else
+#  echo "abort";
+#fi
 croot
 }
 
-function patchcommon()
+function func_patchcommon()
 {
     for f in `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
     do
@@ -148,7 +145,7 @@ function patchcommon()
     unset f
 }
 
-function patchdevice()
+function func_patchdevice()
 {
     for f in `test -d vendor && find -L vendor/extra/patch -maxdepth 1 -name 'apply.sh' 2> /dev/null`
     do
@@ -159,9 +156,9 @@ function patchdevice()
     unset f
 }
 
-function repopicker() {
+function func_repopicker() {
     echo -e ${bldppl}${pa}"repopicking"${rst}
-    . `test -d vendor && find -L vendor/extra/build -maxdepth 1 -name 'repopicker.sh'`
+    . `test -d vendor && find -L vendor/extra/patch/repo -maxdepth 1 -name 'repopicker.sh'`
 }
 
 function set_stuff_for_environment()
@@ -169,13 +166,15 @@ function set_stuff_for_environment()
     settitle
     setpaths
     set_sequence_number
-    patchdevice
-    patchcommon
-    repopicker
+    func_patchdevice
+    func_patchcommon
+    func_repopicker
 
     # With this environment variable new GCC can apply colors to warnings/errors
     export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
     export ASAN_OPTIONS=detect_leaks=0
 }
 
+func_colors
 func_config
+func_ccache
