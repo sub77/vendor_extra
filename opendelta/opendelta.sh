@@ -156,6 +156,7 @@ echo "}" >> $DELTA
 mkdir publish >/dev/null 2>/dev/null
 mkdir publish/$DEVICE >/dev/null 2>/dev/null
 cp out/* publish/$DEVICE/.
+ls -alh publish/$DEVICE
 
 rm -rf work
 rm -rf out
