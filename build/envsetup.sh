@@ -45,6 +45,22 @@ function apply () {
   done
 }
 
+function func_alias()
+{
+alias gs='git status'
+alias gl='git log --oneline'
+alias gr='git remote -v'
+alias gb='git branch -a'
+alias rb='repo branches'
+alias gcp='git cherry-pick --signoff'
+alias gcpa='git cherry-pick --abort'
+alias gcpc='git add --all && git cherry-pick --continue'
+alias gres='git reset'
+alias gd='git diff'
+alias gca='git commit --amend'
+alias gprr='git push $1 "$2:$2" -f'
+}
+
 function func_ccache()
 {
   if [[ ! -f $(which ccache &>/dev/null) ]]; then
@@ -175,6 +191,7 @@ function set_stuff_for_environment()
     export ASAN_OPTIONS=detect_leaks=0
 }
 
+func_alias
 func_colors
 func_config
 func_ccache
