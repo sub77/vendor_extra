@@ -136,7 +136,7 @@ function opendelta()
 {
 #read -p "Continue with OpenDelta(y/n)?" CONT
 #if [ "$CONT" = "y" ]; then
-  cd /mnt/roms/omnirom/vendor/extra/opendelta
+  cd /roms/omni-9/vendor/extra/opendelta
   bash opendelta.sh $CUSTOM_BUILD
   if [ $? -eq 0 ]; then
     echo -e "no error, starting upload"

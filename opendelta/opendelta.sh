@@ -25,8 +25,16 @@ BIN_XDELTA=$HOME/delta/xdelta3
 BIN_ZIPADJUST=$HOME/delta/zipadjust
 
 FILE_MATCH=omni-*.zip
-PATH_CURRENT=/mnt/roms/omnirom/out/target/product/$DEVICE
+PATH_CURRENT=/roms/omni-9/out/target/product/$DEVICE
 PATH_LAST=$HOME/delta/last/$DEVICE
+
+if [ ! -d ~/.keys ]; then
+    subject='/C=US/ST=California/L=Mountain View/O=Android/OU=Android/CN=Android/emailAddress=sub77@ymail.com'
+    mkdir ~/.keys
+    for x in releasekey platform shared media; do \
+        ./development/tools/make_key ~/.keys/$x "$subject"; \
+    done
+fi
 
 KEY_X509=$HOME/.keys/platform.x509.pem
 KEY_PK8=$HOME/.keys/platform.pk8
