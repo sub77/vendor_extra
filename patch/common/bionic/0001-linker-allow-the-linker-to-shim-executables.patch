@@ -1,7 +1,7 @@
-From daeab525cf262242bd7bd17f1d66bbab3fb37e4d Mon Sep 17 00:00:00 2001
+From 6629a811faf408a97e29662289df742d612bac44 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Fri, 26 Oct 2018 03:16:19 +0000
-Subject: [PATCH 1/2] linker: allow the linker to shim executables
+Subject: [PATCH] linker: allow the linker to shim executables
 
 Change-Id: I0980e7588e5894c22a4c76692507ab2eaf7ed334
 Signed-off-by: MasterAwesome <armu30@gmail.com>
@@ -12,7 +12,7 @@ Signed-off-by: MasterAwesome <armu30@gmail.com>
  3 files changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/linker/linker.cpp b/linker/linker.cpp
-index c5d96b7f3..06528840b 100644
+index c5d96b7..0652884 100644
 --- a/linker/linker.cpp
 +++ b/linker/linker.cpp
 @@ -1188,6 +1188,7 @@ const char* fix_dt_needed(const char* dt_needed, const char* sopath __unused) {
@@ -24,7 +24,7 @@ index c5d96b7f3..06528840b 100644
    for (const ElfW(Dyn)* d = elf_reader.dynamic(); d->d_tag != DT_NULL; ++d) {
      if (d->d_tag == DT_NEEDED) {
 diff --git a/linker/linker_main.cpp b/linker/linker_main.cpp
-index 950943f15..a5f9a6445 100644
+index 950943f..a5f9a64 100644
 --- a/linker/linker_main.cpp
 +++ b/linker/linker_main.cpp
 @@ -194,7 +194,7 @@ static void init_linker_info_for_gdb(ElfW(Addr) linker_base, char* linker_path)
@@ -37,7 +37,7 @@ index 950943f15..a5f9a6445 100644
    if (executable_path.empty()) {
      char path[PATH_MAX];
 diff --git a/linker/linker_main.h b/linker/linker_main.h
-index b37b9472f..1906a97ec 100644
+index b37b947..1906a97 100644
 --- a/linker/linker_main.h
 +++ b/linker/linker_main.h
 @@ -71,3 +71,5 @@ bool solist_remove_soinfo(soinfo* si);
@@ -47,5 +47,5 @@ index b37b9472f..1906a97ec 100644
 +
 +const char* get_executable_path();
 -- 
-2.17.2
+2.7.4
 
