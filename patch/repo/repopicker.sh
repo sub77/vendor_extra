@@ -24,7 +24,19 @@ echo -e ${rst}${bldylw} "omni: add hours and minutes to ro.omni.version" ${rst}$
 $repopick_omnirom -f 32545
 
 # testing
-echo -e ${rst}${bldylw} "framework_base: Add ICCID into CarrierIdentifier" ${rst}${bldblu}
-$repopick_omnirom 32860
+#echo -e ${rst}${bldylw} "framework_base: Add ICCID into CarrierIdentifier" ${rst}${bldblu}
+#$repopick_omnirom 32860
+
+
+echo -e ${rst}${bldylw} "android_build: android-9.0: [1/3] build/make: Add soong flag for legacy mutex handle" ${rst}${bldblu}
+echo -e ${rst}${bldylw} "android_build_soong: android-9.0: [2/3] build/soong: Add soong flag for legacy mutex handle" ${rst}${bldblu}
+echo -e ${rst}${bldylw} "android_bionic: android-9.0: [3/3] Restore pre-P mutex behavior for legacy blobs" ${rst}${bldblu}
+$repopick_omnirom 32924
+$repopick_omnirom 32925
+$repopick_omnirom 32926
+
+echo -e ${rst}${bldylw} "32940: softap: Suppress warnings to be treated as errors" ${rst}${bldblu}
+$repopick_omnirom 32940
+
 ###
 echo -e ${rst}

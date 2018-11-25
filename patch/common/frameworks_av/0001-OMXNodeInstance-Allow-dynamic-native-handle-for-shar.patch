@@ -1,6 +1,6 @@
-From 1f82830127a59cd7a0d486226157449ada856cc2 Mon Sep 17 00:00:00 2001
+From dd5060da9e7770ee142d1d1e1b3d2fb2198f9b0b Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Sat, 24 Nov 2018 23:08:46 +0100
+Date: Sun, 25 Nov 2018 00:12:09 +0100
 Subject: [PATCH] OMXNodeInstance: Allow dynamic native handle for shared mem
  buffer
 
@@ -16,35 +16,18 @@ Subject: [PATCH] OMXNodeInstance: Allow dynamic native handle for shared mem
 
 Change-Id: I15f8cbb3956773e2ba97032203f5e9254505d8ac
 ---
- media/libstagefright/omx/Android.bp          | 3 +++
- media/libstagefright/omx/OMXNodeInstance.cpp | 3 +++
- 2 files changed, 6 insertions(+)
+ media/libstagefright/omx/OMXNodeInstance.cpp | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/media/libstagefright/omx/Android.bp b/media/libstagefright/omx/Android.bp
-index 3e6942b..dd8d3fd 100644
---- a/media/libstagefright/omx/Android.bp
-+++ b/media/libstagefright/omx/Android.bp
-@@ -81,6 +81,9 @@ cc_library_shared {
-         diag: {
-             cfi: true,
-         },
-+            needs_legacy_camera_hal1_dyn_native_handle: {
-+                cppflags: ["-DNEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE"],
-+            },
-     },
- }
- 
 diff --git a/media/libstagefright/omx/OMXNodeInstance.cpp b/media/libstagefright/omx/OMXNodeInstance.cpp
-index 32113c2..f1de62d 100644
+index 32113c2..9e1622d 100644
 --- a/media/libstagefright/omx/OMXNodeInstance.cpp
 +++ b/media/libstagefright/omx/OMXNodeInstance.cpp
-@@ -1078,6 +1078,9 @@ status_t OMXNodeInstance::useBuffer(
+@@ -1078,6 +1078,7 @@ status_t OMXNodeInstance::useBuffer(
  
          case OMXBuffer::kBufferTypeSharedMem: {
              if (mPortMode[portIndex] != IOMX::kPortModePresetByteBuffer
-+#ifdef NEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE
 +                    && mPortMode[portIndex] != IOMX::kPortModeDynamicNativeHandle
-+#endif
                      && mPortMode[portIndex] != IOMX::kPortModeDynamicANWBuffer) {
                  break;
              }
