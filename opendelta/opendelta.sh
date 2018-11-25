@@ -30,9 +30,9 @@ PATH_LAST=$HOME/delta/last/$DEVICE
 
 if [ ! -d ~/.keys ]; then
     subject='/C=US/ST=California/L=Mountain View/O=Android/OU=Android/CN=Android/emailAddress=sub77@ymail.com'
-    mkdir ~/.keys
+    mkdir $HOME/.keys
     for x in releasekey platform shared media; do \
-        ./development/tools/make_key ~/.keys/$x "$subject"; \
+        /roms/omni-9/development/tools/make_key $HOME/.keys/$x "$subject"; \
     done
 fi
 
