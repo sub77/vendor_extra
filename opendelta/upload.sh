@@ -18,14 +18,15 @@ fi
 # ------ CONFIGURATION ------
 
 #HOME=$(pwd)
-HOME="/roms/omni-9/vendor/extra/opendelta"
+ROM=/mnt/and/roms/omni-9
+HOME=$ROM/vendor/extra/opendelta
 
 SERVER1="ftp://uploads.androidfilehost.com"
 SERVER2="ftp://basketbuild.com"
 FILEMASK="omni-"
 FILE_MATCH="omni-*.zip"
 PATH_DELTA="$HOME/publish/$DEVICE"
-PATH_FULL="/roms/omni-9/out/target/product/$DEVICE"
+PATH_FULL=$ROM/out/target/product/$DEVICE
 PATH_LAST="$HOME/delta/last/$DEVICE"
 FTP_DIR_DELTA="OmniROM/.delta/$DEVICE/"
 FTP_DIR_FULL="OmniROM/$DEVICE/"

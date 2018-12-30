@@ -17,7 +17,9 @@ fi
 
 # ------ CONFIGURATION ------
 
-HOME=$(pwd)
+ROM=/mnt/and/roms/omni-9
+
+HOME=$ROM/vendor/extra/opendelta
 
 BIN_JAVA=java
 BIN_MINSIGNAPK=$HOME/delta/minsignapk.jar
@@ -25,14 +27,14 @@ BIN_XDELTA=$HOME/delta/xdelta3
 BIN_ZIPADJUST=$HOME/delta/zipadjust
 
 FILE_MATCH=omni-*.zip
-PATH_CURRENT=/roms/omni-9/out/target/product/$DEVICE
+PATH_CURRENT=$ROM/out/target/product/$DEVICE
 PATH_LAST=$HOME/delta/last/$DEVICE
 
-if [ ! -d ~/.keys ]; then
+if [ ! -d $HOME/.keys ]; then
     subject='/C=US/ST=California/L=Mountain View/O=Android/OU=Android/CN=Android/emailAddress=sub77@ymail.com'
     mkdir $HOME/.keys
     for x in releasekey platform shared media; do \
-        /roms/omni-9/development/tools/make_key $HOME/.keys/$x "$subject"; \
+        $ROM/development/tools/make_key $HOME/.keys/$x "$subject"; \
     done
 fi
 
