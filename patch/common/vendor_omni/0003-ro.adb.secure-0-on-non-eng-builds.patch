@@ -1,0 +1,26 @@
+From 1b5f7cefb64c0119b6b5ac7279e79a4b4f10b43a Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 24 Apr 2019 00:38:32 +0000
+Subject: [PATCH 3/3] ro.adb.secure=0 on non-eng builds
+
+Change-Id: I2c17c2ff6a8f94eac31a2bc4b47d36747a5bc4ca
+---
+ config/common.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config/common.mk b/config/common.mk
+index 8e42f13b..c013e6d3 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -36,7 +36,7 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+ 
+ # enable ADB authentication if not on eng build
+ ifneq ($(TARGET_BUILD_VARIANT),eng)
+-PRODUCT_SYSTEM_DEFAULT_PROPERTIES  += ro.adb.secure=1
++PRODUCT_SYSTEM_DEFAULT_PROPERTIES  += ro.adb.secure=0
+ endif
+ 
+ # Enforce privapp-permissions whitelist
+-- 
+2.11.0
+

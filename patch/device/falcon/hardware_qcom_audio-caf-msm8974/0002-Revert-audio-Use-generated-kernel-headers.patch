@@ -1,0 +1,145 @@
+From e3054c3ebecc5d10b13ffbc0b1d1582d7af45415 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Tue, 23 Apr 2019 07:16:00 +0000
+Subject: [PATCH 2/2] Revert "audio: Use generated kernel headers"
+
+This reverts commit dee2005505d24d2298149acc5a473bb33740e0e7.
+---
+ audiod/Android.mk                      | 3 ++-
+ hal/Android.mk                         | 6 ++++--
+ hal_mpq/Android.mk                     | 3 ++-
+ mm-audio/aenc-aac/qdsp6/Android.mk     | 3 ++-
+ mm-audio/aenc-amrnb/qdsp6/Android.mk   | 3 ++-
+ mm-audio/aenc-evrc/qdsp6/Android.mk    | 3 ++-
+ mm-audio/aenc-qcelp13/qdsp6/Android.mk | 4 +++-
+ post_proc/Android.mk                   | 3 ++-
+ 8 files changed, 19 insertions(+), 9 deletions(-)
+
+diff --git a/audiod/Android.mk b/audiod/Android.mk
+index 672ec39..aeff390 100644
+--- a/audiod/Android.mk
++++ b/audiod/Android.mk
+@@ -14,7 +14,8 @@ LOCAL_SHARED_LIBRARIES := \
+ 	libbinder \
+ 	libmedia
+ 
+-LOCAL_HEADER_LIBRARIES := generated_kernel_headers
++
++LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+ 
+ LOCAL_MODULE:= audiod
+ 
+diff --git a/hal/Android.mk b/hal/Android.mk
+index 653df56..6557c36 100644
+--- a/hal/Android.mk
++++ b/hal/Android.mk
+@@ -34,6 +34,8 @@ LOCAL_SRC_FILES := \
+ 
+ LOCAL_SRC_FILES += audio_extn/audio_extn.c
+ 
++LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+ LOCAL_CFLAGS += -DUSE_VENDOR_EXTN
+ LOCAL_CFLAGS += -Wno-error
+ 
+@@ -201,10 +203,10 @@ LOCAL_C_INCLUDES += \
+ 	$(call include-path-for, audio-effects) \
+ 	$(LOCAL_PATH)/$(AUDIO_PLATFORM) \
+ 	$(LOCAL_PATH)/audio_extn \
+-	$(LOCAL_PATH)/voice_extn
++	$(LOCAL_PATH)/voice_extn \
++	$(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+ 
+ LOCAL_HEADER_LIBRARIES := libhardware_headers
+-LOCAL_HEADER_LIBRARIES += generated_kernel_headers
+ 
+ ifeq ($(strip $(AUDIO_FEATURE_ENABLED_LISTEN)),true)
+     LOCAL_CFLAGS += -DAUDIO_LISTEN_ENABLED
+diff --git a/hal_mpq/Android.mk b/hal_mpq/Android.mk
+index 8e86c91..d6bbd27 100644
+--- a/hal_mpq/Android.mk
++++ b/hal_mpq/Android.mk
+@@ -45,7 +45,8 @@ LOCAL_C_INCLUDES := \
+ 	$(LOCAL_PATH)/$(AUDIO_PLATFORM)
+ 
+ 
+-LOCAL_HEADER_LIBRARIES := generated_kernel_headers
++LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+ 
+ LOCAL_MODULE := audio.primary.$(TARGET_BOARD_PLATFORM)
+ 
+diff --git a/mm-audio/aenc-aac/qdsp6/Android.mk b/mm-audio/aenc-aac/qdsp6/Android.mk
+index 9cb96e9..5e88c3e 100644
+--- a/mm-audio/aenc-aac/qdsp6/Android.mk
++++ b/mm-audio/aenc-aac/qdsp6/Android.mk
+@@ -38,7 +38,8 @@ LOCAL_SHARED_LIBRARIES  := libutils liblog
+ LOCAL_SRC_FILES         := src/aenc_svr.c
+ LOCAL_SRC_FILES         += src/omx_aac_aenc.cpp
+ 
+-LOCAL_HEADER_LIBRARIES  := generated_kernel_headers
++LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+ 
+ include $(BUILD_SHARED_LIBRARY)
+ 
+diff --git a/mm-audio/aenc-amrnb/qdsp6/Android.mk b/mm-audio/aenc-amrnb/qdsp6/Android.mk
+index af4c1b0..8c5ef1f 100644
+--- a/mm-audio/aenc-amrnb/qdsp6/Android.mk
++++ b/mm-audio/aenc-amrnb/qdsp6/Android.mk
+@@ -38,7 +38,8 @@ LOCAL_SHARED_LIBRARIES  := libutils liblog
+ LOCAL_SRC_FILES         := src/aenc_svr.c
+ LOCAL_SRC_FILES         += src/omx_amr_aenc.cpp
+ 
+-LOCAL_HEADER_LIBRARIES  := generated_kernel_headers
++LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+ 
+ include $(BUILD_SHARED_LIBRARY)
+ 
+diff --git a/mm-audio/aenc-evrc/qdsp6/Android.mk b/mm-audio/aenc-evrc/qdsp6/Android.mk
+index 026e617..575b844 100644
+--- a/mm-audio/aenc-evrc/qdsp6/Android.mk
++++ b/mm-audio/aenc-evrc/qdsp6/Android.mk
+@@ -38,7 +38,8 @@ LOCAL_SHARED_LIBRARIES  := libutils liblog
+ LOCAL_SRC_FILES         := src/aenc_svr.c
+ LOCAL_SRC_FILES         += src/omx_evrc_aenc.cpp
+ 
+-LOCAL_HEADER_LIBRARIES  := generated_kernel_headers
++LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+ 
+ include $(BUILD_SHARED_LIBRARY)
+ 
+diff --git a/mm-audio/aenc-qcelp13/qdsp6/Android.mk b/mm-audio/aenc-qcelp13/qdsp6/Android.mk
+index b86143f..c8ca8a5 100644
+--- a/mm-audio/aenc-qcelp13/qdsp6/Android.mk
++++ b/mm-audio/aenc-qcelp13/qdsp6/Android.mk
+@@ -38,7 +38,9 @@ LOCAL_SHARED_LIBRARIES  := libutils liblog
+ LOCAL_SRC_FILES         := src/aenc_svr.c
+ LOCAL_SRC_FILES         += src/omx_qcelp13_aenc.cpp
+ 
+-LOCAL_HEADER_LIBRARIES  := generated_kernel_headers
++LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
++
+ 
+ include $(BUILD_SHARED_LIBRARY)
+ 
+diff --git a/post_proc/Android.mk b/post_proc/Android.mk
+index d36e8b9..6a2956f 100644
+--- a/post_proc/Android.mk
++++ b/post_proc/Android.mk
+@@ -35,7 +35,8 @@ LOCAL_C_INCLUDES := \
+ 	external/tinyalsa/include \
+ 	$(call include-path-for, audio-effects)
+ 
+-LOCAL_HEADER_LIBRARIES := generated_kernel_headers
++LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
++LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+ 
+ include $(BUILD_SHARED_LIBRARY)
+ 
+-- 
+2.11.0
+

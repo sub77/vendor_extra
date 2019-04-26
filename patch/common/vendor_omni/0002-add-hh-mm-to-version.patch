@@ -1,0 +1,29 @@
+From becdb983fc687153567c7e398707aa9b1266d7f9 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 24 Apr 2019 00:37:59 +0000
+Subject: [PATCH 2/3] add hh:mm to version
+
+Change-Id: I2fd44f9d69ee38e7477fe47f54d2ca3a656af5a9
+---
+ config/version.mk | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/config/version.mk b/config/version.mk
+index f7aeda55..8a115148 100644
+--- a/config/version.mk
++++ b/config/version.mk
+@@ -12,9 +12,9 @@ ifdef BUILDTYPE_RELEASE
+     ROM_VERSION := $(PLATFORM_VERSION)-$(TARGET_PRODUCT_SHORT)
+ else
+ ifeq ($(ROM_BUILDTIME_UTC),y)
+-    ROM_VERSION := $(PLATFORM_VERSION)-$(shell date -u +%Y%m%d)-$(TARGET_PRODUCT_SHORT)-$(ROM_BUILDTYPE)
++    ROM_VERSION := $(PLATFORM_VERSION)-$(shell date -u +%Y%m%d%H%M)-$(TARGET_PRODUCT_SHORT)-$(ROM_BUILDTYPE)
+ else
+-    ROM_VERSION := $(PLATFORM_VERSION)-$(shell date +%Y%m%d)-$(TARGET_PRODUCT_SHORT)-$(ROM_BUILDTYPE)
++    ROM_VERSION := $(PLATFORM_VERSION)-$(shell date +%Y%m%d%H%M)-$(TARGET_PRODUCT_SHORT)-$(ROM_BUILDTYPE)
+ endif
+ endif
+ 
+-- 
+2.11.0
+
