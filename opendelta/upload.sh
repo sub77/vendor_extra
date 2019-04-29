@@ -18,7 +18,7 @@ fi
 # ------ CONFIGURATION ------
 
 #HOME=$(pwd)
-ROM=/mnt/and/roms/omni-9
+ROM=$(cat vendor/extra/config/rom_config | grep _romdir | awk -F= '{ print $2 }')
 HOME=$ROM/vendor/extra/opendelta
 
 SERVER1="ftp://uploads.androidfilehost.com"

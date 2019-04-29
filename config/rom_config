@@ -1,3 +1,4 @@
+_romdir=/roms/omnirom
 ccache_use=1
-ccache_dir=/mnt/dat/ccache/omnirom
-ccache_size=20
+ccache_dir=/roms/ccache/omnirom
+ccache_size=40

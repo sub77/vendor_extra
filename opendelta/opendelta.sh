@@ -17,8 +17,10 @@ fi
 
 # ------ CONFIGURATION ------
 
-ROM=/mnt/and/roms/omni-9
+LOCALWWW=1
+LOCALWWWROOT=/var/www/html/uploads/devs/sub77/OmniROM
 
+ROM=$(cat ../config/rom_config | grep _romdir | awk -F= '{ print $2 }')
 HOME=$ROM/vendor/extra/opendelta
 
 BIN_JAVA=java
@@ -163,16 +165,53 @@ echo "      \"md5_official\": \"$MD5_CURRENT\"" >> $DELTA
 echo "  }" >> $DELTA
 echo "}" >> $DELTA
 
-mkdir publish >/dev/null 2>/dev/null
-mkdir publish/$DEVICE >/dev/null 2>/dev/null
-cp out/* publish/$DEVICE/.
-ls -alh publish/$DEVICE
 
-rm -rf work
-rm -rf out
+if [ $LOCALWWW == "0" ]
+then
+	mkdir publish >/dev/null 2>/dev/null
+	mkdir publish/$DEVICE >/dev/null 2>/dev/null
+	cp out/* publish/$DEVICE/.
+	if [ $? == 0 ]
+	then
+		rm -rf work
+		rm -rf out
+	else
+		echo "error"
+		exit 1
+	fi
 
-rm -rf $PATH_LAST/*
-mkdir -p $PATH_LAST
-cp $PATH_CURRENT/$FILE_CURRENT $PATH_LAST/$FILE_CURRENT
+	rm -rf $PATH_LAST/*
+	mkdir -p $PATH_LAST
+	cp $PATH_CURRENT/$FILE_CURRENT $PATH_LAST/$FILE_CURRENT
+	if [ $? == 0 ]
+	then
+		echo "everything ok"
+	else
+		echo "error"
+		exit 1
+	fi
+else
+	cp out/* $LOCALWWWROOT/.delta/$DEVICE/.
+	if [ $? == 0 ]
+	then
+		rm -rf work
+		rm -rf out
+	else
+		echo "error"
+		exit 1
+	fi
+
+	rm -rf $PATH_LAST/*
+	mkdir -p $PATH_LAST
+	cp $PATH_CURRENT/$FILE_CURRENT $PATH_LAST/$FILE_CURRENT
+	cp $PATH_CURRENT/$FILE_CURRENT $LOCALWWWROOT/$DEVICE/$FILE_CURRENT
+	if [ $? == 0 ]
+	then
+		echo "everything ok"
+	else
+		echo "error"
+		exit 1
+	fi
+fi
 
 exit 0
