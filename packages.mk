@@ -10,7 +10,6 @@ PRODUCT_PACKAGES += \
 # Remove Packages
 REMOVE_PACKAGES := \
     EggGame \
-    Email \
     MatLog
 
 PRODUCT_PACKAGES := $(filter-out $(REMOVE_PACKAGES),$(PRODUCT_PACKAGES))
