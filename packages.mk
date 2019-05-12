@@ -1,5 +1,7 @@
 BOARD_INCLUDE_CMDLINE_TOOLS := true
 
+TARGET_USES_AOSP_BROWSER := true
+
 ########################################
 ############## Packages ################
 ########################################
