@@ -1,3 +1,5 @@
 ./opendelta/last
+./opendelta/last/falcon
+./opendelta/last/falcon/*.zip
 ./opendelta/publish
 ./opendelta/.xdarc
