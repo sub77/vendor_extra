@@ -87,6 +87,15 @@ function func_ccache()
   fi
 }
 
+function func_brotli()
+{
+  if [ "${_with_brotli}" == "0" ]; then
+    echo -e ${ylw}" * Disable brotli"${txtrst};
+    export BUILD_WITH_COLORS=1
+    export ANDROID_COMPILE_WITH_BROTLI=false
+  fi
+}
+
 function func_colors()
 {
 if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
@@ -195,3 +204,4 @@ func_alias
 func_colors
 func_config
 func_ccache
+func_brotli

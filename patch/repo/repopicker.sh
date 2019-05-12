@@ -24,5 +24,8 @@ repopick_omnirom="./vendor/omni/build/tools/repopick.py"
 #echo -e ${rst}${bldylw} "framework_base: Add ICCID into CarrierIdentifier" ${rst}${bldblu}
 #$repopick_omnirom 32860
 
+$repopick_omnirom 33900
+$repopick_omnirom 33904
+
 ###
 echo -e ${rst}

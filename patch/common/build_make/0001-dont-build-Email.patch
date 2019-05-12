@@ -1,0 +1,25 @@
+From bf691e0a32f4befe6adbcddcbdf1fa3bd442e8cd Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 May 2019 16:02:23 +0000
+Subject: [PATCH] dont build Email
+
+Change-Id: Ic193cc2fce1f2ac47bcd0fec767b44a711b8a47c
+---
+ target/product/core.mk | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/target/product/core.mk b/target/product/core.mk
+index 1400074c4..de021ef00 100644
+--- a/target/product/core.mk
++++ b/target/product/core.mk
+@@ -32,7 +32,6 @@ PRODUCT_PACKAGES += \
+     Contacts \
+     DocumentsUI \
+     DownloadProviderUi \
+-    Email \
+     ExactCalculator \
+     ExternalStorageProvider \
+     FusedLocation \
+-- 
+2.11.0
+

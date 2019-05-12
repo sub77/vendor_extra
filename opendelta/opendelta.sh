@@ -17,31 +17,22 @@ fi
 
 # ------ CONFIGURATION ------
 
-LOCALWWW=1
-LOCALWWWROOT=/var/www/html/uploads/devs/sub77/OmniROM
-
-ROM=$(cat ../config/rom_config | grep _romdir | awk -F= '{ print $2 }')
-HOME=$ROM/vendor/extra/opendelta
+HOME=/roms/omnirom
 
 BIN_JAVA=java
-BIN_MINSIGNAPK=$HOME/delta/minsignapk.jar
-BIN_XDELTA=$HOME/delta/xdelta3
-BIN_ZIPADJUST=$HOME/delta/zipadjust
+BIN_MINSIGNAPK=$HOME/vendor/extra/opendelta/delta/minsignapk.jar
+BIN_XDELTA=$HOME/vendor/extra/opendelta/delta/xdelta3
+BIN_ZIPADJUST=$HOME/vendor/extra/opendelta/delta/zipadjust
 
 FILE_MATCH=omni-*.zip
-PATH_CURRENT=$ROM/out/target/product/$DEVICE
-PATH_LAST=$HOME/delta/last/$DEVICE
+PATH_CURRENT=$HOME/out/target/product/$DEVICE
+PATH_LAST=$HOME/vendor/extra/opendelta/last/$DEVICE
 
-if [ ! -d $HOME/.keys ]; then
-    subject='/C=US/ST=California/L=Mountain View/O=Android/OU=Android/CN=Android/emailAddress=sub77@ymail.com'
-    mkdir $HOME/.keys
-    for x in releasekey platform shared media; do \
-        $ROM/development/tools/make_key $HOME/.keys/$x "$subject"; \
-    done
-fi
+#PATH_CURRENT=$HOME/vendor/extra/opendelta/current/$DEVICE
+#PATH_LAST=$HOME/vendor/extra/opendelta/last/$DEVICE
 
-KEY_X509=$HOME/.keys/platform.x509.pem
-KEY_PK8=$HOME/.keys/platform.pk8
+KEY_X509=$HOME/vendor/extra/opendelta/.keys/platform.x509.pem
+KEY_PK8=$HOME/vendor/extra/opendelta/.keys/platform.pk8
 
 # ------ PROCESS ------
 
@@ -165,53 +156,15 @@ echo "      \"md5_official\": \"$MD5_CURRENT\"" >> $DELTA
 echo "  }" >> $DELTA
 echo "}" >> $DELTA
 
+mkdir publish >/dev/null 2>/dev/null
+mkdir publish/$DEVICE >/dev/null 2>/dev/null
+cp out/* publish/$DEVICE/.
 
-if [ $LOCALWWW == "0" ]
-then
-	mkdir publish >/dev/null 2>/dev/null
-	mkdir publish/$DEVICE >/dev/null 2>/dev/null
-	cp out/* publish/$DEVICE/.
-	if [ $? == 0 ]
-	then
-		rm -rf work
-		rm -rf out
-	else
-		echo "error"
-		exit 1
-	fi
+rm -rf work
+rm -rf out
 
-	rm -rf $PATH_LAST/*
-	mkdir -p $PATH_LAST
-	cp $PATH_CURRENT/$FILE_CURRENT $PATH_LAST/$FILE_CURRENT
-	if [ $? == 0 ]
-	then
-		echo "everything ok"
-	else
-		echo "error"
-		exit 1
-	fi
-else
-	cp out/* $LOCALWWWROOT/.delta/$DEVICE/.
-	if [ $? == 0 ]
-	then
-		rm -rf work
-		rm -rf out
-	else
-		echo "error"
-		exit 1
-	fi
-
-	rm -rf $PATH_LAST/*
-	mkdir -p $PATH_LAST
-	cp $PATH_CURRENT/$FILE_CURRENT $PATH_LAST/$FILE_CURRENT
-	cp $PATH_CURRENT/$FILE_CURRENT $LOCALWWWROOT/$DEVICE/$FILE_CURRENT
-	if [ $? == 0 ]
-	then
-		echo "everything ok"
-	else
-		echo "error"
-		exit 1
-	fi
-fi
+rm -rf $PATH_LAST/*
+mkdir -p $PATH_LAST
+cp $PATH_CURRENT/$FILE_CURRENT $PATH_LAST/$FILE_CURRENT
 
 exit 0

@@ -1,0 +1,32 @@
+From 08b9b9f1468c906c066ea8353574bd050d27d7c1 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 3 May 2019 13:22:57 +0000
+Subject: [PATCH 1/2] ro.adb.secure=0
+
+Change-Id: Ibd6d207a6c1ae5c18f905ad762cb304038e7f708
+---
+ config/common.mk | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/config/common.mk b/config/common.mk
+index 8e42f13b..b0f1b8c1 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -36,12 +36,12 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+ 
+ # enable ADB authentication if not on eng build
+ ifneq ($(TARGET_BUILD_VARIANT),eng)
+-PRODUCT_SYSTEM_DEFAULT_PROPERTIES  += ro.adb.secure=1
++PRODUCT_SYSTEM_DEFAULT_PROPERTIES  += ro.adb.secure=0
+ endif
+ 
+ # Enforce privapp-permissions whitelist
+ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+-    ro.control_privapp_permissions=enforce
++    ro.control_privapp_permissions=log
+ 
+ PRODUCT_COPY_FILES += \
+     vendor/omni/prebuilt/bin/clean_cache.sh:system/bin/clean_cache.sh
+-- 
+2.11.0
+
