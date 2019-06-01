@@ -75,6 +75,7 @@ function func_ccache()
     echo -e ${red}"Error: ccache_dir not set [vendor/extra/config]"${txtrst};
   else
     export USE_CCACHE=1
+    export CCACHE_COMPRESS=1
     mkdir -p "$CCACHE_DIR" 2>/dev/null
     export CCACHE_DIR=${ccache_dir}
     ccmd=$(ccache -M $ccache_size 2>&1)
